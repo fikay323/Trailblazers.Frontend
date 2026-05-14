@@ -1,4 +1,6 @@
 import Image from "next/image"
+import { galleryImages } from "@/lib/gallery-data"
+import { cn } from "@/lib/utils"
 
 export default function GalleryPage() {
   return (
@@ -20,75 +22,22 @@ export default function GalleryPage() {
         <section className="bg-background pb-16 lg:pb-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-4 md:grid-cols-3">
-              {/* First column - large building image */}
-              <div className="relative h-125 overflow-hidden rounded-2xl md:row-span-2">
-                <Image
-                  src="/images/image-5.jpeg"
-                  alt="Trailblazers Academy building exterior"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Second column - classroom */}
-              <div className="relative h-62.5 overflow-hidden rounded-2xl">
-                <Image
-                  src="/images/image-1.jpeg"
-                  alt="Students in classroom"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Third column - coding */}
-              <div className="relative h-62.5 overflow-hidden rounded-2xl">
-                <Image
-                  src="/images/image-2.jpeg"
-                  alt="Students learning to code"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Library - spans 2 columns */}
-              <div className="relative h-62.5 overflow-hidden rounded-2xl md:col-span-2">
-                <Image
-                  src="/images/image-3.jpeg"
-                  alt="Student studying in library"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Science lab - tall image */}
-              <div className="relative h-75 overflow-hidden rounded-2xl md:row-span-2">
-                <Image
-                  src="/images/image-4.jpeg"
-                  alt="Science laboratory equipment"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Campus */}
-              <div className="relative h-62.5 overflow-hidden rounded-2xl">
-                <Image
-                  src="/images/image-6.jpeg"
-                  alt="Students on campus grounds"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-
-              {/* Art supplies */}
-              <div className="relative h-62.5 overflow-hidden rounded-2xl">
-                <Image
-                  src="/images/image-1.jpeg"
-                  alt="Art supplies and creative workspace"
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
+              {galleryImages.map((image, index) => (
+                <div 
+                  key={index} 
+                  className={cn(
+                    "relative overflow-hidden rounded-2xl",
+                    image.className || "h-62.5"
+                  )}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    className="object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </section>
