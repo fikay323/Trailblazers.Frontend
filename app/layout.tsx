@@ -13,24 +13,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: 'Trailblazers Academy - Secure Your Admission',
+	title: 'Trailblazers Academy & Edukonsult - Secure Your Admission',
 	description: 'Empowering future leaders through intensive preparation, state-of-the-art facilities, and experienced mentorship for JAMB, WAEC, NECO, and GCE exams.',
 	icons: {
 		icon: [
 			{
-				url: '/icon-light-32x32.png',
+				url: '/favicon.ico',
 				media: '(prefers-color-scheme: light)',
 			},
 			{
-				url: '/icon-dark-32x32.png',
+				url: '/favicon.ico',
 				media: '(prefers-color-scheme: dark)',
 			},
 			{
-				url: '/icon.svg',
+				url: '/favicon.svg',
 				type: 'image/svg+xml',
 			},
 		],
-		apple: '/apple-icon.png',
+		apple: '/apple-touch-icon.png',
 	},
 }
 
