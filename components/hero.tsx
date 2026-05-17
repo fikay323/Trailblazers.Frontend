@@ -1,49 +1,146 @@
+"use client"
+
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+	type CarouselApi,
+} from "@/components/ui/carousel"
+import { cn } from "@/lib/utils"
+
+const slides = [
+	{
+		id: 1,
+		label: "JAMB/CBT Prep",
+		description: "Complete JAMB CBT training with professional guidance.",
+		image: "/images/image-7.jpeg",
+	},
+	{
+		id: 2,
+		label: "WAEC Classroom",
+		description: "Comprehensive WAEC subject lectures and exam prep.",
+		image: "/images/image-1.jpeg",
+	},
+	{
+		id: 3,
+		label: "NECO & GCE Tutoring",
+		description: "Intensive GCE & NECO tutoring for excellent results.",
+		image: "/images/image-2.jpeg",
+	},
+	{
+		id: 4,
+		label: "Our Classrooms",
+		description: "Active, collaborative learning in a productive environment.",
+		image: "/images/image-3.jpeg",
+	},
+	{
+		id: 5,
+		label: "Focused Study",
+		description: "Quiet spaces dedicated to focused self-study.",
+		image: "/images/image-5.jpeg",
+	},
+	{
+		id: 6,
+		label: "Expert Instructors",
+		description: "Learn from experienced tutors dedicated to your academic success.",
+		image: "/images/image-6.jpeg",
+	},
+	{
+		id: 7,
+		label: "Subject Counseling",
+		description: "Guidance on choosing the right JAMB and WAEC subject combinations.",
+		image: "/images/image-7.jpeg",
+	},
+	{
+		id: 8,
+		label: "Conducive Environment",
+		description: "Comfortable, well-ventilated spaces designed to maximize your focus.",
+		image: "/images/image-6.jpeg",
+	}
+]
 
 export function Hero() {
-  return (
-    <section className="py-12 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="text-center lg:text-left">
-            <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-              Secure Your Admission with{" "}
-              <span className="text-primary">Trailblazers Academy</span>
-            </h1>
-            <p className="mt-6 text-pretty text-base leading-relaxed text-on-background font-medium sm:text-lg">
-              Empowering future leaders through intensive preparation,
-              state-of-the-art facilities, and experienced mentorship.
-            </p>
-            {/* <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                Register for the Next Batch
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
-                Learn More
-              </Button>
-            </div> */}
-          </div>
-          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-            <div className="overflow-hidden rounded-2xl">
-              <Image
-                src="/images/image-3.jpeg"
-                alt="Students studying together at Trailblazers Academy"
-                width={600}
-                height={400}
-                className="h-auto w-full object-cover"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
+	const [api, setApi] = useState<CarouselApi>()
+	const [current, setCurrent] = useState(0)
+
+	useEffect(() => {
+		if (!api) {
+			return
+		}
+
+		setCurrent(api.selectedScrollSnap())
+
+		api.on("select", () => {
+			setCurrent(api.selectedScrollSnap())
+		})
+	}, [api])
+
+	return (
+		<section className="relative w-full h-svh overflow-hidden bg-black font-sans">
+			{/* Background Carousel */}
+			<Carousel
+				setApi={setApi}
+				opts={{
+					align: "start",
+					loop: true,
+				}}
+				className="w-full h-full"
+			>
+				<CarouselContent className="h-full ml-0">
+					{slides.map((slide, index) => (
+						<CarouselItem
+							key={slide.id}
+							className="pl-0 basis-full h-full relative"
+						>
+							<Image
+								src={slide.image}
+								alt={slide.label}
+								fill
+								className="object-cover"
+								priority={index === 0}
+							/>
+							{/* Overlay for readability */}
+							<div className="absolute inset-0 bg-black/60" />
+
+							{/* Right-Middle Slide Specific Content */}
+							<div className="absolute top-1/2 -translate-y-1/2 text-center z-10 flex flex-col items-center justify-center w-full">
+								<h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 drop-shadow-xl tracking-tight">
+									{slide.label}
+								</h2>
+								<p className="text-xl md:text-2xl text-white/90 drop-shadow-md font-medium leading-snug">
+									{slide.description}
+								</p>
+							</div>
+						</CarouselItem>
+					))}
+				</CarouselContent>
+
+				{/* Side Edges (Overlay): Navigation Arrows */}
+				<CarouselPrevious className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/50 border-white/20 text-white h-12 w-12 md:h-16 md:w-16 backdrop-blur-sm z-20" />
+				<CarouselNext className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/50 border-white/20 text-white h-12 w-12 md:h-16 md:w-16 backdrop-blur-sm z-20" />
+			</Carousel>
+
+			{/* Bottom-Center (Overlay): Pagination Dots */}
+			<div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+				{slides.map((_, index) => (
+					<button
+						key={index}
+						onClick={() => api?.scrollTo(index)}
+						className={cn(
+							"h-3 w-3 rounded-full transition-all duration-500 ease-out",
+							current === index
+								? "bg-white w-12 shadow-lg shadow-white/40"
+								: "bg-white/40 hover:bg-white/80"
+						)}
+						aria-label={`Go to slide ${index + 1}`}
+					/>
+				))}
+			</div>
+		</section>
+	)
 }
