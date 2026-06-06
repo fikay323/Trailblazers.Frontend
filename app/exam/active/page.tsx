@@ -83,29 +83,29 @@ function ActiveExamWorkspace() {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center gap-3">
+			<div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col items-center justify-center gap-3">
 				<Loader2 className="h-8 w-8 text-primary animate-spin" />
-				<p className="text-slate-400 text-sm">Loading testing workspace...</p>
+				<p className="text-gray-500 text-sm font-medium">Loading testing workspace...</p>
 			</div>
 		);
 	}
 
 	if (!sessionData || sessionData.questions.length === 0) {
 		return (
-			<div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4">
-				<div className="max-w-md w-full text-center space-y-6 bg-slate-900/40 border border-slate-800 p-8 rounded-2xl backdrop-blur-md">
-					<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-950/30 text-red-500 border border-red-900/20">
+			<div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col items-center justify-center p-4">
+				<div className="max-w-md w-full text-center space-y-6 bg-white border border-gray-200 p-8 rounded-2xl shadow-xl">
+					<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600 border border-red-100">
 						<AlertCircle className="h-6 w-6" />
 					</div>
 					<div className="space-y-2">
-						<h2 className="text-xl font-bold text-white">No Active Session Found</h2>
-						<p className="text-slate-400 text-sm leading-relaxed">
+						<h2 className="text-xl font-bold text-gray-900">No Active Session Found</h2>
+						<p className="text-gray-500 text-sm leading-relaxed">
 							It seems you don&apos;t have an active examination session or your previous session has expired.
 						</p>
 					</div>
 					<Button
 						onClick={() => router.push('/exam')}
-						className="w-full bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+						className="w-full bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer font-semibold"
 					>
 						Return to Entry Gate
 					</Button>
@@ -115,20 +115,20 @@ function ActiveExamWorkspace() {
 	}
 
 	return (
-		<main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden">
+		<main className="min-h-screen bg-gray-50 text-gray-800 flex flex-col relative overflow-hidden">
 			{/* Ambient glow decoration */}
 			<div className="absolute top-[-20%] right-[-10%] w-[45%] h-[45%] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
 			{/* Header Bar */}
-			<header className="border-b border-slate-800/80 bg-slate-900/35 backdrop-blur-md sticky top-0 z-30">
+			<header className="border-b border-gray-200 bg-white sticky top-0 z-30 shadow-sm">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-3">
-						<span className="h-7 w-7 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-extrabold text-sm">
+						<span className="h-7 w-7 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-black text-sm">
 							T
 						</span>
 						<div>
-							<h1 className="text-sm font-black tracking-wider text-white uppercase">Trailblazers</h1>
-							<p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">CBT Exam Arena</p>
+							<h1 className="text-sm font-black tracking-wider text-gray-900 uppercase">Trailblazers</h1>
+							<p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">CBT Exam Arena</p>
 						</div>
 					</div>
 
@@ -142,7 +142,7 @@ function ActiveExamWorkspace() {
 				{/* Main Arena (Left Column) */}
 				<section className="lg:col-span-2 space-y-6">
 					{engine.error && (
-						<div className="p-4 rounded-xl bg-red-950/20 border border-red-900/30 text-red-500 text-sm flex items-center gap-2">
+						<div className="p-4 rounded-xl bg-red-50 border border-red-150 text-red-600 text-sm flex items-center gap-2">
 							<AlertCircle className="h-5 w-5 shrink-0" />
 							<span>{engine.error}</span>
 						</div>
@@ -161,12 +161,12 @@ function ActiveExamWorkspace() {
 					/>
 
 					{/* Navigation controls */}
-					<div className="flex items-center justify-between pt-4 border-t border-slate-900">
+					<div className="flex items-center justify-between pt-4 border-t border-gray-200">
 						<Button
 							variant="outline"
 							onClick={engine.prevQuestion}
 							disabled={engine.currentQuestionIndex === 0}
-							className="border-slate-800 bg-slate-900/40 text-slate-300 hover:text-white cursor-pointer"
+							className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
 						>
 							<ChevronLeft className="h-4 w-4 mr-2" />
 							Previous
@@ -197,7 +197,7 @@ function ActiveExamWorkspace() {
 						<Button
 							onClick={handleSubmitClick}
 							disabled={engine.isSubmitting}
-							className="w-full py-6 text-sm font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg shadow-red-950/30 hover:shadow-red-900/40 transition-all cursor-pointer flex items-center justify-center gap-2"
+							className="w-full py-6 text-sm font-bold bg-red-600 hover:bg-red-750 text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
 						>
 							{engine.isSubmitting ? (
 								<>
@@ -222,9 +222,9 @@ export default function ActiveExamWorkspacePage() {
 	return (
 		<React.Suspense
 			fallback={
-				<div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center gap-3">
+				<div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col items-center justify-center gap-3">
 					<Loader2 className="h-8 w-8 text-primary animate-spin" />
-					<p className="text-slate-400 text-sm">Loading testing workspace...</p>
+					<p className="text-gray-500 text-sm font-medium">Loading testing workspace...</p>
 				</div>
 			}
 		>

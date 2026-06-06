@@ -53,19 +53,19 @@ export function ExamTimer({ endTime, onTimeUp }: ExamTimerProps) {
 	const isUrgent = timeLeft < 600; // Less than 10 minutes (red)
 	const isWarning = timeLeft >= 600 && timeLeft < 1800; // 10 to 30 minutes (amber)
 
-	let timerColorClass = 'text-emerald-400 border-emerald-500/20 bg-emerald-950/20';
+	let timerColorClass = 'text-emerald-700 border-emerald-200 bg-emerald-50';
 	if (isUrgent) {
-		timerColorClass = 'text-red-400 border-red-500/30 bg-red-950/35 animate-pulse';
+		timerColorClass = 'text-red-700 border-red-200 bg-red-50 animate-pulse';
 	} else if (isWarning) {
-		timerColorClass = 'text-amber-400 border-amber-500/30 bg-amber-950/25';
+		timerColorClass = 'text-amber-700 border-amber-200 bg-amber-50';
 	}
 
 	return (
 		<div className={`flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-mono font-bold tracking-wider shadow-inner transition-colors duration-500 ${timerColorClass}`}>
 			{isUrgent ? (
-				<AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+				<AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
 			) : (
-				<Timer className={`h-4 w-4 shrink-0 ${isWarning ? 'text-amber-400' : 'text-emerald-400'}`} />
+				<Timer className={`h-4 w-4 shrink-0 ${isWarning ? 'text-amber-600' : 'text-emerald-600'}`} />
 			)}
 			<span>{formatTime(timeLeft)}</span>
 		</div>

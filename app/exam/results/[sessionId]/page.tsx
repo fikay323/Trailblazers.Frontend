@@ -83,11 +83,11 @@ export default function ExamResultsPage() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4">
+			<div className="min-h-screen bg-gray-50 text-gray-800 py-12 px-4">
 				<div className="max-w-4xl mx-auto space-y-6">
-					<Skeleton className="h-40 w-full bg-slate-900" />
-					<Skeleton className="h-12 w-full bg-slate-900" />
-					<Skeleton className="h-64 w-full bg-slate-900" />
+					<Skeleton className="h-40 w-full bg-gray-200" />
+					<Skeleton className="h-12 w-full bg-gray-200" />
+					<Skeleton className="h-64 w-full bg-gray-200" />
 				</div>
 			</div>
 		);
@@ -95,21 +95,21 @@ export default function ExamResultsPage() {
 
 	if (error || !data) {
 		return (
-			<div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-				<Card className="max-w-md border-red-900/30 bg-red-950/10 text-center text-slate-200">
+			<div className="min-h-screen bg-gray-50 text-gray-800 flex items-center justify-center p-4">
+				<Card className="max-w-md border-red-200 bg-red-50 text-center text-red-900">
 					<CardHeader>
 						<AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-2" />
 						<CardTitle>Error Loading Results</CardTitle>
-						<CardDescription className="text-slate-400">
+						<CardDescription className="text-red-700">
 							{error || 'Unable to fetch the exam submission data.'}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<Button onClick={fetchResults} variant="outline" className="border-slate-800 text-white">
+						<Button onClick={fetchResults} variant="outline" className="border-gray-300 bg-white text-gray-750">
 							Retry
 						</Button>
-						<Button onClick={() => window.location.href = '/'} variant="link" className="block w-full text-slate-400">
-							Back to Home
+						<Button onClick={() => window.location.href = '/exam'} variant="link" className="block w-full text-gray-500">
+							Back to Exam Entry
 						</Button>
 					</CardContent>
 				</Card>
@@ -123,57 +123,57 @@ export default function ExamResultsPage() {
 	);
 
 	return (
-		<div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+		<div className="min-h-screen bg-gray-50 text-gray-800 py-10 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
 
 				{/* Navigation & Header */}
 				<div className="flex items-center gap-4">
 					<Button
 						variant="ghost"
-						onClick={() => window.location.href = '/'}
-						className="text-slate-400 hover:text-white border border-slate-800 bg-slate-900/30 cursor-pointer"
+						onClick={() => window.location.href = '/exam'}
+						className="text-gray-650 hover:text-gray-900 border border-gray-300 bg-white cursor-pointer"
 						size="sm"
 					>
 						<ArrowLeft className="h-4 w-4 mr-2" />
-						Back to Home
+						Back to Exam Gate
 					</Button>
 				</div>
 
 				{/* Overall Score Card */}
-				<Card className="border-slate-800 bg-slate-900/40 backdrop-blur-md overflow-hidden relative">
+				<Card className="border-gray-200 bg-white shadow-lg overflow-hidden relative">
 					<div className="absolute top-0 right-0 p-8 opacity-5">
 						<Award className="h-40 w-40 text-primary" />
 					</div>
 					<CardContent className="p-8">
 						<div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
 							<div className="space-y-3">
-								<Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+								<Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary font-bold">
 									Exam Session Completed
 								</Badge>
-								<h1 className="text-3xl font-extrabold text-white tracking-tight">Performance Summary</h1>
-								<div className="flex flex-wrap gap-4 text-sm text-slate-400 pt-1">
+								<h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Performance Summary</h1>
+								<div className="flex flex-wrap gap-4 text-sm text-gray-500 pt-1">
 									<span className="flex items-center gap-1">
-										<Calendar className="h-4 w-4" />
+										<Calendar className="h-4 w-4 text-gray-400" />
 										{new Date(data.completedAt).toLocaleDateString()}
 									</span>
 									<span className="flex items-center gap-1">
-										<Clock className="h-4 w-4" />
+										<Clock className="h-4 w-4 text-gray-400" />
 										{new Date(data.completedAt).toLocaleTimeString()}
 									</span>
-									<span className="text-slate-300 font-semibold">{data.studentEmail}</span>
+									<span className="text-gray-700 font-semibold">{data.studentEmail}</span>
 								</div>
 							</div>
-							<div className="flex items-center gap-4 bg-slate-950/60 border border-slate-800/80 rounded-xl p-6 shadow-inner">
+							<div className="flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-inner">
 								<div className="text-center">
-									<div className="text-4xl font-extrabold text-primary">{data.overallScore}</div>
-									<div className="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">Score</div>
+									<div className="text-4xl font-black text-primary">{data.overallScore}</div>
+									<div className="text-xs text-gray-500 uppercase tracking-widest font-bold mt-1">Score</div>
 								</div>
-								<div className="h-10 w-px bg-slate-800" />
+								<div className="h-10 w-px bg-gray-200" />
 								<div className="text-center">
-									<div className="text-4xl font-extrabold text-white">
-										{Math.round((data.overallScore / data.totalQuestions) * 100)}%
+									<div className="text-4xl font-black text-gray-900">
+										{data.totalQuestions > 0 ? Math.round((data.overallScore / data.totalQuestions) * 100) : 0}%
 									</div>
-									<div className="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">Percent</div>
+									<div className="text-xs text-gray-500 uppercase tracking-widest font-bold mt-1">Percent</div>
 								</div>
 							</div>
 						</div>
@@ -183,14 +183,14 @@ export default function ExamResultsPage() {
 				{/* Subject-by-Subject breakdown grid */}
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 					{data.subjectPerformance.map((perf) => (
-						<Card key={perf.subject} className="border-slate-800 bg-slate-900/20">
+						<Card key={perf.subject} className="border-gray-200 bg-white shadow-sm">
 							<CardContent className="p-4 text-center space-y-1">
-								<div className="text-xs text-slate-400 font-medium truncate">{perf.subject}</div>
-								<div className="text-xl font-bold text-white">
-									{perf.score} <span className="text-xs text-slate-500">/ {perf.totalQuestions}</span>
+								<div className="text-xs text-gray-500 font-bold truncate uppercase tracking-wider">{perf.subject}</div>
+								<div className="text-xl font-bold text-gray-900">
+									{perf.score} <span className="text-xs text-gray-400">/ {perf.totalQuestions}</span>
 								</div>
-								<div className="text-xs text-primary font-semibold">
-									{Math.round((perf.score / perf.totalQuestions) * 100)}%
+								<div className="text-xs text-primary font-bold">
+									{perf.totalQuestions > 0 ? Math.round((perf.score / perf.totalQuestions) * 100) : 0}%
 								</div>
 							</CardContent>
 						</Card>
@@ -198,14 +198,14 @@ export default function ExamResultsPage() {
 				</div>
 
 				{/* Subject Score Navigation Tabs */}
-				<div className="flex border-b border-slate-800 gap-6 overflow-x-auto pb-1">
+				<div className="flex border-b border-gray-200 gap-6 overflow-x-auto pb-1">
 					{data.subjectPerformance.map((perf) => (
 						<button
 							key={perf.subject}
 							onClick={() => setActiveSubject(perf.subject)}
-							className={`pb-4 text-sm font-semibold transition-all border-b-2 outline-none whitespace-nowrap cursor-pointer ${activeSubject.toLowerCase() === perf.subject.toLowerCase()
+							className={`pb-4 text-sm font-bold transition-all border-b-2 outline-none whitespace-nowrap cursor-pointer ${activeSubject.toLowerCase() === perf.subject.toLowerCase()
 								? 'border-primary text-primary'
-								: 'border-transparent text-slate-400 hover:text-slate-200'
+								: 'border-transparent text-gray-500 hover:text-gray-800'
 								}`}
 						>
 							{perf.subject}
@@ -219,9 +219,9 @@ export default function ExamResultsPage() {
 						const isCorrect = q.selectedOption?.toUpperCase() === q.correctOption.toUpperCase();
 						const isUnattempted = !q.selectedOption;
 
-						let cardStyles = 'border-slate-800 bg-slate-900/10';
-						if (isCorrect) cardStyles = 'border-green-900/30 bg-green-950/5';
-						else if (!isUnattempted) cardStyles = 'border-red-900/30 bg-red-950/5';
+						let cardStyles = 'border-gray-200 bg-white';
+						if (isCorrect) cardStyles = 'border-green-200 bg-green-50/30';
+						else if (!isUnattempted) cardStyles = 'border-red-200 bg-red-50/30';
 
 						return (
 							<Card key={q.id} className={`transition-all border shadow-sm ${cardStyles}`}>
@@ -229,28 +229,28 @@ export default function ExamResultsPage() {
 
 									{/* Passage display if available */}
 									{q.comprehensionPassage && (
-										<div className="mb-4 bg-slate-950/40 border border-slate-800/80 rounded-md p-4 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
-											<div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-2">Comprehension Passage</div>
+										<div className="mb-4 bg-gray-50 border border-gray-200 rounded-md p-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+											<div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Comprehension Passage</div>
 											{q.comprehensionPassage}
 										</div>
 									)}
 
 									{/* Header info */}
 									<div className="flex items-start justify-between gap-4">
-										<div className="text-sm font-semibold text-slate-200">
+										<div className="text-sm font-bold text-gray-700">
 											Question {idx + 1}
 										</div>
 										<div>
 											{isCorrect ? (
-												<Badge variant="outline" className="border-green-700/40 bg-green-950/30 text-green-400 flex items-center gap-1">
+												<Badge variant="outline" className="border-green-300 bg-green-50 text-green-700 font-semibold flex items-center gap-1">
 													<Check className="h-3 w-3" /> Correct
 												</Badge>
 											) : isUnattempted ? (
-												<Badge variant="outline" className="border-slate-700 bg-slate-800/20 text-slate-400">
+												<Badge variant="outline" className="border-gray-300 bg-gray-100 text-gray-600 font-semibold">
 													Unattempted
 												</Badge>
 											) : (
-												<Badge variant="outline" className="border-red-700/40 bg-red-950/30 text-red-400 flex items-center gap-1">
+												<Badge variant="outline" className="border-red-300 bg-red-50 text-red-700 font-semibold flex items-center gap-1">
 													<X className="h-3 w-3" /> Incorrect
 												</Badge>
 											)}
@@ -258,7 +258,7 @@ export default function ExamResultsPage() {
 									</div>
 
 									{/* Question Text */}
-									<p className="text-slate-200 text-md leading-relaxed font-medium">{q.questionText}</p>
+									<p className="text-gray-900 text-md leading-relaxed font-bold">{q.questionText}</p>
 
 									{/* Comparative Options View */}
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -270,12 +270,12 @@ export default function ExamResultsPage() {
 											const isThisSelected = selectedUpper === charUpper;
 											const isThisCorrect = correctUpper === charUpper;
 
-											let btnStyle = 'border-slate-800 bg-slate-950/40 text-slate-300';
+											let btnStyle = 'border-gray-200 bg-gray-50/50 text-gray-700';
 
 											if (isThisCorrect) {
-												btnStyle = 'border-green-700 bg-green-950/30 text-green-400 font-semibold';
+												btnStyle = 'border-green-500 bg-green-50 text-green-700 font-bold';
 											} else if (isThisSelected) {
-												btnStyle = 'border-red-700 bg-red-950/30 text-red-400 font-semibold';
+												btnStyle = 'border-red-500 bg-red-50 text-red-700 font-bold';
 											}
 
 											return (
@@ -283,17 +283,17 @@ export default function ExamResultsPage() {
 													key={optionChar}
 													className={`flex items-center gap-3 border rounded-lg p-3 text-sm transition-all ${btnStyle}`}
 												>
-													<div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${isThisCorrect
-														? 'border-green-500 bg-green-500/10 text-green-400'
+													<div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${isThisCorrect
+														? 'border-green-600 bg-green-600 text-white'
 														: isThisSelected
-															? 'border-red-500 bg-red-500/10 text-red-400'
-															: 'border-slate-700 text-slate-400'
+															? 'border-red-600 bg-red-600 text-white'
+															: 'border-gray-300 text-gray-500 bg-white'
 														}`}>
 														{charUpper}
 													</div>
-													<span className="flex-1 leading-snug">{optionText}</span>
-													{isThisCorrect && <Check className="h-4 w-4 shrink-0 text-green-500" />}
-													{!isThisCorrect && isThisSelected && <X className="h-4 w-4 shrink-0 text-red-500" />}
+													<span className="flex-1 leading-snug font-medium">{optionText}</span>
+													{isThisCorrect && <Check className="h-4 w-4 shrink-0 text-green-600" />}
+													{!isThisCorrect && isThisSelected && <X className="h-4 w-4 shrink-0 text-red-600" />}
 												</div>
 											);
 										})}

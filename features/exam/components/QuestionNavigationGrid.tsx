@@ -48,13 +48,13 @@ export function QuestionNavigationGrid({
 	}, [questions, answers]);
 
 	return (
-		<Card className="border-slate-800 bg-slate-900/40 backdrop-blur-sm shadow-xl flex flex-col h-full">
-			<CardHeader className="border-b border-slate-800/80 pb-4">
+		<Card className="border-gray-200 bg-white shadow-lg flex flex-col h-full">
+			<CardHeader className="border-b border-gray-100 pb-4">
 				<div className="flex items-center justify-between">
-					<CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400">
+					<CardTitle className="text-sm font-bold uppercase tracking-wider text-gray-500">
 						Question Navigator
 					</CardTitle>
-					<span className="text-xs font-semibold bg-primary/10 border border-primary/20 text-primary-foreground px-2.5 py-0.5 rounded-full">
+					<span className="text-xs font-semibold bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full">
 						{totalAnswered} / {questions.length} Solved
 					</span>
 				</div>
@@ -71,10 +71,11 @@ export function QuestionNavigationGrid({
 								key={subj}
 								type="button"
 								onClick={() => setActiveSubjectTab(subj)}
-								className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-all cursor-pointer ${isSelected
-										? 'bg-primary border-primary text-primary-foreground shadow-md shadow-primary/10'
-										: 'bg-slate-950/40 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-									}`}
+								className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-all cursor-pointer ${
+									isSelected
+										? 'bg-primary border-primary text-primary-foreground shadow-sm'
+										: 'bg-gray-150 border-gray-250 text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+								}`}
 							>
 								{subj} ({answeredInSubject}/{totalInSubject})
 							</button>
@@ -83,19 +84,19 @@ export function QuestionNavigationGrid({
 				</div>
 			</CardHeader>
 
-			<CardContent className="p-4 flex-1 overflow-y-auto max-h-95 sm:max-h-none">
+			<CardContent className="p-4 flex-1 overflow-y-auto max-h-[380px] sm:max-h-none">
 				{/* Key / Legend */}
-				<div className="flex items-center gap-4 text-[10px] text-slate-400 font-semibold mb-4 justify-center">
+				<div className="flex items-center gap-4 text-[10px] text-gray-500 font-bold mb-4 justify-center">
 					<div className="flex items-center gap-1.5">
 						<span className="h-3 w-3 rounded bg-primary border border-primary/20 block"></span>
 						<span>Active</span>
 					</div>
 					<div className="flex items-center gap-1.5">
-						<span className="h-3 w-3 rounded bg-emerald-950/45 border border-emerald-500/40 block"></span>
-						<span>Answered</span>
+						<span className="h-3 w-3 rounded bg-emerald-50 border border-emerald-300 block"></span>
+						<span className="text-emerald-700">Answered</span>
 					</div>
 					<div className="flex items-center gap-1.5">
-						<span className="h-3 w-3 rounded bg-slate-950/60 border border-slate-800 block"></span>
+						<span className="h-3 w-3 rounded bg-gray-50 border border-gray-200 block"></span>
 						<span>Unanswered</span>
 					</div>
 				</div>
@@ -106,11 +107,11 @@ export function QuestionNavigationGrid({
 						const isActive = currentQuestionIndex === absoluteIndex;
 						const isAnswered = !!answers[question.id];
 
-						let btnClass = 'border-slate-800 bg-slate-950/60 text-slate-400 hover:bg-slate-900 hover:text-slate-200';
+						let btnClass = 'border-gray-250 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700';
 						if (isActive) {
-							btnClass = 'bg-primary border-primary text-primary-foreground font-extrabold shadow-md shadow-primary/10';
+							btnClass = 'bg-primary border-primary text-primary-foreground font-extrabold shadow-sm';
 						} else if (isAnswered) {
-							btnClass = 'border-emerald-500/40 bg-emerald-950/45 text-emerald-300 font-semibold';
+							btnClass = 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold';
 						}
 
 						return (

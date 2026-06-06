@@ -1,37 +1,59 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
-import { ArrowRight, BookOpen, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, BookOpen, AlertCircle, Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const SUBJECT_LIST = [
-	'Mathematics',
-	'Physics',
-	'Chemistry',
-	'Biology',
-	'Economics',
-	'Government',
-	'Literature in English',
-	'Christian Religious Studies',
-	'Geography',
-	'Commerce'
-];
-
 export function RegistrationGate() {
+	const [metadata, setMetadata] = useState<{ subjects: string[]; years: number[] } | null>(null);
+	const [isLoadingMeta, setIsLoadingMeta] = useState(true);
+	const [metaError, setMetaError] = useState<string | null>(null);
+
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
 		phone: '',
-		year: '2024',
+		year: '',
 		selectedElectives: [] as string[]
 	});
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Fetch exam metadata on mount
+	useEffect(() => {
+		async function fetchMetadata() {
+			try {
+				const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
+				const response = await fetch(`${apiUrl}/api/exams/metadata`);
+				if (!response.ok) {
+					throw new Error('Failed to retrieve mock exam subjects and years.');
+				}
+				const data = await response.json();
+				setMetadata(data);
+				// Automatically select the first available year
+				if (data.years && data.years.length > 0) {
+					setFormData((prev) => ({ ...prev, year: String(data.years[0]) }));
+				}
+			} catch (err: any) {
+				setMetaError(err.message || 'Could not load exam configuration.');
+			} finally {
+				setIsLoadingMeta(false);
+			}
+		}
+		fetchMetadata();
+	}, []);
+
+	const electiveSubjects = React.useMemo(() => {
+		if (!metadata) return [];
+		return metadata.subjects.filter(
+			(subj) => subj.toLowerCase() !== 'use of english'
+		);
+	}, [metadata]);
 
 	const handleElectiveChange = (subject: string) => {
 		setFormData((prev) => {
@@ -92,7 +114,7 @@ export function RegistrationGate() {
 			localStorage.setItem('exam_questions', JSON.stringify(data.questions));
 
 			// Redirect student into the active exam view page
-			window.location.href = '/exam/active';
+			window.location.href = `/exam/active?session=${data.sessionId}`;
 		} catch (err: any) {
 			setError(err.message || 'Failed to start the exam. Please try again.');
 		} finally {
@@ -100,20 +122,36 @@ export function RegistrationGate() {
 		}
 	};
 
-	return (
-		<Card className="w-full max-w-2xl border-slate-800 bg-slate-950/90 backdrop-blur-md shadow-2xl mx-auto text-slate-100">
-			<CardHeader className="space-y-2 text-center border-b border-slate-800 pb-6">
-				<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-					<BookOpen className="h-6 w-6" />
+	if (isLoadingMeta) {
+		return (
+			<Card className="w-full max-w-2xl border-gray-200 bg-white shadow-xl mx-auto text-gray-800 p-8">
+				<div className="flex flex-col items-center justify-center space-y-4 py-12">
+					<Loader2 className="h-10 w-10 text-primary animate-spin" />
+					<p className="text-gray-500 text-sm font-medium">Loading exam options from server...</p>
 				</div>
-				<CardTitle className="text-3xl font-extrabold tracking-tight text-white">JAMB Mock Exam Gate</CardTitle>
-				<CardDescription className="text-slate-400">
-					Enter your registration details and choose your subjects to start your simulated 2-hour exam session.
-				</CardDescription>
-			</CardHeader>
+			</Card>
+		);
+	}
+
+	if (metaError || !metadata) {
+		return (
+			<Card className="w-full max-w-2xl border-red-200 bg-red-50 shadow-xl mx-auto text-red-800 p-6">
+				<div className="flex items-center gap-3">
+					<AlertCircle className="h-6 w-6 text-red-600 shrink-0" />
+					<div>
+						<h3 className="font-bold">Configuration Error</h3>
+						<p className="text-sm text-red-700">{metaError || 'Unable to connect to the backend server.'}</p>
+					</div>
+				</div>
+			</Card>
+		);
+	}
+
+	return (
+		<Card className="w-full max-w-2xl border-gray-200 bg-white shadow-xl mx-auto text-gray-800">
 			<CardContent className="p-6">
 				{error && (
-					<div className="mb-6 p-4 rounded-md bg-red-950/20 border border-red-900/30 text-red-500 text-sm flex items-center gap-2">
+					<div className="mb-6 p-4 rounded-md bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
 						<AlertCircle className="h-5 w-5 shrink-0" />
 						<span>{error}</span>
 					</div>
@@ -122,7 +160,7 @@ export function RegistrationGate() {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{/* Student Name */}
 						<div className="space-y-2">
-							<Label htmlFor="name" className="text-slate-300">Full Name</Label>
+							<Label htmlFor="name" className="text-gray-700 font-semibold">Full Name</Label>
 							<Input
 								id="name"
 								type="text"
@@ -130,13 +168,13 @@ export function RegistrationGate() {
 								required
 								value={formData.name}
 								onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-								className="border-slate-800 bg-slate-900 text-white placeholder-slate-500"
+								className="border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-primary"
 							/>
 						</div>
 
 						{/* Email Address */}
 						<div className="space-y-2">
-							<Label htmlFor="email" className="text-slate-300">Email Address</Label>
+							<Label htmlFor="email" className="text-gray-700 font-semibold">Email Address</Label>
 							<Input
 								id="email"
 								type="email"
@@ -144,7 +182,7 @@ export function RegistrationGate() {
 								required
 								value={formData.email}
 								onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-								className="border-slate-800 bg-slate-900 text-white placeholder-slate-500"
+								className="border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-primary"
 							/>
 						</div>
 					</div>
@@ -152,7 +190,7 @@ export function RegistrationGate() {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{/* Phone Number */}
 						<div className="space-y-2">
-							<Label htmlFor="phone" className="text-slate-300">Phone Number</Label>
+							<Label htmlFor="phone" className="text-gray-700 font-semibold">Phone Number</Label>
 							<Input
 								id="phone"
 								type="tel"
@@ -160,42 +198,44 @@ export function RegistrationGate() {
 								required
 								value={formData.phone}
 								onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-								className="border-slate-800 bg-slate-900 text-white placeholder-slate-500"
+								className="border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-primary"
 							/>
 						</div>
 
 						{/* Selected Year */}
 						<div className="space-y-2">
-							<Label htmlFor="year" className="text-slate-300">Exam Year</Label>
+							<Label htmlFor="year" className="text-gray-700 font-semibold">Exam Year</Label>
 							<select
 								id="year"
 								value={formData.year}
 								onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-								className="w-full h-10 rounded-md border border-slate-800 bg-slate-900 px-3 py-1 text-sm text-slate-100 outline-none focus:ring-1 focus:ring-primary"
+								className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900 outline-none focus:ring-1 focus:ring-primary focus:border-primary"
 							>
-								<option value="2024">2024 (Latest)</option>
-								<option value="2023">2023</option>
-								<option value="2022">2022</option>
+								{metadata.years.map((y) => (
+									<option key={y} value={y}>
+										{y}
+									</option>
+								))}
 							</select>
 						</div>
 					</div>
 
 					{/* Subjects selection */}
 					<div className="space-y-3 pt-2">
-						<Label className="text-slate-300 font-semibold block">
-							Choose 3 Elective Subjects <span className="text-slate-400 font-normal">(Use of English is compulsory)</span>
+						<Label className="text-gray-700 font-bold block">
+							Choose 3 Elective Subjects <span className="text-gray-500 font-normal">(Use of English is compulsory)</span>
 						</Label>
 						<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-							{SUBJECT_LIST.map((subject) => {
+							{electiveSubjects.map((subject) => {
 								const isSelected = formData.selectedElectives.includes(subject);
 								return (
 									<button
 										key={subject}
 										type="button"
 										onClick={() => handleElectiveChange(subject)}
-										className={`p-3 text-left rounded-md text-xs font-medium border transition-all cursor-pointer ${isSelected
-											? 'border-primary bg-primary/10 text-primary-foreground'
-											: 'border-slate-800 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-slate-200'
+										className={`p-3 text-left rounded-md text-xs font-semibold border transition-all cursor-pointer ${isSelected
+											? 'border-primary bg-primary/10 text-primary font-bold'
+											: 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-900'
 											}`}
 									>
 										{subject}
@@ -203,17 +243,24 @@ export function RegistrationGate() {
 								);
 							})}
 						</div>
-						<div className="text-xs text-slate-400 mt-1">
-							Selected: <span className="text-slate-200 font-semibold">{formData.selectedElectives.length} / 3</span> electives.
+						<div className="text-xs text-gray-500 mt-1">
+							Selected: <span className="text-gray-800 font-bold">{formData.selectedElectives.length} / 3</span> electives.
 						</div>
 					</div>
 
 					{/* Submit */}
-					<div className="pt-4 border-t border-slate-800">
+					<div className="pt-4 border-t border-gray-100">
 						<Button
 							type="submit"
-							disabled={isLoading || formData.selectedElectives.length !== 3}
-							className="w-full h-12 text-md flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/95 shadow-lg shadow-primary/20 transition-all cursor-pointer"
+							disabled={
+								isLoading ||
+								!formData.name.trim() ||
+								!formData.email.trim() ||
+								!formData.phone.trim() ||
+								!formData.year ||
+								formData.selectedElectives.length !== 3
+							}
+							className="w-full h-12 text-md flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/95 shadow-lg shadow-primary/20 transition-all cursor-pointer font-bold"
 						>
 							{isLoading ? 'Initializing Session...' : 'Start Exam Simulator'}
 							<ArrowRight className="h-5 w-5" />

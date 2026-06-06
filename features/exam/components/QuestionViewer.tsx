@@ -20,7 +20,7 @@ export function QuestionViewer({
 }: QuestionViewerProps) {
 	if (!question) {
 		return (
-			<Card className="border-slate-800 bg-slate-900/50 text-slate-400 p-8 text-center">
+			<Card className="border-gray-200 bg-gray-50 text-gray-500 p-8 text-center">
 				<p>No active question loaded.</p>
 			</Card>
 		);
@@ -29,45 +29,45 @@ export function QuestionViewer({
 	return (
 		<div className="space-y-6">
 			{/* Subject / Progress Indicator */}
-			<div className="flex items-center justify-between border-b border-slate-800 pb-4">
+			<div className="flex items-center justify-between border-b border-gray-200 pb-4">
 				<div>
-					<span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Subject</span>
-					<h2 className="text-lg font-bold text-white flex items-center gap-2">
+					<span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Active Subject</span>
+					<h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
 						<BookOpen className="h-5 w-5 text-primary" />
 						{question.subject}
 					</h2>
 				</div>
 				<div className="text-right">
-					<span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Question</span>
-					<p className="text-lg font-bold text-white">#{questionNumber}</p>
+					<span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Question</span>
+					<p className="text-lg font-bold text-gray-900">#{questionNumber}</p>
 				</div>
 			</div>
 
 			{/* Comprehension Passage Section if exists */}
 			{question.comprehensionPassage && (
-				<Card className="border-slate-800/80 bg-slate-950/60 shadow-inner overflow-hidden">
-					<CardHeader className="bg-slate-900/40 py-2.5 px-4 border-b border-slate-800/50">
-						<CardTitle className="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
+				<Card className="border-gray-200 bg-gray-50 shadow-inner overflow-hidden">
+					<CardHeader className="bg-gray-100 py-2.5 px-4 border-b border-gray-200">
+						<CardTitle className="text-xs font-bold text-gray-500 tracking-wider uppercase flex items-center gap-1.5">
 							Comprehension Passage
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="p-4 max-h-55 overflow-y-auto text-sm text-slate-300 leading-relaxed font-normal whitespace-pre-line">
+					<CardContent className="p-4 max-h-55 overflow-y-auto text-sm text-gray-700 leading-relaxed font-normal whitespace-pre-line">
 						{question.comprehensionPassage}
 					</CardContent>
 				</Card>
 			)}
 
 			{/* Main Question Card */}
-			<Card className="border-slate-800 bg-slate-900/40 backdrop-blur-sm shadow-xl">
+			<Card className="border-gray-200 bg-white shadow-lg">
 				<CardContent className="p-6 space-y-6">
 					{/* Question Text */}
-					<div className="text-md sm:text-lg text-slate-100 font-medium leading-relaxed whitespace-pre-line">
+					<div className="text-md sm:text-lg text-gray-900 font-semibold leading-relaxed whitespace-pre-line">
 						{question.questionText}
 					</div>
 
 					{/* Question Image if exists */}
 					{question.imageUrl && (
-						<div className="flex justify-center max-w-full rounded-lg overflow-hidden border border-slate-800 bg-slate-950 p-2">
+						<div className="flex justify-center max-w-full rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-2">
 							{/* eslint-disable-next-line @next/next/no-img-element */}
 							<img
 								src={question.imageUrl}
@@ -78,7 +78,7 @@ export function QuestionViewer({
 					)}
 
 					{/* Option Selection Grid */}
-					<div className="grid grid-cols-1 gap-3 pt-4 border-t border-slate-800/50">
+					<div className="grid grid-cols-1 gap-3 pt-4 border-t border-gray-100">
 						{Object.entries(question.options).map(([key, value]) => {
 							const isSelected = selectedOption === key;
 							return (
@@ -86,23 +86,25 @@ export function QuestionViewer({
 									key={key}
 									type="button"
 									onClick={() => onSelectOption(key)}
-									className={`flex items-start gap-4 p-4 text-left rounded-xl border transition-all duration-200 group cursor-pointer ${isSelected
-											? 'border-primary bg-primary/10 text-white shadow-md shadow-primary/5'
-											: 'border-slate-800 bg-slate-950/40 hover:bg-slate-900/60 text-slate-300 hover:text-slate-100'
-										}`}
+									className={`flex items-start gap-4 p-4 text-left rounded-xl border transition-all duration-200 group cursor-pointer ${
+										isSelected
+											? 'border-primary bg-primary/5 text-gray-900 shadow-sm'
+											: 'border-gray-250 bg-gray-50/50 hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+									}`}
 								>
 									{/* Option Character Indicator */}
 									<span
-										className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-extrabold transition-colors duration-200 ${isSelected
+										className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-extrabold transition-colors duration-200 ${
+											isSelected
 												? 'bg-primary text-primary-foreground'
-												: 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
-											}`}
+												: 'bg-gray-200 text-gray-600 group-hover:bg-gray-300 group-hover:text-gray-800'
+										}`}
 									>
 										{key}
 									</span>
 
 									{/* Option Value */}
-									<span className="flex-1 text-sm sm:text-md pt-0.5 leading-snug">{value}</span>
+									<span className="flex-1 text-sm sm:text-md pt-0.5 leading-snug font-medium">{value}</span>
 
 									{/* Selected Icon */}
 									{isSelected && <CheckCircle2 className="h-5 w-5 text-primary shrink-0 self-center" />}
