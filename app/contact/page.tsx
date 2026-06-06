@@ -7,7 +7,7 @@ import { useForm, ValidationError } from '@formspree/react'
 
 export default function ContactPage() {
   const [state, handleSubmit] = useForm('mdornonj')
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -16,7 +16,7 @@ export default function ContactPage() {
   })
   const [contactData, setContactData] = useState({
     address: "Local Government, 5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya 200132, Oyo",
-    phone: "+234 906 471 1618",
+    phone: "+234 816 599 9425",
     email: "trailblazeredukonsult@gmail.com"
   })
 
