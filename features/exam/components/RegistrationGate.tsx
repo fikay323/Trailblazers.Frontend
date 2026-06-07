@@ -88,7 +88,7 @@ export function RegistrationGate() {
 				email: formData.email,
 				phone: formData.phone,
 				year: parseInt(formData.year, 10),
-				subjects: ['Use of English', ...formData.selectedElectives]
+				subjects: ['English', ...formData.selectedElectives]
 			};
 
 			const data = await startExam(payload); // Expected: { sessionId, endTime, questions }
@@ -211,7 +211,7 @@ export function RegistrationGate() {
 							Choose 3 Elective Subjects <span className="text-gray-500 font-normal">(Use of English is compulsory)</span>
 						</Label>
 						<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-							{electiveSubjects.map((subject) => {
+							{electiveSubjects.filter(x => x !== 'English').map((subject) => {
 								const isSelected = formData.selectedElectives.includes(subject);
 								return (
 									<button

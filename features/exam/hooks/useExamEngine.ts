@@ -91,7 +91,12 @@ export function useExamEngine({ sessionId, initialQuestions, endTime }: UseExamE
 		setIsSubmitting(true);
 		setError(null);
 		try {
-			const result = await submitExam(sessionId, answers);
+			const submissionAnswers: Record<string, string> = {};
+			initialQuestions.forEach(q => {
+				submissionAnswers[q.id] = answers[q.id] || '-';
+			});
+
+			const result = await submitExam(sessionId, submissionAnswers);
 
 			// Clear localStorage cache upon successful submission
 			localStorage.removeItem('exam_session_id');
@@ -100,7 +105,7 @@ export function useExamEngine({ sessionId, initialQuestions, endTime }: UseExamE
 			localStorage.removeItem('exam_answers');
 			localStorage.removeItem('exam_current_index');
 
-			router.push(`/exam/results/${sessionId}`);
+			router.push(`/exam/result/${sessionId}`);
 			return result;
 		} catch (err: any) {
 			const errMsg = err.message || 'Submission failed. Please try again.';

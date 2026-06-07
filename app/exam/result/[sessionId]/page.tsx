@@ -221,7 +221,7 @@ export default function ExamResultsPage() {
 									{q.comprehensionPassage && (
 										<div className="mb-4 bg-gray-50 border border-gray-200 rounded-md p-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
 											<div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Comprehension Passage</div>
-											{q.comprehensionPassage}
+											<span dangerouslySetInnerHTML={{ __html: q.comprehensionPassage }}></span>
 										</div>
 									)}
 
@@ -248,7 +248,7 @@ export default function ExamResultsPage() {
 									</div>
 
 									{/* Question Text */}
-									<p className="text-gray-900 text-md leading-relaxed font-bold">{q.questionText}</p>
+									<p dangerouslySetInnerHTML={{ __html: q.questionText }} className="text-gray-900 text-md leading-relaxed font-bold"></p>
 
 									{/* Comparative Options View */}
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">

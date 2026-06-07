@@ -79,7 +79,7 @@ export async function getExamMetadata(): Promise<{ subjects: string[]; years: nu
 }
 
 export async function getExamResults(sessionId: string): Promise<any> {
-	const response = await fetch(`${getApiUrl()}/api/exams/results/${sessionId}`, {
+	const response = await fetch(`${getApiUrl()}/api/exams/sessions/${sessionId}/result`, {
 		method: 'GET',
 		headers: {
 			'Accept': 'application/json'
