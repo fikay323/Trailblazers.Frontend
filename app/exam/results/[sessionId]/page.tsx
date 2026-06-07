@@ -36,6 +36,8 @@ interface ExamResultsPayload {
 	reviewQuestions: ReviewQuestionDTO[];
 }
 
+import { getExamResults } from '@/core/services/examService';
+
 export default function ExamResultsPage() {
 	const params = useParams();
 	const sessionId = params.sessionId as string;
@@ -49,19 +51,7 @@ export default function ExamResultsPage() {
 		setIsLoading(true);
 		setError(null);
 		try {
-			const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
-			const response = await fetch(`${apiUrl}/api/exams/results/${sessionId}`, {
-				method: 'GET',
-				headers: {
-					'Accept': 'application/json'
-				}
-			});
-
-			if (!response.ok) {
-				throw new Error(`Failed to load results: ${response.statusText}`);
-			}
-
-			const payload: ExamResultsPayload = await response.json();
+			const payload: ExamResultsPayload = await getExamResults(sessionId);
 			setData(payload);
 
 			// Set first subject as active by default
@@ -95,8 +85,8 @@ export default function ExamResultsPage() {
 
 	if (error || !data) {
 		return (
-			<div className="min-h-screen bg-gray-50 text-gray-800 flex items-center justify-center p-4">
-				<Card className="max-w-md border-red-200 bg-red-50 text-center text-red-900">
+			<div className="min-h-screen bg-gray-50 text-gray-800 flex items-center justify-center">
+				<Card className="max-w-xl w-xl py-14 border-red-200 bg-red-50 text-center text-red-900">
 					<CardHeader>
 						<AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-2" />
 						<CardTitle>Error Loading Results</CardTitle>
@@ -105,10 +95,10 @@ export default function ExamResultsPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<Button onClick={fetchResults} variant="outline" className="border-gray-300 bg-white text-gray-750">
+						<Button onClick={fetchResults} variant="outline" className="border-gray-300 bg-white text-gray-750 cursor-pointer">
 							Retry
 						</Button>
-						<Button onClick={() => window.location.href = '/exam'} variant="link" className="block w-full text-gray-500">
+						<Button onClick={() => window.location.href = '/exam'} variant="link" className="block w-full text-gray-500 cursor-pointer">
 							Back to Exam Entry
 						</Button>
 					</CardContent>

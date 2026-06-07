@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import { getSubmissions } from '@/core/services/submissionsService';
 import { ChevronLeft, ChevronRight, MessageSquare, Mail, Clock, User, ExternalLink } from 'lucide-react';
 import { FilterBar } from '@/components/ui/FilterBar';
 import { ContactTable, ContactSubmissionDTO } from './ContactTable';
@@ -38,39 +39,22 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 		setIsLoading(true);
 		setError(null);
 		try {
-			const queryParams = new URLSearchParams();
-			// Type=0 is Contact enum value on backend
-			queryParams.append('type', '0');
-
-			if (searchTerm.trim()) {
-				queryParams.append('searchTerm', searchTerm.trim());
-			}
-			if (startDate) {
-				queryParams.append('startDate', new Date(startDate).toISOString());
-			}
-			if (endDate) {
+			const startStr = startDate ? new Date(startDate).toISOString() : undefined;
+			const endStr = endDate ? (() => {
 				const end = new Date(endDate);
 				end.setHours(23, 59, 59, 999);
-				queryParams.append('endDate', end.toISOString());
-			}
+				return end.toISOString();
+			})() : undefined;
 
-			queryParams.append('pageNumber', page.toString());
-			queryParams.append('pageSize', pageSize.toString());
+			const data = await getSubmissions({
+				type: '0',
+				searchTerm: searchTerm.trim() || undefined,
+				startDate: startStr,
+				endDate: endStr,
+				pageNumber: page,
+				pageSize: pageSize
+			}, apiKey);
 
-			const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
-			const response = await fetch(`${apiUrl}/api/submissions?${queryParams.toString()}`, {
-				method: 'GET',
-				headers: {
-					'Accept': 'application/json',
-					'X-API-KEY': apiKey
-				}
-			});
-
-			if (!response.ok) {
-				throw new Error(`Failed to load contact submissions: ${response.statusText}`);
-			}
-
-			const data = await response.json();
 			setItems(data.items || []);
 			setTotalCount(data.totalCount || 0);
 		} catch (err: any) {

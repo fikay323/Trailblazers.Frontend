@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, CheckCircle2, ClipboardList } from "lucide-react"
 
+import { submitRegistration } from "@/core/services/submissionsService"
+
 export default function RegisterPage() {
 	const [submitting, setSubmitting] = useState(false)
 	const [succeeded, setSucceeded] = useState(false)
@@ -64,19 +66,7 @@ export default function RegisterPage() {
 					: "General Program"
 			};
 
-			const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
-			const response = await fetch(`${apiUrl}/api/submissions/register`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(registrationPayload)
-			});
-
-			if (!response.ok) {
-				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || `Server error: ${response.statusText}`);
-			}
+			await submitRegistration(registrationPayload);
 
 			setSucceeded(true);
 		} catch (err: any) {

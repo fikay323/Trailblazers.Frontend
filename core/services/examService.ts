@@ -69,3 +69,26 @@ export async function submitExam(sessionId: string, answers: Record<string, stri
 
 	return response.json();
 }
+
+export async function getExamMetadata(): Promise<{ subjects: string[]; years: number[] }> {
+	const response = await fetch(`${getApiUrl()}/api/exams/metadata`);
+	if (!response.ok) {
+		throw new Error('Failed to retrieve mock exam subjects and years.');
+	}
+	return response.json();
+}
+
+export async function getExamResults(sessionId: string): Promise<any> {
+	const response = await fetch(`${getApiUrl()}/api/exams/results/${sessionId}`, {
+		method: 'GET',
+		headers: {
+			'Accept': 'application/json'
+		}
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to load results: ${response.statusText}`);
+	}
+
+	return response.json();
+}

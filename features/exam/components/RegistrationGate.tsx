@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { getExamMetadata, startExam } from '@/core/services/examService';
+
 export function RegistrationGate() {
 	const [metadata, setMetadata] = useState<{ subjects: string[]; years: number[] } | null>(null);
 	const [isLoadingMeta, setIsLoadingMeta] = useState(true);
@@ -28,12 +30,7 @@ export function RegistrationGate() {
 	useEffect(() => {
 		async function fetchMetadata() {
 			try {
-				const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
-				const response = await fetch(`${apiUrl}/api/exams/metadata`);
-				if (!response.ok) {
-					throw new Error('Failed to retrieve mock exam subjects and years.');
-				}
-				const data = await response.json();
+				const data = await getExamMetadata();
 				setMetadata(data);
 				// Automatically select the first available year
 				if (data.years && data.years.length > 0) {
@@ -87,26 +84,14 @@ export function RegistrationGate() {
 
 		try {
 			const payload = {
-				studentEmail: formData.email,
+				name: formData.name,
+				email: formData.email,
+				phone: formData.phone,
 				year: parseInt(formData.year, 10),
 				subjects: ['Use of English', ...formData.selectedElectives]
 			};
 
-			const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5011';
-			const response = await fetch(`${apiUrl}/api/exams/start`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload)
-			});
-
-			if (!response.ok) {
-				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || `Server responded with status ${response.status}`);
-			}
-
-			const data = await response.json(); // Expected: { sessionId, endTime, questions }
+			const data = await startExam(payload); // Expected: { sessionId, endTime, questions }
 
 			// Store session data in localStorage for active exam recovery
 			localStorage.setItem('exam_session_id', data.sessionId);
