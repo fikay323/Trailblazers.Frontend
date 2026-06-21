@@ -23,7 +23,7 @@ const testimonials = [
     initial: "M",
     color: "text-on-secondary-container bg-secondary-container",
     quote:
-      "Trailblazers Academy provided the right environment. The mock exams prepared me for the actual pressure of the day.",
+      "Trailblazer Academy provided the right environment. The mock exams prepared me for the actual pressure of the day.",
   },
 ]
 

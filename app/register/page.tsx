@@ -59,7 +59,7 @@ export default function RegisterPage() {
 			// Map frontend fields to match backend API validation
 			const registrationPayload = {
 				name: formData.fullName,
-				email: formData.email.trim() || `${formData.fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@trailblazers-academy.com`,
+				email: formData.email.trim() || `${formData.fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@trailblazer-academy.com`,
 				phoneNumber: formData.phone,
 				targetExam: formData.programmes.length > 0
 					? formData.programmes.map(p => p.toUpperCase()).join(', ')
@@ -85,7 +85,7 @@ export default function RegisterPage() {
 					</div>
 					<h1 className="text-3xl font-bold text-foreground">Registration Successful!</h1>
 					<p className="text-muted-foreground">
-						Thank you for registering with Trailblazers Academy. Our admissions team will contact you shortly via the phone number provided.
+						Thank you for registering with Trailblazer Academy. Our admissions team will contact you shortly via the phone number provided.
 					</p>
 					<Button onClick={() => window.location.href = "/"} className="mt-4">
 						Return Home
@@ -319,7 +319,7 @@ export default function RegisterPage() {
 				</Card>
 
 				<p className="mt-8 text-center text-sm text-muted-foreground">
-					Need help? Contact us at admissions@trailblazers.edu or call (555) 123-4567
+					Need help? Contact us at admissions@trailblazer.edu or call (555) 123-4567
 				</p>
 			</div>
 		</div>

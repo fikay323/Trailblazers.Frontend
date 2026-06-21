@@ -9,7 +9,7 @@ export interface GalleryImage {
 export const galleryImages: GalleryImage[] = [
   {
     src: "/images/image-5.jpeg",
-    alt: "Trailblazers Academy building exterior",
+    alt: "Trailblazer Academy building exterior",
     className: "md:row-span-2 h-125"
   },
   {

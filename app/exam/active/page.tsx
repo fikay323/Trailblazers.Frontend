@@ -127,7 +127,7 @@ function ActiveExamWorkspace() {
 							T
 						</span>
 						<div>
-							<h1 className="text-sm font-black tracking-wider text-gray-900 uppercase">Trailblazers</h1>
+							<h1 className="text-sm font-black tracking-wider text-gray-900 uppercase">Trailblazer</h1>
 							<p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">CBT Exam Arena</p>
 						</div>
 					</div>

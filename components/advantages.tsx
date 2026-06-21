@@ -31,7 +31,7 @@ export function Advantages() {
       <div className="mx-auto max-w-7xl px-margin-mobile md:px-margin-desktop">
         <div className="text-center">
           <h2 className="text-2xl font-bold md:text-3xl lg:font-h2 lg:text-h2 text-on-background mb-4">
-            The Trailblazers Advantage
+            The Trailblazer Advantage
           </h2>
           <p className="mt-3 font-body-md text-body-md text-tertiary">
             Why students consistently choose us for their crucial exam preparations.

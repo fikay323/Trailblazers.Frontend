@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: 'Trailblazers Academy & Edukonsult - Secure Your Admission',
+	title: 'Trailblazer Academy & Edukonsult - Secure Your Admission',
 	description: 'Empowering future leaders through intensive preparation, state-of-the-art facilities, and experienced mentorship for JAMB, WAEC, NECO, and GCE exams.',
 	icons: {
 		icon: [

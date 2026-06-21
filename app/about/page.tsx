@@ -17,10 +17,10 @@ export default function AboutPage() {
                 </span>
                 <h1 className="mt-6 text-4xl font-bold leading-tight text-foreground lg:text-5xl">
                   Empowering the next generation of{" "}
-                  <span className="text-primary">trailblazers.</span>
+                  <span className="text-primary">trailblazer.</span>
                 </h1>
                 <p className="mt-6 text-muted-foreground leading-relaxed">
-                  Trailblazers Academy, a proud initiative of Edukonsult, stands as a beacon of academic excellence. We are dedicated to providing a nurturing environment where ambition meets expert guidance, preparing students not just for exams, but for lifelong success.
+                  Trailblazer Academy, a proud initiative of Edukonsult, stands as a beacon of academic excellence. We are dedicated to providing a nurturing environment where ambition meets expert guidance, preparing students not just for exams, but for lifelong success.
                 </p>
                 {/* <div className="mt-8 flex gap-4">
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">

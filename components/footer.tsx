@@ -13,7 +13,7 @@ export function Footer() {
     <footer className="bg-slate-900 dark:bg-black w-full border-t border-slate-800">
       <div className="flex flex-col md:flex-row justify-between items-center px-8 py-12 w-full max-w-7xl mx-auto">
         <Link href="/" className="text-lg font-black text-white mb-6 md:mb-0">
-          Trailblazers Academy
+          Trailblazer Academy
         </Link>
         <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
           {footerLinks.map((link) => (
@@ -27,7 +27,7 @@ export function Footer() {
           ))}
         </nav>
         <div className="text-slate-400 font-['Inter'] text-xs">
-          © {new Date().getFullYear()} Trailblazers Academy. Empowering Future Leaders.
+          © {new Date().getFullYear()} Trailblazer Academy. Empowering Future Leaders.
         </div>
       </div>
     </footer>

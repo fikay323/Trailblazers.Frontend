@@ -16,7 +16,7 @@ export default function ExamRegistrationPage() {
 				<div className="text-center space-y-4">
 					<div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider">
 						<GraduationCap className="h-4 w-4" />
-						Trailblazers Academy
+						Trailblazer Academy
 					</div>
 					<h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-linear-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
 						UTME Mock Testing Grounds
