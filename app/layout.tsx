@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Inter } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
 const inter = Inter({
 	subsets: ['latin'],
 	display: 'swap',
@@ -34,11 +32,20 @@ export const metadata: Metadata = {
 	},
 }
 
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode
-}>) {
+// app/layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+	const jsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'EducationalOrganization', // or 'Organization'
+		'name': 'Trailblazers Academy',
+		'url': 'https://trailblazer-academy.com',
+		'logo': 'https://trailblazer-academy.com/trailblazer.jpeg',
+		'sameAs': [
+			'https://twitter.com/trailblazers',
+			'https://linkedin.com/company/trailblazers'
+		]
+	};
+
 	return (
 		<html lang="en" className={inter.className}>
 			<head>
@@ -48,7 +55,11 @@ export default function RootLayout({
 				<Header />
 				{children}
 				<Footer />
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+				/>
 			</body>
 		</html>
-	)
+	);
 }
