@@ -3,10 +3,18 @@ import { Users, BookOpen, Monitor } from "lucide-react"
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'About Us | Trailblazers Academy',
-	description: 'Learn about our mission, values, and the team driving success at Trailblazers Academy.',
+	title: 'About Us – Our Mission, Team & Facilities',
+	description:
+		'Discover the story behind Trailblazer Academy & Edukonsult — our mission, world-class facilities, CBT labs, and the expert team that has helped hundreds secure university admission.',
 	alternates: {
-		canonical: 'https://trailblazersacademy.com/about',
+		canonical: 'https://trailblazer-academy.com/about',
+	},
+	openGraph: {
+		title: 'About Trailblazer Academy & Edukonsult',
+		description:
+			'Discover our mission, world-class facilities, CBT labs, and the expert team helping hundreds secure university admission in Nigeria.',
+		url: 'https://trailblazer-academy.com/about',
+		images: [{ url: '/trailblazer.jpeg', alt: 'Trailblazer Academy campus' }],
 	},
 };
 

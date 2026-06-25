@@ -1,6 +1,23 @@
 import Image from "next/image"
 import { galleryImages } from "@/lib/gallery-data"
 import { cn } from "@/lib/utils"
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Campus Gallery – Our Facilities & Learning Environment',
+  description:
+    'Browse Trailblazer Academy’s campus gallery — state-of-the-art CBT labs, modern classrooms, quiet study zones, and vibrant student life in Ibadan, Oyo State.',
+  alternates: {
+    canonical: 'https://trailblazer-academy.com/gallery',
+  },
+  openGraph: {
+    title: 'Campus Gallery – Trailblazer Academy & Edukonsult',
+    description:
+      'Explore our CBT labs, modern classrooms, and vibrant campus life. See why students choose Trailblazer Academy for exam preparation in Ibadan.',
+    url: 'https://trailblazer-academy.com/gallery',
+    images: [{ url: '/trailblazer.jpeg', alt: 'Trailblazer Academy campus facilities' }],
+  },
+};
 
 export default function GalleryPage() {
   return (

@@ -2,6 +2,23 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Monitor, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Programs – JAMB, WAEC, NECO & GCE Exam Preparation',
+  description:
+    'Explore Trailblazer Academy’s structured exam preparation programs for JAMB/UTME, WAEC, NECO, and GCE. Intensive coaching, CBT labs, and subject counseling in Ibadan.',
+  alternates: {
+    canonical: 'https://trailblazer-academy.com/programs',
+  },
+  openGraph: {
+    title: 'Exam Preparation Programs – Trailblazer Academy',
+    description:
+      'Structured JAMB/UTME, WAEC, NECO & GCE prep with CBT labs, weekly mocks, and expert subject counseling. Secure your admission today.',
+    url: 'https://trailblazer-academy.com/programs',
+    images: [{ url: '/trailblazer.jpeg', alt: 'Students studying at Trailblazer Academy' }],
+  },
+};
 
 export default function ProgramsPage() {
   return (
