@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
 	Carousel,
@@ -108,13 +109,18 @@ export function Hero() {
 							<div className="absolute inset-0 bg-black/60" />
 
 							{/* Right-Middle Slide Specific Content */}
-							<div className="absolute top-1/2 -translate-y-1/2 text-center z-10 flex flex-col items-center justify-center w-full">
+							<div className="absolute top-1/2 -translate-y-1/2 text-center z-10 flex flex-col items-center justify-center w-full px-4">
 								<h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 drop-shadow-xl tracking-tight">
 									{slide.label}
 								</h2>
-								<p className="text-xl md:text-2xl text-white/90 drop-shadow-md font-medium leading-snug">
+								<p className="text-xl md:text-2xl text-white/90 drop-shadow-md font-medium leading-snug mb-8 max-w-3xl mx-auto">
 									{slide.description}
 								</p>
+								<Link href="/register">
+									<Button className="bg-primary hover:bg-orange-600 text-white font-semibold text-lg px-8 py-6 rounded-md shadow-lg transition-all duration-300">
+										Register Now
+									</Button>
+								</Link>
 							</div>
 						</CarouselItem>
 					))}
