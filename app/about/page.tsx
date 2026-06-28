@@ -404,7 +404,7 @@ export default function AboutPage() {
 						<div className="flex flex-col items-center justify-center pt-8 border-t border-slate-200">
 							<p className="text-muted-foreground text-sm mb-4">Want to see our modern campus and facilities?</p>
 							<Link href="/gallery">
-								<Button className="bg-primary hover:bg-orange-600 text-white font-semibold text-base px-8 py-5 rounded-md shadow-md transition-all duration-300 flex items-center gap-2">
+								<Button className="bg-primary hover:bg-orange-600 text-white font-semibold text-base px-8 py-5 rounded-md shadow-md transition-all duration-300 flex items-center gap-2 cursor-pointer">
 									<Users className="h-5 w-5" />
 									View Campus Gallery
 								</Button>
