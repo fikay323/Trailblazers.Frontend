@@ -1,8 +1,7 @@
 import Image from "next/image"
-import Link from "next/link"
 import { Users, BookOpen, Monitor, Eye, Target, Award, Shield, Lightbulb, Heart, Zap, Compass, CheckCircle2, Music, Milestone } from "lucide-react"
 import { Metadata } from 'next'
-import { Button } from "@/components/ui/button"
+import { ManagementTeam } from "@/components/management-team"
 
 export const metadata: Metadata = {
 	title: 'About Us – Motto: Honesty, Integrity & Excellence is our Hallmark',
@@ -76,15 +75,7 @@ const growthPlan = [
 	"Vocational training units",
 ];
 
-const managementTeam = [
-	{ name: "Dr. Tolulope V. Gbadamosi", title: "Proprietor / Director", initials: "TG" },
-	{ name: "Mr. Akintunde S. Gbadamosi", title: "Administrative Officer", initials: "AG" },
-	{ name: "Dr. Rotimi Akanni", title: "", initials: "RA" },
-	{ name: "Mr. Louise Odunanjo", title: "Accounts Officer", initials: "LO" },
-	{ name: "Mr. David Erioluwa Gbadamosi", title: "Management Member", initials: "DG" },
-	{ name: "Dr. Oluwatoyin Awolola", title: "Management Member", initials: "OA" },
-	{ name: "Miss Boluwatife Ayo", title: "Principal", initials: "BA" },
-];
+
 
 export default function AboutPage() {
 	return (
@@ -371,47 +362,7 @@ export default function AboutPage() {
 				</section>
 
 				{/* Management Team */}
-				<section className="bg-slate-50 py-16 lg:py-24">
-					<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-						<span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary">
-							Our Leadership
-						</span>
-						<h2 className="mt-4 text-3xl font-bold text-foreground lg:text-4xl">Management Team</h2>
-						<p className="mx-auto mt-4 max-w-2xl text-muted-foreground mb-16">
-							The visionary leaders driving Trailblazer Academy & Edukonsult's commitment to academic success.
-						</p>
-
-						<div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-w-6xl mx-auto justify-center mb-16">
-							{managementTeam.map((member, i) => (
-								<div key={i} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-6 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-									{/* Avatar Placeholder */}
-									<div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-orange-600/10 text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
-										{member.initials}
-									</div>
-									<h3 className="text-lg font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
-										{member.name}
-									</h3>
-									{member.title && (
-										<p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-											{member.title}
-										</p>
-									)}
-								</div>
-							))}
-						</div>
-
-						{/* Gallery Redirection Button */}
-						<div className="flex flex-col items-center justify-center pt-8 border-t border-slate-200">
-							<p className="text-muted-foreground text-sm mb-4">Want to see our modern campus and facilities?</p>
-							<Link href="/gallery">
-								<Button className="bg-primary hover:bg-orange-600 text-white font-semibold text-base px-8 py-5 rounded-md shadow-md transition-all duration-300 flex items-center gap-2 cursor-pointer">
-									<Users className="h-5 w-5" />
-									View Campus Gallery
-								</Button>
-							</Link>
-						</div>
-					</div>
-				</section>
+				<ManagementTeam />
 			</main>
 		</div>
 	)
