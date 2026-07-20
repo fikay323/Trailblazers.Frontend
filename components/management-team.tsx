@@ -98,6 +98,16 @@ const managementTeam: Member[] = [
 			"David Gbadamosi is a Data Analyst skilled in Excel, SQL, Power BI, Business Intelligence, and Data Visualization.",
 			"He is a B.Sc. graduate of the Federal University of Agriculture, Abeokuta and currently pursuing a Master's degree at the University of Ibadan. Skilled in data analysis, dashboard development, and business intelligence, with a passion for transforming data into actionable insights that drive informed decision-making."
 		]
+	},
+	{
+		name: "Boluwatife Abigeal Ayano",
+		title: "Educative Administrator",
+		image: "/images/boluwatife-ayano.jpeg",
+		excerpt: "Boluwatife Abigeal Ayano is a dedicated educator and administrator committed to creating a positive learning environment and promoting academic excellence.",
+		paragraphs: [
+			"Boluwatife Abigeal Ayano is a dedicated educator and administrator with a Higher National Diploma (HND) from Osun State Polytechnic.",
+			"She is passionate about teaching, mentoring students, and promoting academic excellence. She is committed to creating a positive learning environment that inspires students to achieve their full potential."
+		]
 	}
 ]
 
