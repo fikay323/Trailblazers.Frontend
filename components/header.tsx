@@ -9,6 +9,7 @@ import Image from "next/image"
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
+  { href: "/summer-coaching", label: "Summer Lessons", badge: "NEW" },
   { href: "/programs", label: "Programs" },
   { href: "/gallery", label: "Gallery" },
   { href: "/exam", label: "CBT Exam" },
@@ -28,15 +29,20 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-6 lg:gap-8 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium hover:text-primary transition-transform duration-200 ${pathname === link.href ? "text-primary font-bold border-b-2 border-primary" : "text-slate-600 dark:text-slate-400"
+              className={`relative text-sm font-medium hover:text-primary transition-transform duration-200 flex items-center gap-1.5 ${pathname === link.href ? "text-primary font-bold border-b-2 border-primary" : "text-slate-600 dark:text-slate-400"
                 }`}
             >
-              {link.label}
+              <span>{link.label}</span>
+              {link.badge && (
+                <span className="rounded-full bg-orange-600 px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-white shadow-2xs">
+                  {link.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -71,11 +77,16 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary" : "text-muted-foreground"
+                className={`text-sm font-medium transition-colors hover:text-primary flex items-center justify-between ${pathname === link.href ? "text-primary font-bold" : "text-muted-foreground"
                   }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.badge && (
+                  <span className="rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-extrabold uppercase text-white shadow-2xs">
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             ))}
 

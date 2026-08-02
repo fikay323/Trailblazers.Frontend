@@ -16,6 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
         // Primary landing pages — high priority (drive most conversions)
         {
+            url: `${baseUrl}/summer-coaching`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
             url: `${baseUrl}/programs`,
             lastModified,
             changeFrequency: 'monthly',
