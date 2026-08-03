@@ -102,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		'email': 'trailblazeredukonsult@gmail.com',
 		'address': {
 			'@type': 'PostalAddress',
-			'streetAddress': '5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya',
+			'streetAddress': 'Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya',
 			'addressLocality': 'Ibadan',
 			'addressRegion': 'Oyo State',
 			'postalCode': '200132',
@@ -115,9 +115,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			'availableLanguage': 'English',
 		},
 		'sameAs': [
-			'https://www.facebook.com/trailblazeracademy',
-			'https://twitter.com/trailblazers',
-			'https://linkedin.com/company/trailblazers',
+			'https://www.facebook.com/TrailblazerEdukonsult',
+			'https://www.instagram.com/trailblazeredukonsult',
 			'https://maps.app.goo.gl/7LV1258gCkycPC1y9',
 		],
 		'hasOfferCatalog': {

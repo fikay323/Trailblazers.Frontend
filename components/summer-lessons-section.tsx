@@ -71,7 +71,7 @@ export function SummerLessonsSection() {
           </div>
           <div className="flex items-center gap-2 rounded-full bg-slate-800/80 px-4 py-2 border border-slate-700">
             <MapPin className="h-4 w-4 text-orange-400" />
-            <span>5 Odo Oba Rd, Moniya, Ibadan</span>
+            <span>Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya, Ibadan</span>
           </div>
           <div className="flex items-center gap-2 rounded-full bg-slate-800/80 px-4 py-2 border border-slate-700">
             <UserCheck className="h-4 w-4 text-orange-400" />

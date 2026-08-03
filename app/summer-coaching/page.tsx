@@ -70,7 +70,7 @@ export default function SummerCoachingPage() {
 			name: 'Trailblazer Academy & Edukonsult Campus',
 			address: {
 				'@type': 'PostalAddress',
-				streetAddress: '5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya',
+				streetAddress: 'Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya',
 				addressLocality: 'Ibadan',
 				addressRegion: 'Oyo State',
 				addressCountry: 'NG',
@@ -153,7 +153,7 @@ export default function SummerCoachingPage() {
 		{
 			question: 'Where is the lesson venue located in Ibadan?',
 			answer:
-				'The summer coaching takes place at Trailblazer Academy Campus: 5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya, Ibadan, Oyo State.',
+				'The summer coaching takes place at Trailblazer Academy Campus: Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya, Ibadan, Oyo State.',
 		},
 		{
 			question: 'Are CBT computer practice sessions included for all students?',
@@ -378,7 +378,7 @@ export default function SummerCoachingPage() {
 										<MapPin className="h-5 w-5 text-primary shrink-0" />
 										<div>
 											<span className="font-semibold text-foreground block">Campus Address</span>
-											<span className="text-muted-foreground">5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya, Ibadan</span>
+											<span className="text-muted-foreground">Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya, Ibadan</span>
 										</div>
 									</div>
 								</div>

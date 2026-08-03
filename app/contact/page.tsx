@@ -18,7 +18,7 @@ export default function ContactPage() {
     message: "",
   })
   const [contactData, setContactData] = useState({
-    address: "Local Government, 5 Odo Oba Rd, beside Odo-Oba Mosque, Moniya 200132, Oyo",
+    address: "Opp. Ajorosun Garden City, Ijaye-Iseyin Road, Odo Oba Moniya, Ibadan, Oyo State",
     phone: "+234 816 599 9425",
     email: "trailblazeredukonsult@gmail.com"
   })
