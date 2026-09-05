@@ -65,6 +65,8 @@ function SubmissionsDashboardContent() {
 		localStorage.removeItem('admin_api_key');
 		if (user) {
 			authLogout();
+		} else if (typeof window !== 'undefined') {
+			window.location.href = '/auth/login';
 		}
 	};
 
@@ -87,7 +89,7 @@ function SubmissionsDashboardContent() {
 							Enter your Admin API Key or sign in with an instructor account.
 						</CardDescription>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="space-y-4">
 						<form onSubmit={handleLogin} className="space-y-4">
 							<Input
 								type="password"
@@ -101,6 +103,24 @@ function SubmissionsDashboardContent() {
 								Unlock Portal
 							</Button>
 						</form>
+
+						<div className="relative">
+							<div className="absolute inset-0 flex items-center">
+								<span className="w-full border-t border-slate-800" />
+							</div>
+							<div className="relative flex justify-center text-xs uppercase">
+								<span className="bg-slate-900 px-2 text-slate-500">Or continue with</span>
+							</div>
+						</div>
+
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => router.push('/auth/login')}
+							className="w-full border-slate-800 hover:bg-slate-800 text-slate-300 cursor-pointer"
+						>
+							Sign in with Staff Account
+						</Button>
 					</CardContent>
 				</Card>
 			</div>

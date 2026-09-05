@@ -8,6 +8,7 @@ import {
 	AdminStudentListItem,
 	StudentHistoryResult
 } from '@/core/services/adminService';
+import { useAuth } from '@/core/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,6 +69,9 @@ const PRESET_DEACTIVATION_REASONS = [
 ];
 
 export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
+	const { user } = useAuth();
+	const isAdmin = !user || user.role === 'Admin';
+
 	const [students, setStudents] = useState<AdminStudentListItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -380,27 +384,29 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 														History
 													</Button>
 
-													{/* Deactivate / Activate Button */}
-													{s.isActive ? (
-														<Button
-															variant="destructive"
-															size="sm"
-															onClick={() => handleOpenStatusModal(s)}
-															className="text-xs h-8 cursor-pointer flex items-center gap-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-800"
-														>
-															<Lock className="h-3.5 w-3.5" />
-															Disable
-														</Button>
-													) : (
-														<Button
-															variant="outline"
-															size="sm"
-															onClick={() => handleOpenStatusModal(s)}
-															className="text-xs h-8 cursor-pointer flex items-center gap-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
-														>
-															<Unlock className="h-3.5 w-3.5" />
-															Enable
-														</Button>
+													{/* Deactivate / Activate Button (Only visible to Admin) */}
+													{isAdmin && (
+														s.isActive ? (
+															<Button
+																variant="destructive"
+																size="sm"
+																onClick={() => handleOpenStatusModal(s)}
+																className="text-xs h-8 cursor-pointer flex items-center gap-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-800"
+															>
+																<Lock className="h-3.5 w-3.5" />
+																Disable
+															</Button>
+														) : (
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => handleOpenStatusModal(s)}
+																className="text-xs h-8 cursor-pointer flex items-center gap-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
+															>
+																<Unlock className="h-3.5 w-3.5" />
+																Enable
+															</Button>
+														)
 													)}
 												</div>
 											</td>

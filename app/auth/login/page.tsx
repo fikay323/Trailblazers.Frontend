@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/core/contexts/AuthContext';
@@ -18,6 +18,14 @@ export default function LoginPage() {
 	const [password, setPassword] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isStaffSubdomain, setIsStaffSubdomain] = useState(false);
+
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			const host = window.location.hostname.toLowerCase();
+			setIsStaffSubdomain(host.startsWith('staff.'));
+		}
+	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -26,10 +34,22 @@ export default function LoginPage() {
 
 		try {
 			const user = await login({ email: email.trim(), password });
-			if (user.role === 'Admin' || user.role === 'Instructor') {
+
+			// Domain-level Role Guardrails
+			if (isStaffSubdomain) {
+				if (user.role === 'Student') {
+					setError('Access Denied: Student accounts cannot access the Staff Management Portal. Please log in on the student portal (learn.trailblazer-academy.com).');
+					setIsLoading(false);
+					return;
+				}
 				router.push('/admin/submissions');
 			} else {
-				router.push('/student/dashboard');
+				// On Student or Marketing domain
+				if (user.role === 'Admin' || user.role === 'Instructor') {
+					router.push('/admin/submissions');
+				} else {
+					router.push('/student/dashboard');
+				}
 			}
 		} catch (err: any) {
 			setError(err.message || 'Invalid email or password.');
@@ -48,14 +68,22 @@ export default function LoginPage() {
 		<div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-950 text-slate-100">
 			<Card className="w-full max-w-md border-slate-800 bg-slate-900/70 backdrop-blur-md shadow-2xl">
 				<CardHeader className="space-y-2 text-center">
-					<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-600/10 text-orange-500 border border-orange-500/20">
-						<GraduationCap className="h-6 w-6" />
+					<div
+						className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full border ${
+							isStaffSubdomain
+								? 'bg-cyan-600/10 text-cyan-400 border-cyan-500/20'
+								: 'bg-orange-600/10 text-orange-500 border border-orange-500/20'
+						}`}
+					>
+						{isStaffSubdomain ? <ShieldCheck className="h-6 w-6" /> : <GraduationCap className="h-6 w-6" />}
 					</div>
 					<CardTitle className="text-2xl font-bold tracking-tight text-white">
-						Welcome Back
+						{isStaffSubdomain ? 'Staff Portal Sign In' : 'Welcome Back'}
 					</CardTitle>
 					<CardDescription className="text-slate-400">
-						Sign in to access your student dashboard or academy portal.
+						{isStaffSubdomain
+							? 'Authorized access for academy tutors, instructors, and administrators.'
+							: 'Sign in to access your student dashboard and CBT mock exam testing grounds.'}
 					</CardDescription>
 				</CardHeader>
 
@@ -75,7 +103,7 @@ export default function LoginPage() {
 							<Input
 								id="login-email"
 								type="email"
-								placeholder="student@trailblazer.edu"
+								placeholder={isStaffSubdomain ? 'staff@trailblazer.edu' : 'student@trailblazer.edu'}
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								className="border-slate-800 bg-slate-950 text-white placeholder-slate-500"
@@ -103,7 +131,11 @@ export default function LoginPage() {
 						<Button
 							type="submit"
 							disabled={isLoading}
-							className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 transition-colors cursor-pointer"
+							className={`w-full text-white font-semibold py-2.5 transition-colors cursor-pointer ${
+								isStaffSubdomain
+									? 'bg-cyan-600 hover:bg-cyan-700'
+									: 'bg-orange-600 hover:bg-orange-700'
+							}`}
 						>
 							{isLoading ? (
 								<>
@@ -157,12 +189,18 @@ export default function LoginPage() {
 				</CardContent>
 
 				<CardFooter className="flex justify-center border-t border-slate-800/80 pt-4">
-					<p className="text-xs text-slate-400">
-						Don't have an account yet?{' '}
-						<Link href="/auth/register" className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2">
-							Create Student Account
-						</Link>
-					</p>
+					{!isStaffSubdomain ? (
+						<p className="text-xs text-slate-400">
+							Don't have an account yet?{' '}
+							<Link href="/auth/register" className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2">
+								Create Student Account
+							</Link>
+						</p>
+					) : (
+						<p className="text-xs text-slate-400">
+							Need staff credentials? Contact the academy proprietor.
+						</p>
+					)}
 				</CardFooter>
 			</Card>
 		</div>

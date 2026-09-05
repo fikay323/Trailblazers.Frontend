@@ -41,8 +41,14 @@ export function Footer() {
           </a>
         </div>
 
-        <div className="text-xs text-slate-400 text-center md:text-right">
-          © {new Date().getFullYear()} Trailblazer Academy & Edukonsult. All rights reserved.
+        <div className="text-xs text-slate-400 text-center md:text-right flex flex-col md:items-end gap-1">
+          <div>© {new Date().getFullYear()} Trailblazer Academy & Edukonsult. All rights reserved.</div>
+          <a
+            href={process.env.NODE_ENV === 'production' ? 'https://staff.trailblazer-academy.com' : 'http://staff.localhost:3000'}
+            className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
+          >
+            Staff Portal Login
+          </a>
         </div>
       </div>
     </footer>

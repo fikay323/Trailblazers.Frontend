@@ -31,6 +31,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponseDto> {
 	const res = await fetch(`${getApiUrl()}/api/auth/login`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
+		credentials: 'include',
 		body: JSON.stringify(payload)
 	});
 
@@ -46,6 +47,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponseDt
 	const res = await fetch(`${getApiUrl()}/api/auth/register`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
+		credentials: 'include',
 		body: JSON.stringify(payload)
 	});
 
@@ -61,6 +63,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<AuthResp
 	const res = await fetch(`${getApiUrl()}/api/auth/refresh-token`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
+		credentials: 'include',
 		body: JSON.stringify({ refreshToken })
 	});
 
@@ -71,11 +74,15 @@ export async function refreshAccessToken(refreshToken: string): Promise<AuthResp
 	return res.json();
 }
 
-export async function getCurrentUser(token: string): Promise<UserDto> {
+export async function getCurrentUser(token?: string): Promise<UserDto> {
+	const headers: Record<string, string> = {};
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
 	const res = await fetch(`${getApiUrl()}/api/auth/me`, {
-		headers: {
-			'Authorization': `Bearer ${token}`
-		}
+		headers,
+		credentials: 'include'
 	});
 
 	if (!res.ok) {
@@ -83,4 +90,15 @@ export async function getCurrentUser(token: string): Promise<UserDto> {
 	}
 
 	return res.json();
+}
+
+export async function logoutUser(): Promise<void> {
+	try {
+		await fetch(`${getApiUrl()}/api/auth/logout`, {
+			method: 'POST',
+			credentials: 'include'
+		});
+	} catch (e) {
+		console.error('Logout error on backend:', e);
+	}
 }

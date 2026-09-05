@@ -8,7 +8,8 @@ import {
 	RegisterPayload,
 	login as apiLogin,
 	register as apiRegister,
-	getCurrentUser
+	getCurrentUser,
+	logoutUser
 } from '../services/authService';
 
 interface AuthContextType {
@@ -68,12 +69,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	const logout = () => {
+		logoutUser();
 		setUser(null);
 		setToken(null);
 		localStorage.removeItem('auth_token');
 		localStorage.removeItem('auth_refresh_token');
 		localStorage.removeItem('auth_user');
 		localStorage.removeItem('admin_api_key');
+		if (typeof window !== 'undefined') {
+			window.location.href = '/auth/login';
+		}
 	};
 
 	const refreshUserProfile = async () => {
