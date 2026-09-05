@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { AuthProvider } from '@/core/contexts/AuthContext';
 
 const inter = Inter({
 	subsets: ['latin'],
@@ -146,9 +147,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				>
 					Skip to main content
 				</a>
-				<Header />
-				{children}
-				<Footer />
+				<AuthProvider>
+					<Header />
+					{children}
+					<Footer />
+				</AuthProvider>
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
