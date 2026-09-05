@@ -218,22 +218,70 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 
 							<div className="py-4 space-y-4">
 								<div>
-									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Registration Details</h4>
-									<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 space-y-3 text-sm">
+									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Student Profile & Academic Details</h4>
+									<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 space-y-2.5 text-sm">
 										<div className="flex justify-between border-b border-slate-800/60 pb-2">
 											<span className="text-slate-400 flex items-center gap-1">
 												<Phone className="h-4 w-4 text-slate-500" />
 												Phone Number
 											</span>
-											<span className="text-slate-200 font-semibold">{getMetadataProperty(selectedItem.metadata, 'PhoneNumber')}</span>
+											<span className="text-slate-200 font-semibold">{getMetadataProperty(selectedItem.metadata, 'PhoneNumber') || 'N/A'}</span>
 										</div>
-										<div className="flex justify-between pt-1">
+										<div className="flex justify-between border-b border-slate-800/60 pb-2">
 											<span className="text-slate-400 flex items-center gap-1">
 												<BookOpen className="h-4 w-4 text-slate-500" />
-												Target Exam Program
+												Target Program(s)
 											</span>
-											<span className="text-slate-200 font-semibold">{getMetadataProperty(selectedItem.metadata, 'TargetExam')}</span>
+											<span className="text-slate-200 font-semibold">{getMetadataProperty(selectedItem.metadata, 'TargetExam') || 'N/A'}</span>
 										</div>
+										{getMetadataProperty(selectedItem.metadata, 'DateOfBirth') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Date of Birth</span>
+												<span className="text-slate-200">{getMetadataProperty(selectedItem.metadata, 'DateOfBirth')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'Gender') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Gender</span>
+												<span className="text-slate-200 capitalize">{getMetadataProperty(selectedItem.metadata, 'Gender')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'Address') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Address</span>
+												<span className="text-slate-200 text-right max-w-[280px] truncate">{getMetadataProperty(selectedItem.metadata, 'Address')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'LastSchool') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Last School Attended</span>
+												<span className="text-slate-200">{getMetadataProperty(selectedItem.metadata, 'LastSchool')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'ClassCompleted') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Class Completed</span>
+												<span className="text-slate-200">{getMetadataProperty(selectedItem.metadata, 'ClassCompleted')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'SubjectCombination') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Subject Combination</span>
+												<span className="text-slate-200">{getMetadataProperty(selectedItem.metadata, 'SubjectCombination')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'ClassMode') && (
+											<div className="flex justify-between border-b border-slate-800/60 pb-2">
+												<span className="text-slate-400">Class Mode</span>
+												<span className="text-slate-200 capitalize">{getMetadataProperty(selectedItem.metadata, 'ClassMode')}</span>
+											</div>
+										)}
+										{getMetadataProperty(selectedItem.metadata, 'Referral') && (
+											<div className="flex justify-between pt-1">
+												<span className="text-slate-400">Referral Channel</span>
+												<span className="text-slate-200">{getMetadataProperty(selectedItem.metadata, 'Referral')}</span>
+											</div>
+										)}
 									</div>
 								</div>
 							</div>

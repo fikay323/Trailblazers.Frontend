@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import DOMPurify from 'isomorphic-dompurify';
 import { Check, X, AlertCircle, Award, Calendar, Clock, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -221,7 +222,7 @@ export default function ExamResultsPage() {
 									{q.comprehensionPassage && (
 										<div className="mb-4 bg-gray-50 border border-gray-200 rounded-md p-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
 											<div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Comprehension Passage</div>
-											<span dangerouslySetInnerHTML={{ __html: q.comprehensionPassage }}></span>
+											<span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.comprehensionPassage) }}></span>
 										</div>
 									)}
 
@@ -248,7 +249,7 @@ export default function ExamResultsPage() {
 									</div>
 
 									{/* Question Text */}
-									<p dangerouslySetInnerHTML={{ __html: q.questionText }} className="text-gray-900 text-md leading-relaxed font-bold"></p>
+									<p dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText) }} className="text-gray-900 text-md leading-relaxed font-bold"></p>
 
 									{/* Comparative Options View */}
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">

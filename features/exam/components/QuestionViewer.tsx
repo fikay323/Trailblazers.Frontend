@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { QuestionDto } from '@/core/services/examService';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CheckCircle2, BookOpen } from 'lucide-react';
@@ -51,7 +52,7 @@ export function QuestionViewer({
 							Comprehension Passage
 						</CardTitle>
 					</CardHeader>
-					<CardContent dangerouslySetInnerHTML={{ __html: question.comprehensionPassage }} className="p-4 max-h-55 overflow-y-auto text-sm text-gray-700 leading-relaxed font-normal whitespace-pre-line">
+					<CardContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.comprehensionPassage) }} className="p-4 max-h-55 overflow-y-auto text-sm text-gray-700 leading-relaxed font-normal whitespace-pre-line">
 					</CardContent>
 				</Card>
 			)}
@@ -60,7 +61,7 @@ export function QuestionViewer({
 			<Card className="border-gray-200 bg-white shadow-lg">
 				<CardContent className="p-6 space-y-6">
 					{/* Question Text */}
-					<div dangerouslySetInnerHTML={{ __html: question.questionText }} className="text-md sm:text-lg text-gray-900 font-semibold leading-relaxed whitespace-pre-line">
+					<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText) }} className="text-md sm:text-lg text-gray-900 font-semibold leading-relaxed whitespace-pre-line">
 					</div>
 
 					{/* Question Image if exists */}

@@ -56,14 +56,23 @@ export default function RegisterPage() {
 		setSubmitError(null);
 
 		try {
-			// Map frontend fields to match backend API validation
+			// Map frontend fields to match backend API validation with all captured details
 			const registrationPayload = {
 				name: formData.fullName,
 				email: formData.email.trim() || `${formData.fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@trailblazer-academy.com`,
 				phoneNumber: formData.phone,
 				targetExam: formData.programmes.length > 0
 					? formData.programmes.map(p => p.toUpperCase()).join(', ')
-					: "General Program"
+					: "General Program",
+				dateOfBirth: formData.dob,
+				gender: formData.gender,
+				address: formData.address,
+				lastSchool: formData.lastSchool,
+				classCompleted: formData.classCompleted,
+				subjectCombination: formData.subjectCombination,
+				classMode: formData.classMode,
+				referral: formData.referral,
+				programmes: formData.programmes
 			};
 
 			await submitRegistration(registrationPayload);

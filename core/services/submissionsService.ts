@@ -11,6 +11,15 @@ export interface RegisterSubmissionPayload {
 	email: string;
 	phoneNumber: string;
 	targetExam: string;
+	dateOfBirth?: string;
+	gender?: string;
+	address?: string;
+	lastSchool?: string;
+	classCompleted?: string;
+	subjectCombination?: string;
+	classMode?: string;
+	referral?: string;
+	programmes?: string[];
 }
 
 export interface GetSubmissionsParams {
