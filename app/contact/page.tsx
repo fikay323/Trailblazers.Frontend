@@ -46,7 +46,7 @@ export default function ContactPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero Section */}
         <section className="bg-[#f8f9fb] py-16 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
@@ -161,10 +161,11 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-foreground">
+                        <label htmlFor="fullName" className="text-sm font-medium text-foreground">
                           Full Name
                         </label>
                         <Input
+                          id="fullName"
                           name="fullName"
                           type="text"
                           required
@@ -177,10 +178,11 @@ export default function ContactPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-foreground">
+                        <label htmlFor="email" className="text-sm font-medium text-foreground">
                           Email Address
                         </label>
                         <Input
+                          id="email"
                           name="email"
                           type="email"
                           required
@@ -196,10 +198,11 @@ export default function ContactPage() {
 
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-foreground">
+                        <label htmlFor="phone" className="text-sm font-medium text-foreground">
                           Phone Number
                         </label>
                         <Input
+                          id="phone"
                           name="phone"
                           type="tel"
                           required
@@ -213,10 +216,11 @@ export default function ContactPage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-foreground">
+                        <label htmlFor="program" className="text-sm font-medium text-foreground">
                           Exam / Program of Interest
                         </label>
                         <select
+                          id="program"
                           name="program"
                           required
                           className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -236,10 +240,11 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-foreground">
+                      <label htmlFor="message" className="text-sm font-medium text-foreground">
                         Message (Optional)
                       </label>
                       <textarea
+                        id="message"
                         name="message"
                         className="mt-2 flex min-h-30 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Tell us about your academic goals..."

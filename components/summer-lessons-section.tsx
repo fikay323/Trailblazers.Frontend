@@ -128,17 +128,17 @@ export function SummerLessonsSection() {
           </div>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:mt-0 shrink-0">
-            <Link href="/summer-coaching">
-              <Button className="w-full sm:w-auto bg-white text-orange-700 hover:bg-slate-100 font-bold px-6 py-3 rounded-lg shadow-md cursor-pointer transition-transform hover:scale-105">
+            <Button asChild className="w-full sm:w-auto bg-white text-orange-700 hover:bg-slate-100 font-bold px-6 py-3 rounded-lg shadow-md cursor-pointer transition-transform hover:scale-105">
+              <Link href="/summer-coaching">
                 Full Summer Timetable
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link href="/register">
-              <Button className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-950 font-bold px-6 py-3 rounded-lg shadow-md cursor-pointer transition-transform hover:scale-105">
+            <Button asChild className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-950 font-bold px-6 py-3 rounded-lg shadow-md cursor-pointer transition-transform hover:scale-105">
+              <Link href="/register">
                 Register Immediately
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

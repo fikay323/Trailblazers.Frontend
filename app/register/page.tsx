@@ -105,7 +105,7 @@ export default function RegisterPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">
+		<main id="main-content" className="min-h-screen bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-4xl">
 				<div className="mb-8 text-center">
 					<h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
@@ -162,9 +162,10 @@ export default function RegisterPage() {
 									</div>
 								</div>
 
-								<div className="space-y-3">
-									<Label>3. Gender</Label>
+								<fieldset className="space-y-3">
+									<legend id="gender-label" className="text-sm font-medium text-foreground">3. Gender</legend>
 									<RadioGroup
+										aria-labelledby="gender-label"
 										onValueChange={(val) => setFormData({ ...formData, gender: val })}
 										className="flex gap-6"
 										required
@@ -178,7 +179,7 @@ export default function RegisterPage() {
 											<Label htmlFor="female">Female</Label>
 										</div>
 									</RadioGroup>
-								</div>
+								</fieldset>
 
 								<div className="grid gap-6 md:grid-cols-2">
 									<div className="space-y-2">
@@ -251,8 +252,8 @@ export default function RegisterPage() {
 							{/* Programme Selection */}
 							<div className="space-y-8 pt-4">
 								<h3 className="text-lg font-semibold border-b pb-2">3. Programme Details</h3>
-								<div className="space-y-4">
-									<Label>9. Programme Registering For (Select all that apply)</Label>
+								<fieldset className="space-y-4">
+									<legend className="text-sm font-medium text-foreground">9. Programme Registering For (Select all that apply)</legend>
 									<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
 										{programmesList.map((prog) => (
 											<div key={prog.id} className="flex items-center space-x-2">
@@ -265,7 +266,7 @@ export default function RegisterPage() {
 											</div>
 										))}
 									</div>
-								</div>
+								</fieldset>
 
 								<div className="space-y-2">
 									<Label htmlFor="subjects">10. Subject Combination (for WAEC/UTME/JUPEB)</Label>
@@ -278,9 +279,10 @@ export default function RegisterPage() {
 									/>
 								</div>
 
-								<div className="space-y-3">
-									<Label>11. Preferred Class Mode</Label>
+								<fieldset className="space-y-3">
+									<legend id="classmode-label" className="text-sm font-medium text-foreground">11. Preferred Class Mode</legend>
 									<RadioGroup
+										aria-labelledby="classmode-label"
 										onValueChange={(val) => setFormData({ ...formData, classMode: val })}
 										className="flex flex-wrap gap-6"
 										required
@@ -298,7 +300,7 @@ export default function RegisterPage() {
 											<Label htmlFor="both">Both</Label>
 										</div>
 									</RadioGroup>
-								</div>
+								</fieldset>
 
 								<div className="space-y-2">
 									<Label htmlFor="referral">12. How Did You Hear About Us?</Label>
@@ -331,6 +333,6 @@ export default function RegisterPage() {
 					Need help? Contact us at admissions@trailblazer.edu or call (555) 123-4567
 				</p>
 			</div>
-		</div>
+		</main>
 	)
 }

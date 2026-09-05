@@ -116,11 +116,11 @@ export function Hero() {
 								<p className="text-xl md:text-2xl text-white/90 drop-shadow-md font-medium leading-snug mb-8 max-w-3xl mx-auto">
 									{slide.description}
 								</p>
-								<Link href="/register">
-									<Button className="bg-primary hover:bg-orange-600 text-white font-semibold text-lg px-8 py-6 rounded-md shadow-lg transition-all duration-300">
+								<Button asChild className="bg-primary hover:bg-orange-600 text-white font-semibold text-lg px-8 py-6 rounded-md shadow-lg transition-all duration-300">
+									<Link href="/register">
 										Register Now
-									</Button>
-								</Link>
+									</Link>
+								</Button>
 							</div>
 						</CarouselItem>
 					))}

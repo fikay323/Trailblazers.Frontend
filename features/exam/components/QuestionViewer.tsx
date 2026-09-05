@@ -19,6 +19,8 @@ export function QuestionViewer({
 	selectedOption,
 	onSelectOption
 }: QuestionViewerProps) {
+	const optionButtonRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+
 	if (!question) {
 		return (
 			<Card className="border-gray-200 bg-gray-50 text-gray-500 p-8 text-center">
@@ -26,6 +28,26 @@ export function QuestionViewer({
 			</Card>
 		);
 	}
+
+	const optionEntries = Object.entries(question.options);
+	const questionTextId = `question-text-${question.id}`;
+
+	const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+		let targetIndex = index;
+		if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+			e.preventDefault();
+			targetIndex = (index + 1) % optionEntries.length;
+		} else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+			e.preventDefault();
+			targetIndex = (index - 1 + optionEntries.length) % optionEntries.length;
+		} else {
+			return;
+		}
+
+		const [targetKey] = optionEntries[targetIndex];
+		onSelectOption(targetKey);
+		optionButtonRefs.current[targetIndex]?.focus();
+	};
 
 	return (
 		<div className="space-y-6">
@@ -61,8 +83,11 @@ export function QuestionViewer({
 			<Card className="border-gray-200 bg-white shadow-lg">
 				<CardContent className="p-6 space-y-6">
 					{/* Question Text */}
-					<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText) }} className="text-md sm:text-lg text-gray-900 font-semibold leading-relaxed whitespace-pre-line">
-					</div>
+					<div
+						id={questionTextId}
+						dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText) }}
+						className="text-md sm:text-lg text-gray-900 font-semibold leading-relaxed whitespace-pre-line"
+					/>
 
 					{/* Question Image if exists */}
 					{question.imageUrl && (
@@ -76,16 +101,27 @@ export function QuestionViewer({
 						</div>
 					)}
 
-					{/* Option Selection Grid */}
-					<div className="grid grid-cols-1 gap-3 pt-4 border-t border-gray-100">
-						{Object.entries(question.options).map(([key, value]) => {
+					{/* Option Selection Grid (Accessible Radio Group) */}
+					<div
+						role="radiogroup"
+						aria-labelledby={questionTextId}
+						className="grid grid-cols-1 gap-3 pt-4 border-t border-gray-100"
+					>
+						{optionEntries.map(([key, value], index) => {
 							const isSelected = selectedOption === key;
+							const isRovingTabFocus = isSelected || (!selectedOption && index === 0);
+
 							return (
 								<button
 									key={key}
+									ref={(el) => { optionButtonRefs.current[index] = el; }}
 									type="button"
+									role="radio"
+									aria-checked={isSelected}
+									tabIndex={isRovingTabFocus ? 0 : -1}
 									onClick={() => onSelectOption(key)}
-									className={`flex items-start gap-4 p-4 text-left rounded-xl border transition-all duration-200 group cursor-pointer ${isSelected
+									onKeyDown={(e) => handleKeyDown(e, index)}
+									className={`flex items-start gap-4 p-4 text-left rounded-xl border transition-all duration-200 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${isSelected
 										? 'border-primary bg-primary/5 text-gray-900 shadow-sm'
 										: 'border-gray-250 bg-gray-50/50 hover:bg-gray-100 text-gray-700 hover:text-gray-900'
 										}`}
@@ -104,7 +140,7 @@ export function QuestionViewer({
 									<span className="flex-1 text-sm sm:text-md pt-0.5 leading-snug font-medium">{value}</span>
 
 									{/* Selected Icon */}
-									{isSelected && <CheckCircle2 className="h-5 w-5 text-primary shrink-0 self-center" />}
+									{isSelected && <CheckCircle2 className="h-5 w-5 text-primary shrink-0 self-center" aria-hidden="true" />}
 								</button>
 							);
 						})}

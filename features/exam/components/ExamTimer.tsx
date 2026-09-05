@@ -11,6 +11,8 @@ interface ExamTimerProps {
 
 export function ExamTimer({ endTime, onTimeUp }: ExamTimerProps) {
 	const [timeLeft, setTimeLeft] = useState<number>(0);
+	const [announcement, setAnnouncement] = useState<string>('');
+	const announcedMilestones = React.useRef<Set<number>>(new Set());
 
 	useEffect(() => {
 		const calculateTimeLeft = () => {
@@ -30,6 +32,25 @@ export function ExamTimer({ endTime, onTimeUp }: ExamTimerProps) {
 		const interval = setInterval(() => {
 			const remaining = calculateTimeLeft();
 			setTimeLeft(remaining);
+
+			// Check milestone announcements
+			const milestones: Record<number, string> = {
+				1800: '30 minutes remaining in examination.',
+				900: '15 minutes remaining in examination.',
+				600: 'Warning: 10 minutes remaining in examination.',
+				300: 'Warning: 5 minutes remaining in examination.',
+				120: 'Warning: 2 minutes remaining.',
+				60: 'Urgent: 1 minute remaining in examination.',
+				30: 'Urgent: 30 seconds remaining.'
+			};
+
+			for (const [secStr, message] of Object.entries(milestones)) {
+				const sec = Number(secStr);
+				if (remaining <= sec && remaining > sec - 2 && !announcedMilestones.current.has(sec)) {
+					announcedMilestones.current.add(sec);
+					setAnnouncement(message);
+				}
+			}
 
 			if (remaining <= 0) {
 				clearInterval(interval);
@@ -61,13 +82,28 @@ export function ExamTimer({ endTime, onTimeUp }: ExamTimerProps) {
 	}
 
 	return (
-		<div className={`flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-mono font-bold tracking-wider shadow-inner transition-colors duration-500 ${timerColorClass}`}>
-			{isUrgent ? (
-				<AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
-			) : (
-				<Timer className={`h-4 w-4 shrink-0 ${isWarning ? 'text-amber-600' : 'text-emerald-600'}`} />
-			)}
-			<span>{formatTime(timeLeft)}</span>
+		<div className="flex items-center gap-2">
+			{/* Accessible Live Region for Milestones */}
+			<div
+				aria-live="polite"
+				aria-atomic="true"
+				className="sr-only"
+			>
+				{announcement}
+			</div>
+
+			<div
+				role="timer"
+				aria-label={`Time remaining: ${formatTime(timeLeft)}`}
+				className={`flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-mono font-bold tracking-wider shadow-inner transition-colors duration-500 ${timerColorClass}`}
+			>
+				{isUrgent ? (
+					<AlertTriangle className="h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+				) : (
+					<Timer className={`h-4 w-4 shrink-0 ${isWarning ? 'text-amber-600' : 'text-emerald-600'}`} aria-hidden="true" />
+				)}
+				<span>{formatTime(timeLeft)}</span>
+			</div>
 		</div>
 	);
 }
