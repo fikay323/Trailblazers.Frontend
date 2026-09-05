@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GraduationCap, ShieldCheck, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { getPortalUrl } from '@/core/utils/subdomain';
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -42,14 +43,10 @@ export default function LoginPage() {
 					setIsLoading(false);
 					return;
 				}
-				router.push('/admin/submissions');
+				window.location.href = getPortalUrl(user.role, '/admin/submissions');
 			} else {
-				// On Student or Marketing domain
-				if (user.role === 'Admin' || user.role === 'Instructor') {
-					router.push('/admin/submissions');
-				} else {
-					router.push('/student/dashboard');
-				}
+				// On Student or Marketing domain, redirect directly to the designated subdomain portal
+				window.location.href = getPortalUrl(user.role);
 			}
 		} catch (err: any) {
 			setError(err.message || 'Invalid email or password.');

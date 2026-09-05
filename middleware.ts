@@ -44,6 +44,13 @@ export function middleware(request: NextRequest) {
 			return NextResponse.redirect(learnUrl);
 		}
 
+		// If accessing student or exam routes on staff subdomain, redirect to student portal
+		if (pathname.startsWith('/student') || pathname.startsWith('/exam')) {
+			const learnUrl = new URL(pathname + request.nextUrl.search, request.url);
+			learnUrl.host = hostname.replace('staff.', 'learn.');
+			return NextResponse.redirect(learnUrl);
+		}
+
 		// Rewrite root '/' to staff dashboard '/admin/submissions'
 		if (pathname === '/' || pathname === '') {
 			url.pathname = '/admin/submissions';
@@ -63,6 +70,13 @@ export function middleware(request: NextRequest) {
 	// 2. STUDENT LMS SUBDOMAIN (learn.trailblazer-academy.com or learn.localhost)
 	// =========================================================================
 	if (isLearnSubdomain) {
+		// If accessing admin routes on learn subdomain, redirect to staff portal
+		if (pathname.startsWith('/admin')) {
+			const staffUrl = new URL(pathname + request.nextUrl.search, request.url);
+			staffUrl.host = hostname.replace('learn.', 'staff.');
+			return NextResponse.redirect(staffUrl);
+		}
+
 		// If Staff accesses student subdomain, allow or rewrite
 		if (pathname === '/' || pathname === '' || pathname === '/dashboard') {
 			url.pathname = '/student/dashboard';
@@ -85,6 +99,35 @@ export function middleware(request: NextRequest) {
 	// =========================================================================
 	// 3. PUBLIC MARKETING SITE (trailblazer-academy.com or localhost:3000)
 	// =========================================================================
+	const isLocalhost = hostname === 'localhost' || hostname.startsWith('localhost:');
+	const isProduction = hostname === 'trailblazer-academy.com' || hostname.startsWith('trailblazer-academy.com:');
+
+	// Redirect admin routes to staff portal subdomain
+	if (pathname.startsWith('/admin')) {
+		const staffUrl = new URL(pathname + request.nextUrl.search, request.url);
+		if (isLocalhost) {
+			staffUrl.host = hostname.replace(/^localhost/, 'staff.localhost');
+			return NextResponse.redirect(staffUrl);
+		}
+		if (isProduction) {
+			staffUrl.host = 'staff.trailblazer-academy.com';
+			return NextResponse.redirect(staffUrl);
+		}
+	}
+
+	// Redirect student LMS and exam routes to learn portal subdomain
+	if (pathname.startsWith('/student') || pathname.startsWith('/exam')) {
+		const learnUrl = new URL(pathname + request.nextUrl.search, request.url);
+		if (isLocalhost) {
+			learnUrl.host = hostname.replace(/^localhost/, 'learn.localhost');
+			return NextResponse.redirect(learnUrl);
+		}
+		if (isProduction) {
+			learnUrl.host = 'learn.trailblazer-academy.com';
+			return NextResponse.redirect(learnUrl);
+		}
+	}
+
 	return NextResponse.next();
 }
 

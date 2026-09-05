@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GraduationCap, AlertCircle, Loader2 } from 'lucide-react';
+import { getPortalUrl } from '@/core/utils/subdomain';
 
 export default function RegisterPage() {
 	const router = useRouter();
@@ -45,7 +46,7 @@ export default function RegisterPage() {
 				phoneNumber: phoneNumber.trim() || undefined,
 				password
 			});
-			router.push('/student/dashboard');
+			window.location.href = getPortalUrl('Student', '/student/dashboard');
 		} catch (err: any) {
 			setError(err.message || 'Failed to create student account.');
 		} finally {
