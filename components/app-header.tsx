@@ -27,6 +27,23 @@ export function AppHeader() {
 	const { user, logout } = useAuth();
 	const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
+	// Close mobile menu when navigating or switching tabs
+	React.useEffect(() => {
+		setMobileMenuOpen(false);
+	}, [pathname, searchParams]);
+
+	// Lock body scroll when mobile menu is open
+	React.useEffect(() => {
+		if (mobileMenuOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	}, [mobileMenuOpen]);
+
 	if (!user) return null;
 
 	const isAdminOrTutor =
@@ -80,7 +97,8 @@ export function AppHeader() {
 	const currentLinks = isAdminOrTutor ? staffNavLinks : studentNavLinks;
 
 	return (
-		<header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md text-slate-100 shadow-lg">
+		<>
+			<header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md text-slate-100 shadow-lg">
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 				{/* LMS Brand */}
 				<div className="flex items-center gap-8">
@@ -185,89 +203,114 @@ export function AppHeader() {
 					</button>
 				</div>
 
-				{/* Mobile Hamburger Button */}
+				{/* Mobile Hamburger Button with Smooth Icon Transition */}
 				<button
 					onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-					className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors"
+					className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors relative cursor-pointer"
 					aria-label="Toggle App Menu"
 				>
-					{mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+					<div className="relative h-6 w-6">
+						<Menu
+							className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
+								mobileMenuOpen ? 'opacity-0 rotate-90 scale-75' : 'opacity-100 rotate-0 scale-100'
+							}`}
+						/>
+						<X
+							className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
+								mobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-75'
+							}`}
+						/>
+					</div>
 				</button>
 			</div>
+		</header>
 
-			{/* Mobile App Drawer (Zero Website Links) */}
-			{mobileMenuOpen && (
-				<div className="border-t border-slate-800 md:hidden bg-slate-950/98 p-4 space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150">
-					{/* User Card */}
-					<div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
-						<div
-							className={`h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-sm text-white shrink-0 ${
-								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+		{/* Mobile Backdrop Blur & Darkening Overlay */}
+		<div
+			className={`fixed inset-x-0 top-16 bottom-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-in-out md:hidden ${
+				mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+			}`}
+			onClick={() => setMobileMenuOpen(false)}
+			aria-hidden="true"
+		/>
+
+		{/* Mobile App Drawer Panel with Smooth Slide/Fade Transition */}
+		<div
+			className={`fixed inset-x-0 top-16 z-50 md:hidden border-b border-slate-800 bg-slate-950/98 p-4 space-y-4 shadow-2xl transition-all duration-300 ease-out origin-top max-h-[calc(100vh-4rem)] overflow-y-auto ${
+				mobileMenuOpen
+					? 'opacity-100 translate-y-0 pointer-events-auto'
+					: 'opacity-0 -translate-y-3 pointer-events-none'
+			}`}
+		>
+			{/* User Card */}
+			<div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
+				<div
+					className={`h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-sm text-white shrink-0 ${
+						isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+					}`}
+				>
+					{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
+				</div>
+				<div className="overflow-hidden">
+					<div className="text-sm font-bold text-white truncate">{user.fullName || user.email}</div>
+					<div className="text-xs text-slate-400 font-mono truncate">{user.email}</div>
+					<div className="flex items-center gap-2 mt-1">
+						<span
+							className={`text-[9px] uppercase font-extrabold px-1.5 py-0.2 rounded border ${
+								isAdminOrTutor
+									? 'bg-cyan-950 text-cyan-300 border-cyan-800'
+									: 'bg-orange-950 text-orange-300 border-orange-800'
 							}`}
 						>
-							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
-						</div>
-						<div className="overflow-hidden">
-							<div className="text-sm font-bold text-white truncate">{user.fullName || user.email}</div>
-							<div className="text-xs text-slate-400 font-mono truncate">{user.email}</div>
-							<div className="flex items-center gap-2 mt-1">
-								<span
-									className={`text-[9px] uppercase font-extrabold px-1.5 py-0.2 rounded border ${
-										isAdminOrTutor
-											? 'bg-cyan-950 text-cyan-300 border-cyan-800'
-											: 'bg-orange-950 text-orange-300 border-orange-800'
-									}`}
-								>
-									{user.role}
-								</span>
-								<span
-									className={`text-[10px] font-semibold ${
-										user.isActive ? 'text-emerald-400' : 'text-red-400'
-									}`}
-								>
-									{user.isActive ? 'Account Active' : 'Account Suspended'}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					{/* Navigation Links */}
-					<nav className="flex flex-col gap-1.5 pt-1">
-						{currentLinks.map((item) => {
-							const Icon = item.icon;
-							return (
-								<Link
-									key={item.label}
-									href={item.href}
-									onClick={() => setMobileMenuOpen(false)}
-									className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-										item.isActive
-											? 'bg-slate-800 text-white border border-slate-700'
-											: 'text-slate-300 hover:bg-slate-900 hover:text-white'
-									}`}
-								>
-									<Icon className={`h-4 w-4 ${item.isActive ? 'text-orange-400' : 'text-slate-400'}`} />
-									<span>{item.label}</span>
-								</Link>
-							);
-						})}
-					</nav>
-
-					{/* Mobile Sign Out Button */}
-					<div className="pt-2 border-t border-slate-800/80">
-						<button
-							onClick={() => {
-								logout();
-								setMobileMenuOpen(false);
-							}}
-							className="w-full flex items-center justify-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 py-3 rounded-lg bg-red-950/30 border border-red-900/60 transition-colors cursor-pointer"
+							{user.role}
+						</span>
+						<span
+							className={`text-[10px] font-semibold ${
+								user.isActive ? 'text-emerald-400' : 'text-red-400'
+							}`}
 						>
-							<LogOut className="h-4 w-4" />
-							<span>Sign Out</span>
-						</button>
+							{user.isActive ? 'Account Active' : 'Account Suspended'}
+						</span>
 					</div>
 				</div>
-			)}
-		</header>
+			</div>
+
+			{/* Navigation Links */}
+			<nav className="flex flex-col gap-1.5 pt-1">
+				{currentLinks.map((item) => {
+					const Icon = item.icon;
+					return (
+						<Link
+							key={item.label}
+							href={item.href}
+							onClick={() => setMobileMenuOpen(false)}
+							className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+								item.isActive
+									? 'bg-slate-800 text-white border border-slate-700'
+									: 'text-slate-300 hover:bg-slate-900 hover:text-white'
+							}`}
+						>
+							<Icon className={`h-4 w-4 ${item.isActive ? 'text-orange-400' : 'text-slate-400'}`} />
+							<span>{item.label}</span>
+						</Link>
+					);
+				})}
+			</nav>
+
+			{/* Mobile Sign Out Button */}
+			<div className="pt-2 border-t border-slate-800/80">
+				<button
+					onClick={() => {
+						logout();
+						setMobileMenuOpen(false);
+					}}
+					className="w-full flex items-center justify-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 py-3 rounded-lg bg-red-950/30 border border-red-900/60 transition-colors cursor-pointer"
+				>
+					<LogOut className="h-4 w-4" />
+					<span>Sign Out</span>
+				</button>
+			</div>
+		</div>
+	</>
 	);
 }

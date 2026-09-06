@@ -28,8 +28,10 @@ import {
 	Clock,
 	X,
 	FileText,
-	ShieldAlert
+	ShieldAlert,
+	Phone
 } from 'lucide-react';
+import { DataPagination } from '@/components/ui/DataPagination';
 
 interface StudentManagementViewProps {
 	apiKey: string;
@@ -77,6 +79,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 	const [error, setError] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+
+	// Pagination State
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
 
 	// Status Toggle Modal State
 	const [selectedStudent, setSelectedStudent] = useState<AdminStudentListItem | null>(null);
@@ -177,6 +183,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 		return matchSearch;
 	});
 
+	// Pagination Calculations
+	const totalPages = Math.ceil(filteredStudents.length / pageSize);
+	const paginatedStudents = filteredStudents.slice((page - 1) * pageSize, page * pageSize);
+
 	// Metrics
 	const totalStudents = students.length;
 	const activeCount = students.filter(s => s.isActive).length;
@@ -250,7 +260,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 					<Input
 						placeholder="Search by student name, email, or phone..."
 						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
+						onChange={(e) => {
+							setSearchTerm(e.target.value);
+							setPage(1);
+						}}
 						className="pl-9 border-slate-800 bg-slate-900/60 text-white placeholder-slate-500"
 					/>
 				</div>
@@ -258,7 +271,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 				<div className="flex items-center gap-3">
 					<div className="flex rounded-md border border-slate-800 p-1 bg-slate-900/60">
 						<button
-							onClick={() => setStatusFilter('all')}
+							onClick={() => {
+								setStatusFilter('all');
+								setPage(1);
+							}}
 							className={`px-3 py-1 text-xs font-semibold rounded cursor-pointer transition-colors ${statusFilter === 'all'
 								? 'bg-slate-800 text-white'
 								: 'text-slate-400 hover:text-white'
@@ -267,7 +283,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							All ({totalStudents})
 						</button>
 						<button
-							onClick={() => setStatusFilter('active')}
+							onClick={() => {
+								setStatusFilter('active');
+								setPage(1);
+							}}
 							className={`px-3 py-1 text-xs font-semibold rounded cursor-pointer transition-colors ${statusFilter === 'active'
 								? 'bg-emerald-950 text-emerald-300 border border-emerald-800/50'
 								: 'text-slate-400 hover:text-white'
@@ -276,7 +295,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							Active ({activeCount})
 						</button>
 						<button
-							onClick={() => setStatusFilter('suspended')}
+							onClick={() => {
+								setStatusFilter('suspended');
+								setPage(1);
+							}}
 							className={`px-3 py-1 text-xs font-semibold rounded cursor-pointer transition-colors ${statusFilter === 'suspended'
 								? 'bg-red-950 text-red-300 border border-red-800/50'
 								: 'text-slate-400 hover:text-white'
@@ -323,7 +345,8 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							</p>
 						</div>
 					) : (
-						<div className="overflow-x-auto">
+						<>
+							<div className="overflow-x-auto">
 							<table className="w-full text-left text-sm">
 								<thead className="bg-slate-950/80 text-xs font-semibold uppercase text-slate-400 border-b border-slate-800">
 									<tr>
@@ -336,7 +359,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-slate-800/60">
-									{filteredStudents.map((s) => (
+									{paginatedStudents.map((s) => (
 										<tr key={s.id} className="hover:bg-slate-800/30 transition-colors">
 											<td className="py-4 px-4 sm:px-6">
 												<div className="font-semibold text-white">{s.fullName}</div>
@@ -415,6 +438,26 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 								</tbody>
 							</table>
 						</div>
+
+						{filteredStudents.length > 0 && (
+							<div className="p-4 pt-0">
+								<DataPagination
+									currentPage={page}
+									totalPages={totalPages}
+									totalCount={filteredStudents.length}
+									pageSize={pageSize}
+									pageSizeOptions={[10, 20, 50, 100]}
+									itemName="students"
+									onPageChange={setPage}
+									onPageSizeChange={(newSize) => {
+										setPageSize(newSize);
+										setPage(1);
+									}}
+									disabled={isLoading}
+								/>
+							</div>
+						)}
+						</>
 					)}
 				</CardContent>
 			</Card>

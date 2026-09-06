@@ -22,6 +22,7 @@ import {
 	BookOpen,
 	AlertCircle
 } from 'lucide-react';
+import { DataPagination } from '@/components/ui/DataPagination';
 
 interface QuestionBankViewProps {
 	apiKey: string;
@@ -53,7 +54,7 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 	const [selectedYear, setSelectedYear] = useState<string>('');
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [pageNumber, setPageNumber] = useState<number>(1);
-	const pageSize = 15;
+	const [pageSize, setPageSize] = useState<number>(10);
 
 	// Create Question Modal state
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -73,7 +74,7 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 
 	useEffect(() => {
 		loadQuestions();
-	}, [selectedSubject, selectedYear, pageNumber, apiKey]);
+	}, [selectedSubject, selectedYear, pageNumber, pageSize, apiKey]);
 
 	const loadQuestions = async () => {
 		setIsLoading(true);
@@ -347,32 +348,20 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 					))}
 
 					{/* Pagination */}
-					<div className="flex items-center justify-between pt-4 border-t border-slate-800 text-xs text-slate-400">
-						<div>
-							Showing {(pageNumber - 1) * pageSize + 1} to{' '}
-							{Math.min(pageNumber * pageSize, totalCount)} of {totalCount} questions
-						</div>
-						<div className="flex gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								disabled={pageNumber <= 1}
-								onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-								className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer text-xs h-8"
-							>
-								Previous
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								disabled={pageNumber * pageSize >= totalCount}
-								onClick={() => setPageNumber((p) => p + 1)}
-								className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer text-xs h-8"
-							>
-								Next
-							</Button>
-						</div>
-					</div>
+					<DataPagination
+						currentPage={pageNumber}
+						totalPages={Math.ceil(totalCount / pageSize)}
+						totalCount={totalCount}
+						pageSize={pageSize}
+						pageSizeOptions={[10, 20, 50, 100]}
+						itemName="questions"
+						onPageChange={setPageNumber}
+						onPageSizeChange={(newSize) => {
+							setPageSize(newSize);
+							setPageNumber(1);
+						}}
+						disabled={isLoading}
+					/>
 				</div>
 			)}
 

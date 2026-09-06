@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { DataPagination } from '@/components/ui/DataPagination';
 
 interface ContactSubmissionsViewProps {
 	apiKey: string;
@@ -24,7 +25,7 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 
 	// Pagination State
 	const [page, setPage] = useState(1);
-	const pageSize = 8;
+	const [pageSize, setPageSize] = useState(10);
 
 	// Data States
 	const [items, setItems] = useState<ContactSubmissionDTO[]>([]);
@@ -70,7 +71,7 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 		}, 300);
 
 		return () => clearTimeout(timer);
-	}, [searchTerm, startDate, endDate, page, apiKey]);
+	}, [searchTerm, startDate, endDate, page, pageSize, apiKey]);
 
 	const handleClearFilters = () => {
 		setSearchTerm('');
@@ -152,40 +153,20 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 					<ContactTable items={items} onSelect={setSelectedItem} />
 
 					{/* Pagination */}
-					{totalPages > 1 && (
-						<div className="flex items-center justify-between pt-4 px-2">
-							<div className="text-sm text-slate-400">
-								Showing <span className="font-medium text-white">{((page - 1) * pageSize) + 1}</span> to{' '}
-								<span className="font-medium text-white">{Math.min(page * pageSize, totalCount)}</span> of{' '}
-								<span className="font-medium text-white">{totalCount}</span> inquiries
-							</div>
-							<div className="flex items-center gap-2">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setPage((p) => Math.max(p - 1, 1))}
-									disabled={page === 1}
-									className="border-slate-800 text-slate-300 disabled:opacity-50"
-								>
-									<ChevronLeft className="h-4 w-4 mr-1" />
-									Previous
-								</Button>
-								<span className="text-sm text-slate-400 px-2">
-									Page {page} of {totalPages}
-								</span>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-									disabled={page === totalPages}
-									className="border-slate-800 text-slate-300 disabled:opacity-50"
-								>
-									Next
-									<ChevronRight className="h-4 w-4 ml-1" />
-								</Button>
-							</div>
-						</div>
-					)}
+					<DataPagination
+						currentPage={page}
+						totalPages={totalPages}
+						totalCount={totalCount}
+						pageSize={pageSize}
+						pageSizeOptions={[10, 20, 50, 100]}
+						itemName="inquiries"
+						onPageChange={setPage}
+						onPageSizeChange={(newSize) => {
+							setPageSize(newSize);
+							setPage(1);
+						}}
+						disabled={isLoading}
+					/>
 				</div>
 			)}
 
