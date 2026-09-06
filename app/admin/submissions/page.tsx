@@ -182,35 +182,6 @@ function SubmissionsDashboardContent() {
 									</p>
 								</div>
 							</div>
-
-							{/* Quick Mobile Navigation Pills: Instant thumb-friendly switching on mobile */}
-							<div className="flex sm:hidden items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-								{(['students', 'questions', 'registration', 'contact'] as AdminTab[]).map((tab) => {
-									const meta = sectionMeta[tab];
-									const isCurrent = activeTab === tab;
-									const TabIcon = meta.icon;
-									const shortLabels: Record<AdminTab, string> = {
-										students: 'Students',
-										questions: 'Questions',
-										registration: 'Registrations',
-										contact: 'Inquiries'
-									};
-									return (
-										<button
-											key={tab}
-											onClick={() => switchTab(tab)}
-											className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
-												isCurrent
-													? 'bg-orange-600 text-white shadow-sm'
-													: 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
-											}`}
-										>
-											<TabIcon className="h-3.5 w-3.5" />
-											<span>{shortLabels[tab]}</span>
-										</button>
-									);
-								})}
-							</div>
 						</div>
 					);
 				})()}
