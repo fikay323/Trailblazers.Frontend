@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { GraduationCap, ShieldCheck, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { GraduationCap, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { getPortalUrl } from '@/core/utils/subdomain';
 
 export default function LoginPage() {
@@ -53,12 +53,6 @@ export default function LoginPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	const quickFill = (demoEmail: string, demoPw: string) => {
-		setEmail(demoEmail);
-		setPassword(demoPw);
-		setError(null);
 	};
 
 	return (
@@ -144,45 +138,6 @@ export default function LoginPage() {
 							)}
 						</Button>
 					</form>
-
-					{/* Demo Accounts Quick-Fill */}
-					<div className="pt-4 border-t border-slate-800">
-						<p className="text-xs font-medium text-slate-400 text-center mb-2.5">
-							Demo Testing Accounts (1-Click Fill):
-						</p>
-						<div className="grid grid-cols-3 gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => quickFill('student@trailblazer.edu', 'Student123!')}
-								className="border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 text-[11px] h-8 px-2 cursor-pointer flex items-center justify-center gap-1"
-							>
-								<UserCheck className="h-3 w-3 text-orange-400" />
-								Student
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => quickFill('admin@trailblazer.edu', 'AdminPassword123!')}
-								className="border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 text-[11px] h-8 px-2 cursor-pointer flex items-center justify-center gap-1"
-							>
-								<ShieldCheck className="h-3 w-3 text-cyan-400" />
-								Admin
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => quickFill('instructor@trailblazer.edu', 'Instructor123!')}
-								className="border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 text-[11px] h-8 px-2 cursor-pointer flex items-center justify-center gap-1"
-							>
-								<GraduationCap className="h-3 w-3 text-emerald-400" />
-								Tutor
-							</Button>
-						</div>
-					</div>
 				</CardContent>
 
 				<CardFooter className="flex justify-center border-t border-slate-800/80 pt-4">
