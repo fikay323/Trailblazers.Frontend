@@ -66,12 +66,24 @@ export function Header() {
 
 	const isStaff = host.startsWith('staff.') || pathname.startsWith('/admin');
 	if (isStaff) {
-		return <AppHeader />;
+		return (
+			<MinimalPortalHeader
+				title="Staff Management Portal"
+				badge="Staff"
+				badgeColor="bg-cyan-950 text-cyan-300 border border-cyan-800"
+			/>
+		);
 	}
 
 	const isLearn = host.startsWith('learn.') || pathname.startsWith('/student') || pathname.startsWith('/exam');
 	if (isLearn) {
-		return <AppHeader />;
+		return (
+			<MinimalPortalHeader
+				title="Student Learning Management System"
+				badge="Student"
+				badgeColor="bg-orange-950 text-orange-300 border border-orange-800"
+			/>
+		);
 	}
 
 	return <WebsiteHeader />;

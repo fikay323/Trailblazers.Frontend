@@ -24,30 +24,16 @@ export function AppHeader() {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const currentTab = searchParams.get('tab') || 'students';
-	const { user: authUser, logout } = useAuth();
+	const { user, logout } = useAuth();
 	const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-
-	const isStaffRoute = pathname.startsWith('/admin');
-	const isStudentRoute = pathname.startsWith('/student') || pathname.startsWith('/exam');
-
-	// Ensure AppHeader always renders on portal routes even during hydration
-	const user = authUser || (isStaffRoute ? {
-		id: 'staff-portal',
-		fullName: 'Academy Staff',
-		email: 'staff@trailblazer.edu',
-		role: 'Staff',
-		isActive: true
-	} : isStudentRoute ? {
-		id: 'student-portal',
-		fullName: 'Student Candidate',
-		email: 'student@trailblazer.edu',
-		role: 'Student',
-		isActive: true
-	} : null);
 
 	if (!user) return null;
 
-	const isAdminOrTutor = user.role === 'Admin' || user.role === 'Instructor' || user.role === 'Staff';
+	const isAdminOrTutor =
+		user.role === 'Admin' ||
+		user.role === 'Instructor' ||
+		user.role === 'Staff' ||
+		pathname.startsWith('/admin');
 
 	const studentNavLinks = [
 		{
@@ -159,12 +145,12 @@ export function AppHeader() {
 								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
 							}`}
 						>
-							{user.fullName?.charAt(0).toUpperCase() || 'U'}
+							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
 						</div>
 
 						<div className="flex flex-col text-left">
 							<span className="font-bold text-xs text-white max-w-[140px] truncate leading-tight">
-								{user.fullName || 'Candidate'}
+								{user.fullName || user.email}
 							</span>
 							<div className="flex items-center gap-1.5 mt-0.5">
 								<span
@@ -219,10 +205,10 @@ export function AppHeader() {
 								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
 							}`}
 						>
-							{user.fullName?.charAt(0).toUpperCase() || 'U'}
+							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
 						</div>
 						<div className="overflow-hidden">
-							<div className="text-sm font-bold text-white truncate">{user.fullName}</div>
+							<div className="text-sm font-bold text-white truncate">{user.fullName || user.email}</div>
 							<div className="text-xs text-slate-400 font-mono truncate">{user.email}</div>
 							<div className="flex items-center gap-2 mt-1">
 								<span

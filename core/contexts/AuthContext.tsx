@@ -9,7 +9,8 @@ import {
 	login as apiLogin,
 	register as apiRegister,
 	getCurrentUser,
-	logoutUser
+	logoutUser,
+	parseJwtUser
 } from '../services/authService';
 import {
 	setSharedAuthCookie,
@@ -35,35 +36,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		const storedToken = localStorage.getItem('auth_token');
-		const storedUser = localStorage.getItem('auth_user');
+		let activeToken = localStorage.getItem('auth_token');
+		let activeUser: UserDto | null = null;
 
-		if (storedToken && storedUser) {
+		const storedUser = localStorage.getItem('auth_user');
+		if (storedUser) {
 			try {
-				const parsedUser = JSON.parse(storedUser);
-				setToken(storedToken);
-				setUser(parsedUser);
-				// Synchronize / refresh shared cookie
-				setSharedAuthCookie(storedToken, parsedUser);
-				setIsLoading(false);
-				return;
-			} catch (e) {
-				localStorage.removeItem('auth_token');
+				activeUser = JSON.parse(storedUser);
+			} catch {
 				localStorage.removeItem('auth_user');
 			}
 		}
 
-		// Fallback: Check shared wildcard cookie across subdomains (Single Sign-On bridge)
-		const shared = getSharedAuthCookie();
-		if (shared && shared.token && shared.user) {
-			setToken(shared.token);
-			setUser(shared.user);
-			// Rehydrate current subdomain's localStorage
-			localStorage.setItem('auth_token', shared.token);
-			localStorage.setItem('auth_user', JSON.stringify(shared.user));
-			if (shared.user.role === 'Admin' || shared.user.role === 'Instructor') {
+		// Fallback 1: Check shared wildcard cookie across subdomains (Single Sign-On bridge)
+		if (!activeToken || !activeUser) {
+			const shared = getSharedAuthCookie();
+			if (shared && shared.token) {
+				activeToken = activeToken || shared.token;
+				activeUser = activeUser || shared.user;
+			}
+		}
+
+		// Fallback 2: If we have a token but user profile is missing, extract claims from JWT
+		if (activeToken && !activeUser) {
+			activeUser = parseJwtUser(activeToken);
+		}
+
+		if (activeToken && activeUser) {
+			setToken(activeToken);
+			setUser(activeUser);
+			localStorage.setItem('auth_token', activeToken);
+			localStorage.setItem('auth_user', JSON.stringify(activeUser));
+			setSharedAuthCookie(activeToken, activeUser);
+
+			if (activeUser.role === 'Admin' || activeUser.role === 'Instructor') {
 				localStorage.setItem('admin_api_key', 'trailblazers-secret-key');
 			}
+
+			// Silently re-verify with database to sync any role or status changes
+			getCurrentUser(activeToken)
+				.then((freshUser) => {
+					setUser(freshUser);
+					localStorage.setItem('auth_user', JSON.stringify(freshUser));
+					setSharedAuthCookie(activeToken!, freshUser);
+				})
+				.catch((err) => {
+					console.warn('Silent user profile sync noticed:', err);
+				});
 		}
 
 		setIsLoading(false);
