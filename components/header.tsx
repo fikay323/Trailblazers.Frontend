@@ -12,13 +12,13 @@ function MinimalPortalHeader({ title, badge, badgeColor }: { title: string; badg
 		<header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md text-slate-100 shadow-lg">
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center gap-3">
-					<div className="relative flex items-center justify-center h-10 w-10 rounded-xl bg-white p-1 border border-slate-800 shadow-sm">
+					<div className="relative">
 						<Image
-							src="/logo.jpg"
-							alt="Trailblazer Logo"
-							width={34}
-							height={34}
-							className="object-contain rounded-md"
+							className="rounded-full ring-2 ring-orange-500/30"
+							src="/trailblazer.jpeg"
+							alt="Trailblazer LMS"
+							width={36}
+							height={36}
 						/>
 					</div>
 					<div>

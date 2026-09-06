@@ -65,6 +65,27 @@ export async function submitRegistration(payload: RegisterSubmissionPayload): Pr
 	return response.json();
 }
 
+function getAuthHeaders(tokenOrApiKey?: string): HeadersInit {
+	const defaultKey = 'trailblazers-secret-key';
+	if (!tokenOrApiKey) {
+		return {
+			'Accept': 'application/json',
+			'X-API-KEY': defaultKey
+		};
+	}
+	if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
+		return {
+			'Accept': 'application/json',
+			'X-API-KEY': tokenOrApiKey
+		};
+	}
+	return {
+		'Accept': 'application/json',
+		'Authorization': `Bearer ${tokenOrApiKey}`,
+		'X-API-KEY': defaultKey
+	};
+}
+
 export async function getSubmissions(params: GetSubmissionsParams, apiKey: string): Promise<any> {
 	const queryParams = new URLSearchParams();
 	if (params.type) queryParams.append('type', params.type);
@@ -76,10 +97,8 @@ export async function getSubmissions(params: GetSubmissionsParams, apiKey: strin
 
 	const response = await fetch(`${getApiUrl()}/api/submissions?${queryParams.toString()}`, {
 		method: 'GET',
-		headers: {
-			'Accept': 'application/json',
-			'X-API-KEY': apiKey
-		}
+		headers: getAuthHeaders(apiKey),
+		credentials: 'include'
 	});
 
 	if (!response.ok) {
