@@ -19,7 +19,7 @@ interface RegistrationTableProps {
 	onDelete?: (item: RegistrationSubmissionDTO) => void;
 }
 
-export function RegistrationTable({ items, onSelect }: RegistrationTableProps) {
+export function RegistrationTable({ items, onSelect, onDelete }: RegistrationTableProps) {
 	// Helpers to parse metadata properties
 	const getMetadataProperty = (metadataStr: string, prop: string): string => {
 		try {

@@ -14,6 +14,29 @@ export interface StaffMemberDto {
 	createdAt: string;
 	invitationId?: string | null;
 	invitationExpiresAt?: string | null;
+	emailDeliveryStatus?: string; // "Sent", "Failed", "Pending"
+	emailDeliveryError?: string | null;
+}
+
+export interface StaffInvitationResponse {
+	id: string;
+	email: string;
+	fullName: string;
+	role: StaffRole;
+	expiresAt: string;
+	invitedByUserName: string;
+	isAccepted: boolean;
+	createdAt: string;
+	inviteUrl?: string;
+	emailSent: boolean;
+	emailStatusMessage?: string;
+}
+
+export interface ResendInvitationResponse {
+	message: string;
+	inviteUrl?: string;
+	emailSent: boolean;
+	emailStatusMessage?: string;
 }
 
 export interface InviteStaffPayload {
@@ -72,7 +95,7 @@ export async function getStaffRoster(apiKey?: string): Promise<StaffMemberDto[]>
 /**
  * Send a branded invitation email to a new instructor or administrator.
  */
-export async function inviteStaffMember(payload: InviteStaffPayload, apiKey?: string): Promise<any> {
+export async function inviteStaffMember(payload: InviteStaffPayload, apiKey?: string): Promise<StaffInvitationResponse> {
 	const res = await fetch(`${getApiUrl()}/api/admin/staff/invite`, {
 		method: 'POST',
 		headers: getAuthHeaders(apiKey),
@@ -91,7 +114,7 @@ export async function inviteStaffMember(payload: InviteStaffPayload, apiKey?: st
 /**
  * Resend invitation email with a fresh 48-hour token.
  */
-export async function resendStaffInvitation(invitationId: string, apiKey?: string): Promise<{ message: string }> {
+export async function resendStaffInvitation(invitationId: string, apiKey?: string): Promise<ResendInvitationResponse> {
 	const res = await fetch(`${getApiUrl()}/api/admin/staff/invitations/${invitationId}/resend`, {
 		method: 'POST',
 		headers: getAuthHeaders(apiKey),
@@ -101,6 +124,24 @@ export async function resendStaffInvitation(invitationId: string, apiKey?: strin
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({}));
 		throw new Error(err.error || 'Failed to resend staff invitation.');
+	}
+
+	return res.json();
+}
+
+/**
+ * Delete a pending staff invitation.
+ */
+export async function deleteStaffInvitation(invitationId: string, apiKey?: string): Promise<{ message: string }> {
+	const res = await fetch(`${getApiUrl()}/api/admin/staff/invitations/${invitationId}`, {
+		method: 'DELETE',
+		headers: getAuthHeaders(apiKey),
+		credentials: 'include'
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to delete staff invitation.');
 	}
 
 	return res.json();

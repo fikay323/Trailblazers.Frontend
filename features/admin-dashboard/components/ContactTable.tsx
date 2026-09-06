@@ -19,7 +19,7 @@ interface ContactTableProps {
 	onDelete?: (item: ContactSubmissionDTO) => void;
 }
 
-export function ContactTable({ items, onSelect }: ContactTableProps) {
+export function ContactTable({ items, onSelect, onDelete }: ContactTableProps) {
 	// Helper to parse message from JSON metadata
 	const getMessage = (metadataStr: string): string => {
 		try {

@@ -18,7 +18,13 @@ import {
 	UserCheck,
 	UserX,
 	Lock,
-	ChevronDown
+	ChevronDown,
+	Trash2,
+	Copy,
+	Check,
+	MailCheck,
+	MailX,
+	AlertTriangle
 } from 'lucide-react';
 import {
 	StaffMemberDto,
@@ -27,7 +33,8 @@ import {
 	inviteStaffMember,
 	resendStaffInvitation,
 	updateStaffRole,
-	toggleStaffStatus
+	toggleStaffStatus,
+	deleteStaffInvitation
 } from '@/core/services/staffService';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,6 +76,22 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 	const [statusTarget, setStatusTarget] = useState<StaffMemberDto | null>(null);
 	const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
+	// Delete Invite State
+	const [deleteInviteTarget, setDeleteInviteTarget] = useState<StaffMemberDto | null>(null);
+	const [isDeletingInvite, setIsDeletingInvite] = useState(false);
+
+	// Invite Result & Direct Link Modal
+	const [inviteResultModal, setInviteResultModal] = useState<{
+		isOpen: boolean;
+		emailSent: boolean;
+		emailStatusMessage: string;
+		inviteUrl?: string;
+		fullName: string;
+		role: string;
+		email: string;
+	} | null>(null);
+	const [copiedLink, setCopiedLink] = useState(false);
+
 	const loadStaff = async () => {
 		setIsLoading(true);
 		setError(null);
@@ -94,6 +117,13 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 		}
 	}, [successMessage]);
 
+	const copyToClipboard = (url?: string) => {
+		if (!url) return;
+		navigator.clipboard.writeText(url);
+		setCopiedLink(true);
+		setTimeout(() => setCopiedLink(false), 3000);
+	};
+
 	// Handle Invite Submission
 	const handleSendInvite = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -103,7 +133,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 		setInviteError(null);
 
 		try {
-			await inviteStaffMember(
+			const res = await inviteStaffMember(
 				{
 					fullName: inviteName.trim(),
 					email: inviteEmail.trim(),
@@ -112,8 +142,20 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 				apiKey
 			);
 
-			setSuccessMessage(`Invitation email sent to ${inviteEmail.trim()} (${inviteRole}).`);
 			setIsInviteOpen(false);
+			setInviteResultModal({
+				isOpen: true,
+				emailSent: res.emailSent,
+				emailStatusMessage: res.emailStatusMessage || (res.emailSent ? 'Invitation email successfully delivered.' : 'Email delivery timed out or failed.'),
+				inviteUrl: res.inviteUrl,
+				fullName: inviteName.trim(),
+				role: inviteRole,
+				email: inviteEmail.trim()
+			});
+
+			if (res.emailSent) {
+				setSuccessMessage(`Invitation email sent to ${inviteEmail.trim()} (${inviteRole}).`);
+			}
 			setInviteName('');
 			setInviteEmail('');
 			setInviteRole('Instructor');
@@ -126,13 +168,42 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 	};
 
 	// Handle Resending Invite
-	const handleResendInvite = async (invitationId: string, email: string) => {
+	const handleResendInvite = async (invitationId: string, email: string, fullName: string) => {
 		try {
-			await resendStaffInvitation(invitationId, apiKey);
-			setSuccessMessage(`Fresh invitation email resent to ${email}.`);
+			const res = await resendStaffInvitation(invitationId, apiKey);
+			setInviteResultModal({
+				isOpen: true,
+				emailSent: res.emailSent,
+				emailStatusMessage: res.emailStatusMessage || (res.emailSent ? 'Fresh invitation email dispatched.' : 'Email delivery timed out or failed.'),
+				inviteUrl: res.inviteUrl,
+				fullName: fullName,
+				role: 'Staff',
+				email: email
+			});
+
+			if (res.emailSent) {
+				setSuccessMessage(`Fresh invitation email resent to ${email}.`);
+			}
 			await loadStaff();
 		} catch (err: any) {
 			alert(err.message || 'Failed to resend invitation.');
+		}
+	};
+
+	// Handle Delete Pending Invitation
+	const handleConfirmDeleteInvite = async () => {
+		if (!deleteInviteTarget?.invitationId) return;
+
+		setIsDeletingInvite(true);
+		try {
+			await deleteStaffInvitation(deleteInviteTarget.invitationId, apiKey);
+			setSuccessMessage(`Invitation for ${deleteInviteTarget.fullName} (${deleteInviteTarget.email}) deleted.`);
+			setDeleteInviteTarget(null);
+			await loadStaff();
+		} catch (err: any) {
+			alert(err.message || 'Failed to delete invitation.');
+		} finally {
+			setIsDeletingInvite(false);
 		}
 	};
 
@@ -424,10 +495,23 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 													{/* Status Badge */}
 													<td className="py-3.5 px-4">
 														{isPending ? (
-															<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-orange-950/40 text-orange-300 border border-orange-800/40">
-																<Clock className="h-3 w-3" />
-																Invite Pending
-															</span>
+															<div className="space-y-1">
+																<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-orange-950/40 text-orange-300 border border-orange-800/40">
+																	<Clock className="h-3 w-3" />
+																	Invite Pending
+																</span>
+																{s.emailDeliveryStatus === 'Sent' ? (
+																	<div className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+																		<MailCheck className="h-3 w-3" />
+																		Email Sent
+																	</div>
+																) : s.emailDeliveryStatus === 'Failed' ? (
+																	<div className="flex items-center gap-1 text-[10px] text-amber-400 font-medium" title={s.emailDeliveryError || 'Email delivery failed'}>
+																		<MailX className="h-3 w-3" />
+																		Email Undelivered
+																	</div>
+																) : null}
+															</div>
 														) : isExpired ? (
 															<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-950/40 text-red-300 border border-red-800/40">
 																<AlertCircle className="h-3 w-3" />
@@ -469,19 +553,32 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 														)}
 													</td>
 
-													{/* Access / Resend Actions */}
+													{/* Access / Resend / Delete Actions */}
 													<td className="py-3.5 px-4 sm:px-6 text-right">
 														<div className="flex items-center justify-end gap-1.5">
 															{(isPending || isExpired) && s.invitationId && (
-																<Button
-																	variant="outline"
-																	size="sm"
-																	onClick={() => handleResendInvite(s.invitationId!, s.email)}
-																	className="text-xs h-7 px-2.5 border-orange-800/60 bg-orange-950/30 text-orange-300 hover:bg-orange-900/50 cursor-pointer flex items-center gap-1"
-																>
-																	<Send className="h-3 w-3" />
-																	Resend Invite
-																</Button>
+																<>
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		onClick={() => handleResendInvite(s.invitationId!, s.email, s.fullName)}
+																		className="text-xs h-7 px-2.5 border-orange-800/60 bg-orange-950/30 text-orange-300 hover:bg-orange-900/50 cursor-pointer flex items-center gap-1"
+																		title="Resend invitation email"
+																	>
+																		<Send className="h-3 w-3" />
+																		Resend
+																	</Button>
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		onClick={() => setDeleteInviteTarget(s)}
+																		className="text-xs h-7 px-2 border-red-900/60 bg-red-950/20 text-red-400 hover:bg-red-950/50 cursor-pointer flex items-center gap-1"
+																		title="Delete pending invitation"
+																	>
+																		<Trash2 className="h-3 w-3" />
+																		Delete
+																	</Button>
+																</>
 															)}
 
 															{!isPending && !isExpired && (
@@ -736,6 +833,126 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 								: statusTarget?.isActive
 								? 'Confirm Suspension'
 								: 'Confirm Reactivation'}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Invite Result & Direct Link Modal */}
+			<Dialog open={!!inviteResultModal} onOpenChange={(open) => !open && setInviteResultModal(null)}>
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-lg">
+					<DialogHeader className="space-y-2">
+						<div className="flex items-center gap-2">
+							{inviteResultModal?.emailSent ? (
+								<div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+									<CheckCircle2 className="h-5 w-5" />
+								</div>
+							) : (
+								<div className="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+									<AlertTriangle className="h-5 w-5" />
+								</div>
+							)}
+							<div>
+								<DialogTitle className="text-base font-bold text-white">
+									{inviteResultModal?.emailSent ? 'Invitation Email Dispatched' : 'Invitation Created (Email Failed)'}
+								</DialogTitle>
+								<p className="text-xs text-slate-400">
+									Recipient: <span className="text-white font-medium">{inviteResultModal?.fullName}</span> ({inviteResultModal?.email})
+								</p>
+							</div>
+						</div>
+					</DialogHeader>
+
+					<div className="space-y-4 py-2">
+						<Alert className={inviteResultModal?.emailSent ? 'border-emerald-800/60 bg-emerald-950/30 text-emerald-300' : 'border-amber-800/60 bg-amber-950/30 text-amber-300'}>
+							<AlertDescription className="text-xs leading-relaxed">
+								{inviteResultModal?.emailStatusMessage}
+							</AlertDescription>
+						</Alert>
+
+						{inviteResultModal?.inviteUrl && (
+							<div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+								<div className="flex items-center justify-between">
+									<span className="text-xs font-semibold text-slate-300">Direct Activation Link</span>
+									<span className="text-[10px] text-slate-500">Valid for 48 hours</span>
+								</div>
+								<p className="text-[11px] text-slate-400">
+									You can copy this link and send it directly via WhatsApp, SMS, or Slack:
+								</p>
+								<div className="flex items-center gap-2 mt-2">
+									<Input
+										readOnly
+										value={inviteResultModal.inviteUrl}
+										className="border-slate-800 bg-slate-950 text-xs font-mono text-slate-300 h-9 select-all"
+									/>
+									<Button
+										type="button"
+										size="sm"
+										onClick={() => copyToClipboard(inviteResultModal.inviteUrl)}
+										className="h-9 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+									>
+										{copiedLink ? (
+											<>
+												<Check className="h-3.5 w-3.5 text-white" />
+												Copied!
+											</>
+										) : (
+											<>
+												<Copy className="h-3.5 w-3.5" />
+												Copy Link
+											</>
+										)}
+									</Button>
+								</div>
+							</div>
+						)}
+					</div>
+
+					<div className="flex justify-end pt-2 border-t border-slate-800">
+						<Button
+							size="sm"
+							onClick={() => setInviteResultModal(null)}
+							className="bg-slate-800 hover:bg-slate-700 text-white text-xs cursor-pointer"
+						>
+							Close
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Pending Invitation Modal */}
+			<Dialog open={!!deleteInviteTarget} onOpenChange={(open) => !open && !isDeletingInvite && setDeleteInviteTarget(null)}>
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+					<DialogHeader>
+						<DialogTitle className="text-base font-bold text-white flex items-center gap-2">
+							<Trash2 className="h-5 w-5 text-red-500" />
+							Delete Pending Invitation
+						</DialogTitle>
+						<DialogDescription className="text-slate-400 text-xs mt-1">
+							Are you sure you want to delete the pending invitation for{' '}
+							<span className="text-white font-semibold">{deleteInviteTarget?.fullName}</span> (
+							<span className="font-mono text-slate-300">{deleteInviteTarget?.email}</span>)?
+							The activation link will be immediately invalidated.
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-800">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={isDeletingInvite}
+							onClick={() => setDeleteInviteTarget(null)}
+							className="border-slate-800 text-slate-300 text-xs cursor-pointer"
+						>
+							Cancel
+						</Button>
+						<Button
+							size="sm"
+							disabled={isDeletingInvite}
+							onClick={handleConfirmDeleteInvite}
+							className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold cursor-pointer"
+						>
+							{isDeletingInvite ? 'Deleting...' : 'Delete Invitation'}
 						</Button>
 					</div>
 				</DialogContent>
