@@ -4,6 +4,7 @@ import './globals.css'
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { AuthProvider } from '@/core/contexts/AuthContext';
+import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({
 	subsets: ['latin'],
@@ -152,6 +153,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					{children}
 					<Footer />
 				</AuthProvider>
+				<Analytics />
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
