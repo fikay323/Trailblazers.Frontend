@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
+	AlertCircle,
 	AlertTriangle,
 	Award,
 	BookOpen,
@@ -21,22 +22,35 @@ import {
 	CheckCircle2,
 	ChevronRight,
 	Clock,
+	Flame,
 	GraduationCap,
 	Lock,
+	MapPin,
+	Navigation,
 	Play,
 	RefreshCw,
 	ShieldAlert,
 	TrendingUp,
 	User
 } from 'lucide-react';
+import {
+	clockInToAttendance,
+	getStudentTodayStatus,
+	getCurrentGpsPosition,
+	StudentAttendanceStatsDto
+} from '@/core/services/attendanceService';
 
 export default function StudentDashboardPage() {
 	const router = useRouter();
 	const { user, token, isLoading: authLoading, logout, refreshUserProfile } = useAuth();
 
 	const [history, setHistory] = useState<StudentHistoryResponseDto | null>(null);
+	const [attendanceStats, setAttendanceStats] = useState<StudentAttendanceStatsDto | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [isClockingIn, setIsClockingIn] = useState(false);
+	const [clockInError, setClockInError] = useState<string | null>(null);
+	const [clockInSuccess, setClockInSuccess] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!authLoading && !user) {
@@ -55,12 +69,57 @@ export default function StudentDashboardPage() {
 		setError(null);
 		try {
 			await refreshUserProfile();
-			const data = await getMyExamHistory(user.email, token || undefined);
-			setHistory(data);
+			const [examData, attData] = await Promise.allSettled([
+				getMyExamHistory(user.email, token || undefined),
+				getStudentTodayStatus(token || undefined)
+			]);
+
+			if (examData.status === 'fulfilled') {
+				setHistory(examData.value);
+			} else {
+				console.error('Failed to load exam history:', examData.reason);
+			}
+
+			if (attData.status === 'fulfilled') {
+				setAttendanceStats(attData.value);
+			} else {
+				console.error('Failed to load attendance status:', attData.reason);
+			}
 		} catch (err: any) {
 			setError(err.message || 'Failed to load dashboard data.');
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleClockIn = async () => {
+		setIsClockingIn(true);
+		setClockInError(null);
+		setClockInSuccess(null);
+
+		try {
+			const position = await getCurrentGpsPosition();
+			const record = await clockInToAttendance(
+				{
+					latitude: position.latitude,
+					longitude: position.longitude,
+					accuracyMeters: position.accuracyMeters,
+					clientTimestamp: position.clientTimestamp
+				},
+				token || undefined
+			);
+
+			setClockInSuccess(
+				`Successfully checked in as ${record.status}! Arrived at ${new Date(record.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${Math.round(record.distanceMeters ?? 0)}m from campus).`
+			);
+
+			// Refresh attendance stats
+			const freshStats = await getStudentTodayStatus(token || undefined);
+			setAttendanceStats(freshStats);
+		} catch (err: any) {
+			setClockInError(err.message || 'Failed to verify attendance. Please ensure you are inside the tutorial center.');
+		} finally {
+			setIsClockingIn(false);
 		}
 	};
 
@@ -134,6 +193,147 @@ export default function StudentDashboardPage() {
 						</AlertDescription>
 					</Alert>
 				)}
+
+				{/* Tutorial Center Physical Attendance Card */}
+				<Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm overflow-hidden relative shadow-lg">
+					<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-500" />
+					<CardHeader className="pb-3 pt-5">
+						<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+							<div className="flex items-center gap-3">
+								<div className="h-10 w-10 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center shrink-0">
+									<MapPin className="h-5 w-5" />
+								</div>
+								<div>
+									<CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+										Tutorial Center Attendance
+										{attendanceStats?.hasClockedInToday ? (
+											<span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+												attendanceStats.todayRecord?.status === 'Present'
+													? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+													: attendanceStats.todayRecord?.status === 'Late'
+													? 'bg-amber-950 text-amber-400 border border-amber-800'
+													: 'bg-cyan-950 text-cyan-400 border border-cyan-800'
+											}`}>
+												<CheckCircle2 className="h-3.5 w-3.5" />
+												{attendanceStats.todayRecord?.status || 'Clocked In'}
+											</span>
+										) : (
+											<span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+												Not Clocked In Today
+											</span>
+										)}
+									</CardTitle>
+									<CardDescription className="text-xs text-slate-400 mt-0.5">
+										{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} • Physical presence verified via campus geofence.
+									</CardDescription>
+								</div>
+							</div>
+
+							{/* Streak and Attendance stats pills */}
+							<div className="flex items-center gap-2">
+								<div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-950/40 border border-orange-800/40 text-orange-300 text-xs font-semibold">
+									<Flame className="h-3.5 w-3.5 text-orange-400" />
+									<span>{attendanceStats?.punctualStreak ?? 0} Day Streak</span>
+								</div>
+								<div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800/60 border border-slate-700 text-slate-300 text-xs">
+									<Calendar className="h-3.5 w-3.5 text-slate-400" />
+									<span>{attendanceStats?.attendanceRate ?? 100}% Rate</span>
+								</div>
+							</div>
+						</div>
+					</CardHeader>
+
+					<CardContent className="space-y-4 pt-1 pb-5">
+						{/* Success Message Banner */}
+						{clockInSuccess && (
+							<div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-200 text-xs sm:text-sm flex items-start gap-2.5">
+								<CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+								<div className="flex-1">{clockInSuccess}</div>
+							</div>
+						)}
+
+						{/* Error Message Banner */}
+						{clockInError && (
+							<div className="p-3 rounded-lg bg-red-950/40 border border-red-800/60 text-red-200 text-xs sm:text-sm flex items-start justify-between gap-2.5">
+								<div className="flex items-start gap-2">
+									<AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+									<span>{clockInError}</span>
+								</div>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setClockInError(null)}
+									className="h-6 px-2 text-xs text-red-300 hover:text-white hover:bg-red-900/50"
+								>
+									Dismiss
+								</Button>
+							</div>
+						)}
+
+						{attendanceStats?.hasClockedInToday ? (
+							<div className="rounded-lg bg-slate-950/60 border border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
+								<div className="space-y-1">
+									<div className="font-semibold text-white flex items-center gap-2">
+										<CheckCircle2 className="h-4 w-4 text-emerald-400" />
+										Check-in Recorded for Today
+									</div>
+									<p className="text-slate-400 text-xs">
+										Clocked in at{' '}
+										<span className="font-mono text-slate-200 font-semibold">
+											{attendanceStats.todayRecord?.clockInTime
+												? new Date(attendanceStats.todayRecord.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+												: 'Recorded'}
+										</span>
+										{attendanceStats.todayRecord?.distanceMeters != null && (
+											<> • Distance: <span className="text-slate-200 font-mono">{Math.round(attendanceStats.todayRecord.distanceMeters)}m</span> from campus center</>
+										)}
+										{attendanceStats.todayRecord?.accuracyMeters != null && (
+											<> • GPS Accuracy: <span className="text-slate-200 font-mono">±{Math.round(attendanceStats.todayRecord.accuracyMeters)}m</span></>
+										)}
+										{attendanceStats.todayRecord?.verificationType === 'ManualStaff' && (
+											<> • Manually verified by instructor {attendanceStats.todayRecord.markedByUserName ? `(${attendanceStats.todayRecord.markedByUserName})` : ''}</>
+										)}
+									</p>
+								</div>
+								<div className="text-right">
+									<span className="text-xs text-emerald-400 font-semibold bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/60">
+										Attendance Secured
+									</span>
+								</div>
+							</div>
+						) : (
+							<div className="rounded-lg bg-slate-950/40 border border-slate-800/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+								<div className="space-y-1">
+									<div className="font-semibold text-white text-sm flex items-center gap-2">
+										<Navigation className="h-4 w-4 text-orange-400 animate-pulse" />
+										Are you currently inside the tutorial center?
+									</div>
+									<p className="text-xs text-slate-400 max-w-xl">
+										Clock in using your device&apos;s GPS to mark your daily physical arrival. Your device must be physically within the academy premises to verify your presence.
+									</p>
+								</div>
+
+								<Button
+									onClick={handleClockIn}
+									disabled={isClockingIn}
+									className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-5 shadow-lg shadow-orange-950/40 cursor-pointer shrink-0"
+								>
+									{isClockingIn ? (
+										<>
+											<RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+											Verifying Location...
+										</>
+									) : (
+										<>
+											<MapPin className="mr-2 h-4 w-4 fill-current" />
+											Clock In to Tutorial Center
+										</>
+									)}
+								</Button>
+							</div>
+						)}
+					</CardContent>
+				</Card>
 
 				{/* KPI Cards */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

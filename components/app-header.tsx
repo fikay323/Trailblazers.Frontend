@@ -16,7 +16,8 @@ import {
 	X,
 	ShieldCheck,
 	CheckCircle2,
-	AlertCircle
+	AlertCircle,
+	CalendarCheck
 } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 
@@ -73,6 +74,12 @@ export function AppHeader() {
 			label: 'Students Directory',
 			icon: Users,
 			isActive: pathname.startsWith('/admin') && currentTab === 'students'
+		},
+		{
+			href: '/admin/submissions?tab=attendance',
+			label: 'Attendance',
+			icon: CalendarCheck,
+			isActive: pathname.startsWith('/admin') && currentTab === 'attendance'
 		},
 		{
 			href: '/admin/submissions?tab=questions',

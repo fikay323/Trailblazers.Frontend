@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck } from 'lucide-react';
+import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,9 @@ import { StudentManagementView } from '@/features/admin-dashboard/components/Stu
 import { QuestionBankView } from '@/features/admin-dashboard/components/QuestionBankView';
 import { ContactSubmissionsView } from '@/features/admin-dashboard/components/ContactSubmissionsView';
 import { RegistrationSubmissionsView } from '@/features/admin-dashboard/components/RegistrationSubmissionsView';
+import { AttendanceManagementView } from '@/features/admin-dashboard/components/AttendanceManagementView';
 
-type AdminTab = 'students' | 'questions' | 'registration' | 'contact';
+type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance';
 
 function SubmissionsDashboardContent() {
 	const router = useRouter();
@@ -29,7 +30,7 @@ function SubmissionsDashboardContent() {
 	// Active tab derived from query parameter ?tab (defaults to 'students')
 	const tabParam = searchParams.get('tab') as AdminTab | null;
 	const activeTab: AdminTab =
-		tabParam && ['students', 'questions', 'registration', 'contact'].includes(tabParam)
+		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance'].includes(tabParam)
 			? tabParam
 			: 'students';
 
@@ -156,6 +157,12 @@ function SubmissionsDashboardContent() {
 							subtitle: 'Manage and respond to public inquiries and parent messages.',
 							icon: Mail,
 							color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20'
+						},
+						attendance: {
+							title: 'Daily Attendance Register',
+							subtitle: 'Verify student physical arrival, lateness, and staff overrides.',
+							icon: CalendarCheck,
+							color: 'text-amber-400 bg-amber-500/10 border-amber-500/20'
 						}
 					};
 
@@ -192,6 +199,7 @@ function SubmissionsDashboardContent() {
 					{activeTab === 'questions' && <QuestionBankView apiKey={apiKey} />}
 					{activeTab === 'registration' && <RegistrationSubmissionsView apiKey={apiKey} />}
 					{activeTab === 'contact' && <ContactSubmissionsView apiKey={apiKey} />}
+					{activeTab === 'attendance' && <AttendanceManagementView apiKey={apiKey} />}
 				</div>
 			</div>
 		</div>
