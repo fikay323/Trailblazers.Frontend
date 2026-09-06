@@ -13,8 +13,9 @@ import { QuestionBankView } from '@/features/admin-dashboard/components/Question
 import { ContactSubmissionsView } from '@/features/admin-dashboard/components/ContactSubmissionsView';
 import { RegistrationSubmissionsView } from '@/features/admin-dashboard/components/RegistrationSubmissionsView';
 import { AttendanceManagementView } from '@/features/admin-dashboard/components/AttendanceManagementView';
+import { StaffManagementView } from '@/features/admin-dashboard/components/StaffManagementView';
 
-type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance';
+type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff';
 
 function SubmissionsDashboardContent() {
 	const router = useRouter();
@@ -30,7 +31,7 @@ function SubmissionsDashboardContent() {
 	// Active tab derived from query parameter ?tab (defaults to 'students')
 	const tabParam = searchParams.get('tab') as AdminTab | null;
 	const activeTab: AdminTab =
-		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance'].includes(tabParam)
+		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff'].includes(tabParam)
 			? tabParam
 			: 'students';
 
@@ -163,6 +164,12 @@ function SubmissionsDashboardContent() {
 							subtitle: 'Verify student physical arrival, lateness, and staff overrides.',
 							icon: CalendarCheck,
 							color: 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+						},
+						staff: {
+							title: 'Staff & Instructor Directory',
+							subtitle: 'Invite faculty members, manage roles, and review administrative access privileges.',
+							icon: ShieldCheck,
+							color: 'text-purple-400 bg-purple-500/10 border-purple-500/20'
 						}
 					};
 
@@ -200,6 +207,7 @@ function SubmissionsDashboardContent() {
 					{activeTab === 'registration' && <RegistrationSubmissionsView apiKey={apiKey} />}
 					{activeTab === 'contact' && <ContactSubmissionsView apiKey={apiKey} />}
 					{activeTab === 'attendance' && <AttendanceManagementView apiKey={apiKey} />}
+					{activeTab === 'staff' && <StaffManagementView apiKey={apiKey} />}
 				</div>
 			</div>
 		</div>

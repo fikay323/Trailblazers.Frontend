@@ -26,6 +26,7 @@ interface AuthContextType {
 	register: (payload: RegisterPayload) => Promise<UserDto>;
 	logout: () => void;
 	refreshUserProfile: () => Promise<void>;
+	setSession: (auth: AuthResponseDto) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -148,7 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				login,
 				register,
 				logout,
-				refreshUserProfile
+				refreshUserProfile,
+				setSession: saveAuth
 			}}
 		>
 			{children}

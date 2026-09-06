@@ -75,6 +75,12 @@ export function AppHeader() {
 			icon: Users,
 			isActive: pathname.startsWith('/admin') && currentTab === 'students'
 		},
+		...(user?.role === 'Admin' ? [{
+			href: '/admin/submissions?tab=staff',
+			label: 'Staff Directory',
+			icon: ShieldCheck,
+			isActive: pathname.startsWith('/admin') && currentTab === 'staff'
+		}] : []),
 		{
 			href: '/admin/submissions?tab=attendance',
 			label: 'Attendance',
