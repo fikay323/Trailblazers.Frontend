@@ -1,9 +1,8 @@
-'use client';
-
 import * as React from 'react';
-import { Mail, Clock } from 'lucide-react';
+import { Mail, Clock, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export interface ContactSubmissionDTO {
 	id: string;
@@ -17,6 +16,7 @@ export interface ContactSubmissionDTO {
 interface ContactTableProps {
 	items: ContactSubmissionDTO[];
 	onSelect: (item: ContactSubmissionDTO) => void;
+	onDelete?: (item: ContactSubmissionDTO) => void;
 }
 
 export function ContactTable({ items, onSelect }: ContactTableProps) {
@@ -39,6 +39,7 @@ export function ContactTable({ items, onSelect }: ContactTableProps) {
 						<TableHead className="text-slate-400 font-semibold">Type</TableHead>
 						<TableHead className="text-slate-400 font-semibold hidden md:table-cell">Message Preview</TableHead>
 						<TableHead className="text-slate-400 font-semibold">Date</TableHead>
+						<TableHead className="text-right text-slate-400 font-semibold">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -72,6 +73,22 @@ export function ContactTable({ items, onSelect }: ContactTableProps) {
 										year: 'numeric'
 									})}
 								</div>
+							</TableCell>
+							<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+								{onDelete && (
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={(e) => {
+											e.stopPropagation();
+											onDelete(item);
+										}}
+										className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-950/40 cursor-pointer"
+										title="Delete inquiry"
+									>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								)}
 							</TableCell>
 						</TableRow>
 					))}

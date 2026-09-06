@@ -108,3 +108,18 @@ export async function getSubmissions(params: GetSubmissionsParams, apiKey: strin
 
 	return response.json();
 }
+
+export async function deleteSubmission(id: string, apiKey: string): Promise<{ message: string }> {
+	const response = await fetch(`${getApiUrl()}/api/submissions/${id}`, {
+		method: 'DELETE',
+		headers: getAuthHeaders(apiKey),
+		credentials: 'include'
+	});
+
+	if (!response.ok) {
+		const errData = await response.json().catch(() => ({}));
+		throw new Error(errData.error || `Server error: ${response.statusText}`);
+	}
+
+	return response.json();
+}

@@ -1,9 +1,8 @@
-'use client';
-
 import * as React from 'react';
-import { Mail, Clock, Phone, BookOpen } from 'lucide-react';
+import { Mail, Clock, Phone, BookOpen, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export interface RegistrationSubmissionDTO {
 	id: string;
@@ -17,6 +16,7 @@ export interface RegistrationSubmissionDTO {
 interface RegistrationTableProps {
 	items: RegistrationSubmissionDTO[];
 	onSelect: (item: RegistrationSubmissionDTO) => void;
+	onDelete?: (item: RegistrationSubmissionDTO) => void;
 }
 
 export function RegistrationTable({ items, onSelect }: RegistrationTableProps) {
@@ -40,6 +40,7 @@ export function RegistrationTable({ items, onSelect }: RegistrationTableProps) {
 						<TableHead className="text-slate-400 font-semibold">Registered Phone</TableHead>
 						<TableHead className="text-slate-400 font-semibold">Target Exam</TableHead>
 						<TableHead className="text-slate-400 font-semibold">Date of Entry</TableHead>
+						<TableHead className="text-right text-slate-400 font-semibold">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -79,6 +80,22 @@ export function RegistrationTable({ items, onSelect }: RegistrationTableProps) {
 										year: 'numeric'
 									})}
 								</div>
+							</TableCell>
+							<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+								{onDelete && (
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={(e) => {
+											e.stopPropagation();
+											onDelete(item);
+										}}
+										className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-950/40 cursor-pointer"
+										title="Delete registration"
+									>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								)}
 							</TableCell>
 						</TableRow>
 					))}

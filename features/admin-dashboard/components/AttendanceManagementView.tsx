@@ -216,6 +216,14 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 		document.body.removeChild(link);
 	};
 
+function normalizeAttendanceStatus(val: any): AttendanceStatus {
+	if (val === 1 || val === 'Present') return 'Present';
+	if (val === 2 || val === 'Late') return 'Late';
+	if (val === 3 || val === 'Absent') return 'Absent';
+	if (val === 4 || val === 'Excused') return 'Excused';
+	return (val as AttendanceStatus) || 'Absent';
+}
+
 	// Filtered students list
 	const allStudents = roster?.students || [];
 	const filteredStudents = allStudents.filter((s) => {
@@ -224,10 +232,11 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 			s.studentEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			(s.phoneNumber && s.phoneNumber.includes(searchTerm));
 
-		if (statusFilter === 'present') return matchSearch && s.status === 'Present';
-		if (statusFilter === 'late') return matchSearch && s.status === 'Late';
-		if (statusFilter === 'absent') return matchSearch && s.status === 'Absent';
-		if (statusFilter === 'excused') return matchSearch && s.status === 'Excused';
+		const sStatus = normalizeAttendanceStatus(s.status);
+		if (statusFilter === 'present') return matchSearch && sStatus === 'Present';
+		if (statusFilter === 'late') return matchSearch && sStatus === 'Late';
+		if (statusFilter === 'absent') return matchSearch && sStatus === 'Absent';
+		if (statusFilter === 'excused') return matchSearch && sStatus === 'Excused';
 		return matchSearch;
 	});
 
@@ -510,10 +519,11 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 									</thead>
 									<tbody className="divide-y divide-slate-800/60">
 										{paginatedStudents.map((s) => {
-											const isPresent = s.status === 'Present';
-											const isLate = s.status === 'Late';
-											const isAbsent = s.status === 'Absent';
-											const isExcused = s.status === 'Excused';
+											const status = normalizeAttendanceStatus(s.status);
+											const isPresent = status === 'Present';
+											const isLate = status === 'Late';
+											const isAbsent = status === 'Absent';
+											const isExcused = status === 'Excused';
 
 											return (
 												<tr key={s.studentId} className="hover:bg-slate-800/30 transition-colors">
@@ -538,7 +548,7 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 																	: 'bg-red-950 text-red-300 border-red-800'
 															}`}
 														>
-															{s.status}
+															{status}
 														</span>
 													</td>
 

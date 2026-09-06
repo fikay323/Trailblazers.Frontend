@@ -1,9 +1,7 @@
-'use client';
-
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { getSubmissions } from '@/core/services/submissionsService';
-import { ChevronLeft, ChevronRight, MessageSquare, Mail, Clock, User, Phone, BookOpen } from 'lucide-react';
+import { getSubmissions, deleteSubmission } from '@/core/services/submissionsService';
+import { ChevronLeft, ChevronRight, MessageSquare, Mail, Clock, User, Phone, BookOpen, Trash2, AlertTriangle } from 'lucide-react';
 import { FilterBar } from '@/components/ui/FilterBar';
 import { RegistrationTable, RegistrationSubmissionDTO } from './RegistrationTable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +33,25 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 
 	// Modal State
 	const [selectedItem, setSelectedItem] = useState<RegistrationSubmissionDTO | null>(null);
+	const [itemToDelete, setItemToDelete] = useState<RegistrationSubmissionDTO | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const handleConfirmDelete = async () => {
+		if (!itemToDelete) return;
+		setIsDeleting(true);
+		try {
+			await deleteSubmission(itemToDelete.id, apiKey);
+			if (selectedItem?.id === itemToDelete.id) {
+				setSelectedItem(null);
+			}
+			setItemToDelete(null);
+			await fetchRegistrations();
+		} catch (err: any) {
+			alert(err.message || 'Failed to delete registration.');
+		} finally {
+			setIsDeleting(false);
+		}
+	};
 
 	const fetchRegistrations = async () => {
 		setIsLoading(true);
@@ -150,7 +167,7 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 				</Card>
 			) : (
 				<div className="space-y-4">
-					<RegistrationTable items={items} onSelect={setSelectedItem} />
+					<RegistrationTable items={items} onSelect={setSelectedItem} onDelete={setItemToDelete} />
 
 					{/* Pagination */}
 					<DataPagination
@@ -267,13 +284,59 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 								</div>
 							</div>
 
-							<div className="flex justify-end pt-2 border-t border-slate-800">
-								<Button onClick={() => setSelectedItem(null)} variant="outline" className="border-slate-800 text-slate-300">
+							<div className="flex justify-between items-center pt-3 border-t border-slate-800">
+								<Button
+									onClick={() => setItemToDelete(selectedItem)}
+									variant="outline"
+									size="sm"
+									className="border-red-900/60 text-red-400 hover:bg-red-950/60 hover:text-red-200 cursor-pointer flex items-center gap-1.5"
+								>
+									<Trash2 className="h-4 w-4" />
+									Delete Registration
+								</Button>
+								<Button onClick={() => setSelectedItem(null)} variant="outline" size="sm" className="border-slate-800 text-slate-300">
 									Close
 								</Button>
 							</div>
 						</>
 					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Confirmation Modal */}
+			<Dialog open={!!itemToDelete} onOpenChange={(open) => !open && !isDeleting && setItemToDelete(null)}>
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+					<DialogHeader className="space-y-2">
+						<div className="flex items-center gap-2 text-red-400">
+							<AlertTriangle className="h-5 w-5" />
+							<DialogTitle className="text-lg font-bold text-white">Delete Registration</DialogTitle>
+						</div>
+						<DialogDescription className="text-slate-400 text-sm leading-relaxed">
+							Are you sure you want to permanently delete the registration record for{' '}
+							<span className="text-white font-semibold">{itemToDelete?.name}</span> (
+							<span className="font-mono text-slate-300">{itemToDelete?.email}</span>)? This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-slate-800">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={isDeleting}
+							onClick={() => setItemToDelete(null)}
+							className="border-slate-800 text-slate-300 hover:bg-slate-900 cursor-pointer"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={isDeleting}
+							onClick={handleConfirmDelete}
+							className="bg-red-600 hover:bg-red-700 text-white font-semibold cursor-pointer"
+						>
+							{isDeleting ? 'Deleting...' : 'Delete Registration'}
+						</Button>
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>
