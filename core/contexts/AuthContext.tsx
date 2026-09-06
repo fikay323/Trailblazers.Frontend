@@ -11,6 +11,11 @@ import {
 	getCurrentUser,
 	logoutUser
 } from '../services/authService';
+import {
+	setSharedAuthCookie,
+	getSharedAuthCookie,
+	clearSharedAuthCookie
+} from '../utils/subdomain';
 
 interface AuthContextType {
 	user: UserDto | null;
@@ -35,13 +40,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 		if (storedToken && storedUser) {
 			try {
+				const parsedUser = JSON.parse(storedUser);
 				setToken(storedToken);
-				setUser(JSON.parse(storedUser));
+				setUser(parsedUser);
+				// Synchronize / refresh shared cookie
+				setSharedAuthCookie(storedToken, parsedUser);
+				setIsLoading(false);
+				return;
 			} catch (e) {
 				localStorage.removeItem('auth_token');
 				localStorage.removeItem('auth_user');
 			}
 		}
+
+		// Fallback: Check shared wildcard cookie across subdomains (Single Sign-On bridge)
+		const shared = getSharedAuthCookie();
+		if (shared && shared.token && shared.user) {
+			setToken(shared.token);
+			setUser(shared.user);
+			// Rehydrate current subdomain's localStorage
+			localStorage.setItem('auth_token', shared.token);
+			localStorage.setItem('auth_user', JSON.stringify(shared.user));
+			if (shared.user.role === 'Admin' || shared.user.role === 'Instructor') {
+				localStorage.setItem('admin_api_key', 'trailblazers-secret-key');
+			}
+		}
+
 		setIsLoading(false);
 	}, []);
 
@@ -54,6 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		if (auth.user.role === 'Admin' || auth.user.role === 'Instructor') {
 			localStorage.setItem('admin_api_key', 'trailblazers-secret-key');
 		}
+		// Write shared wildcard cookie for cross-subdomain SSO
+		setSharedAuthCookie(auth.token, auth.user);
 	};
 
 	const login = async (payload: LoginPayload): Promise<UserDto> => {
@@ -70,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const logout = () => {
 		logoutUser();
+		clearSharedAuthCookie();
 		setUser(null);
 		setToken(null);
 		localStorage.removeItem('auth_token');
@@ -87,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			const updated = await getCurrentUser(token);
 			setUser(updated);
 			localStorage.setItem('auth_user', JSON.stringify(updated));
+			setSharedAuthCookie(token, updated);
 		} catch (err) {
 			console.error('Failed to refresh profile:', err);
 		}
