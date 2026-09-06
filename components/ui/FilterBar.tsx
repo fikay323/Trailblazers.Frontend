@@ -39,26 +39,26 @@ export function FilterBar({
 	showClear
 }: FilterBarProps) {
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+		<div className="flex flex-col gap-3">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 				{/* Search */}
-				<div className="space-y-2">
-					<label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Search</label>
+				<div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
+					<label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Search</label>
 					<div className="relative">
 						<Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
 						<Input
 							placeholder={searchPlaceholder}
 							value={searchTerm}
 							onChange={(e) => onSearchChange(e.target.value)}
-							className="pl-9 border-slate-800 bg-slate-950 text-slate-100 placeholder-slate-500"
+							className="pl-9 border-slate-800 bg-slate-950 text-slate-100 placeholder-slate-500 h-9"
 						/>
 					</div>
 				</div>
 
 				{/* Dynamic Select Dropdown */}
 				{onSelectChange && selectOptions && (
-					<div className="space-y-2">
-						<label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+					<div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
+						<label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
 							{selectPlaceholder}
 						</label>
 						<select
@@ -76,29 +76,27 @@ export function FilterBar({
 					</div>
 				)}
 
-				{/* Start Date */}
+				{/* Date Range - Compact Side-by-Side on Mobile */}
 				{showDateRange && (
-					<div className="space-y-2">
-						<label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Start Date</label>
-						<Input
-							type="date"
-							value={startDate}
-							onChange={(e) => onStartDateChange(e.target.value)}
-							className="border-slate-800 bg-slate-950 text-slate-100"
-						/>
-					</div>
-				)}
-
-				{/* End Date */}
-				{showDateRange && (
-					<div className="space-y-2">
-						<label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">End Date</label>
-						<Input
-							type="date"
-							value={endDate}
-							onChange={(e) => onEndDateChange(e.target.value)}
-							className="border-slate-800 bg-slate-950 text-slate-100"
-						/>
+					<div className="grid grid-cols-2 gap-2 col-span-1 sm:col-span-2 lg:col-span-2">
+						<div className="space-y-1.5">
+							<label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Start Date</label>
+							<Input
+								type="date"
+								value={startDate}
+								onChange={(e) => onStartDateChange(e.target.value)}
+								className="border-slate-800 bg-slate-950 text-slate-100 h-9 text-xs"
+							/>
+						</div>
+						<div className="space-y-1.5">
+							<label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">End Date</label>
+							<Input
+								type="date"
+								value={endDate}
+								onChange={(e) => onEndDateChange(e.target.value)}
+								className="border-slate-800 bg-slate-950 text-slate-100 h-9 text-xs"
+							/>
+						</div>
 					</div>
 				)}
 			</div>

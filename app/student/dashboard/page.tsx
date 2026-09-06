@@ -96,7 +96,7 @@ export default function StudentDashboardPage() {
 						</div>
 					</div>
 
-					<div className="flex items-center gap-3">
+					<div className="flex items-center justify-end sm:justify-start gap-3 w-full sm:w-auto">
 						<Button
 							variant="outline"
 							size="sm"

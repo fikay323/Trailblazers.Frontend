@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
 	LayoutDashboard,
 	GraduationCap,
@@ -22,6 +22,8 @@ import { useAuth } from '@/core/contexts/AuthContext';
 
 export function AppHeader() {
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const currentTab = searchParams.get('tab') || 'students';
 	const { user, logout } = useAuth();
 	const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -49,25 +51,25 @@ export function AppHeader() {
 			href: '/admin/submissions?tab=students',
 			label: 'Students Directory',
 			icon: Users,
-			isActive: pathname === '/admin/submissions'
+			isActive: pathname.startsWith('/admin') && currentTab === 'students'
 		},
 		{
 			href: '/admin/submissions?tab=questions',
 			label: 'Question Bank',
 			icon: BookOpen,
-			isActive: false
+			isActive: pathname.startsWith('/admin') && currentTab === 'questions'
 		},
 		{
 			href: '/admin/submissions?tab=registration',
 			label: 'Registrations',
 			icon: FileText,
-			isActive: false
+			isActive: pathname.startsWith('/admin') && currentTab === 'registration'
 		},
 		{
 			href: '/admin/submissions?tab=contact',
 			label: 'Inquiries',
 			icon: Mail,
-			isActive: false
+			isActive: pathname.startsWith('/admin') && currentTab === 'contact'
 		}
 	];
 

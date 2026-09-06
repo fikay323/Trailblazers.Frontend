@@ -130,74 +130,90 @@ function SubmissionsDashboardContent() {
 	return (
 		<div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-7xl mx-auto space-y-8">
-				{/* Header */}
-				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6">
-					<div>
-						<div className="flex items-center gap-2">
-							<span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-orange-600/20 text-orange-400 border border-orange-500/30">
-								{user?.role || 'Admin'}
-							</span>
-							<h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-								Academy Management Portal
-							</h1>
+				{/* Streamlined Dynamic Section Header */}
+				{(() => {
+					const sectionMeta: Record<AdminTab, { title: string; subtitle: string; icon: any; color: string }> = {
+						students: {
+							title: 'Students Directory & Status',
+							subtitle: 'Manage student accounts, verify physical fee payments, and inspect past exam attempts.',
+							icon: Users,
+							color: 'text-orange-400 bg-orange-500/10 border-orange-500/20'
+						},
+						questions: {
+							title: 'Question Bank & Quizzes',
+							subtitle: 'Oversee question repository, configure subject question banks, and create custom exam questions.',
+							icon: BookOpen,
+							color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+						},
+						registration: {
+							title: 'Course Registrations',
+							subtitle: 'Review student program enrollment submissions and contact details.',
+							icon: UserPlus,
+							color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20'
+						},
+						contact: {
+							title: 'Contact Inquiries',
+							subtitle: 'Manage and respond to public inquiries and parent messages.',
+							icon: Mail,
+							color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20'
+						}
+					};
+
+					const currentMeta = sectionMeta[activeTab];
+					const SectionIcon = currentMeta.icon;
+
+					return (
+						<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+							<div className="flex items-center gap-3.5">
+								<div className={`h-11 w-11 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${currentMeta.color}`}>
+									<SectionIcon className="h-5 w-5" />
+								</div>
+								<div>
+									<div className="flex items-center gap-2">
+										<h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+											{currentMeta.title}
+										</h1>
+										<span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-slate-900 text-slate-300 border border-slate-800">
+											{user?.role || 'Staff'}
+										</span>
+									</div>
+									<p className="text-xs sm:text-sm text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+										{currentMeta.subtitle}
+									</p>
+								</div>
+							</div>
+
+							{/* Quick Mobile Navigation Pills: Instant thumb-friendly switching on mobile */}
+							<div className="flex sm:hidden items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+								{(['students', 'questions', 'registration', 'contact'] as AdminTab[]).map((tab) => {
+									const meta = sectionMeta[tab];
+									const isCurrent = activeTab === tab;
+									const TabIcon = meta.icon;
+									const shortLabels: Record<AdminTab, string> = {
+										students: 'Students',
+										questions: 'Questions',
+										registration: 'Registrations',
+										contact: 'Inquiries'
+									};
+									return (
+										<button
+											key={tab}
+											onClick={() => switchTab(tab)}
+											className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+												isCurrent
+													? 'bg-orange-600 text-white shadow-sm'
+													: 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+											}`}
+										>
+											<TabIcon className="h-3.5 w-3.5" />
+											<span>{shortLabels[tab]}</span>
+										</button>
+									);
+								})}
+							</div>
 						</div>
-						<p className="text-sm text-slate-400 mt-1">
-							Manage student accounts & status, oversee question bank, review test histories, and view submissions.
-						</p>
-					</div>
-					<div className="flex items-center gap-3">
-						<Button className="cursor-pointer" variant="destructive" onClick={handleLogout} size="sm">
-							Log Out
-						</Button>
-					</div>
-				</div>
-
-				{/* Navigation Tabs */}
-				<div className="flex border-b border-slate-800 gap-2 sm:gap-6 overflow-x-auto">
-					<button
-						onClick={() => switchTab('students')}
-						className={`pb-3 text-xs sm:text-sm font-semibold transition-all border-b-2 outline-none cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === 'students'
-							? 'border-orange-500 text-orange-400'
-							: 'border-transparent text-slate-400 hover:text-slate-200'
-							}`}
-					>
-						<Users className="h-4 w-4" />
-						Students Directory & Status
-					</button>
-
-					<button
-						onClick={() => switchTab('questions')}
-						className={`pb-3 text-xs sm:text-sm font-semibold transition-all border-b-2 outline-none cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === 'questions'
-							? 'border-emerald-500 text-emerald-400'
-							: 'border-transparent text-slate-400 hover:text-slate-200'
-							}`}
-					>
-						<BookOpen className="h-4 w-4" />
-						Question Bank
-					</button>
-
-					<button
-						onClick={() => switchTab('registration')}
-						className={`pb-3 text-xs sm:text-sm font-semibold transition-all border-b-2 outline-none cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === 'registration'
-							? 'border-indigo-500 text-indigo-400'
-							: 'border-transparent text-slate-400 hover:text-slate-200'
-							}`}
-					>
-						<UserPlus className="h-4 w-4" />
-						Course Registrations
-					</button>
-
-					<button
-						onClick={() => switchTab('contact')}
-						className={`pb-3 text-xs sm:text-sm font-semibold transition-all border-b-2 outline-none cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === 'contact'
-							? 'border-cyan-500 text-cyan-400'
-							: 'border-transparent text-slate-400 hover:text-slate-200'
-							}`}
-					>
-						<Mail className="h-4 w-4" />
-						Contact Inquiries
-					</button>
-				</div>
+					);
+				})()}
 
 				{/* Feature View Render */}
 				<div className="mt-6">
