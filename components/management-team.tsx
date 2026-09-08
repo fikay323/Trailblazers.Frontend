@@ -102,7 +102,7 @@ const managementTeam: Member[] = [
 	{
 		name: "Boluwatife Abigeal Ayano",
 		title: "Educative Administrator",
-		image: "/images/boluwatife-ayano.jpeg",
+		image: "/images/boluwatife-ayano.jpg",
 		excerpt: "Boluwatife Abigeal Ayano is a dedicated educator and administrator committed to creating a positive learning environment and promoting academic excellence.",
 		paragraphs: [
 			"Boluwatife Abigeal Ayano is a dedicated educator and administrator with a Higher National Diploma (HND) from Osun State Polytechnic.",
