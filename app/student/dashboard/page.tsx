@@ -33,7 +33,9 @@ import {
 	RefreshCw,
 	ShieldAlert,
 	TrendingUp,
-	User
+	User,
+	Megaphone,
+	Bell
 } from 'lucide-react';
 import {
 	clockInToAttendance,
@@ -42,6 +44,10 @@ import {
 	getCurrentGpsPosition,
 	StudentAttendanceStatsDto
 } from '@/core/services/attendanceService';
+import {
+	getActiveAnnouncements,
+	AnnouncementDto
+} from '@/core/services/announcementService';
 
 export default function StudentDashboardPage() {
 	const router = useRouter();
@@ -49,6 +55,7 @@ export default function StudentDashboardPage() {
 
 	const [history, setHistory] = useState<StudentHistoryResponseDto | null>(null);
 	const [attendanceStats, setAttendanceStats] = useState<StudentAttendanceStatsDto | null>(null);
+	const [announcements, setAnnouncements] = useState<AnnouncementDto[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isClockingIn, setIsClockingIn] = useState(false);
@@ -75,9 +82,10 @@ export default function StudentDashboardPage() {
 		setError(null);
 		try {
 			await refreshUserProfile();
-			const [examData, attData] = await Promise.allSettled([
+			const [examData, attData, annData] = await Promise.allSettled([
 				getMyExamHistory(user.email, token || undefined),
-				getStudentTodayStatus(token || undefined)
+				getStudentTodayStatus(token || undefined),
+				getActiveAnnouncements('All', token || undefined)
 			]);
 
 			if (examData.status === 'fulfilled') {
@@ -90,6 +98,12 @@ export default function StudentDashboardPage() {
 				setAttendanceStats(attData.value);
 			} else {
 				console.error('Failed to load attendance status:', attData.reason);
+			}
+
+			if (annData.status === 'fulfilled') {
+				setAnnouncements(annData.value);
+			} else {
+				console.error('Failed to load announcements:', annData.reason);
 			}
 		} catch (err: any) {
 			setError(err.message || 'Failed to load dashboard data.');
@@ -393,6 +407,82 @@ export default function StudentDashboardPage() {
 							>
 								Dismiss
 							</button>
+						</div>
+					)}
+				</div>
+
+				{/* Academy Noticeboard Widget */}
+				<div className="rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 space-y-3">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2.5">
+							<div className="h-8 w-8 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center shrink-0">
+								<Megaphone className="h-4 w-4" />
+							</div>
+							<div>
+								<h2 className="text-sm sm:text-base font-semibold text-white">Academy Noticeboard</h2>
+								<p className="text-[11px] text-slate-400">Official announcements, holiday updates, and exam alerts</p>
+							</div>
+						</div>
+						{announcements.length > 0 && (
+							<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-950 text-orange-400 border border-orange-800">
+								{announcements.length} {announcements.length === 1 ? 'Notice' : 'Notices'}
+							</span>
+						)}
+					</div>
+
+					{isLoading ? (
+						<div className="space-y-2 pt-1">
+							<div className="h-16 rounded-lg bg-slate-800/40 animate-pulse" />
+							<div className="h-16 rounded-lg bg-slate-800/40 animate-pulse" />
+						</div>
+					) : announcements.length === 0 ? (
+						<div className="p-4 text-center text-xs text-slate-500 bg-slate-950/40 rounded-lg border border-slate-800/60">
+							No active announcements at this time. Check back later for academy updates.
+						</div>
+					) : (
+						<div className="space-y-2.5 pt-1">
+							{announcements.map((notice) => {
+								const priorityBadgeColor =
+									notice.priority === 'Urgent'
+										? 'bg-red-500/15 text-red-400 border-red-500/30'
+										: notice.priority === 'FeeReminder'
+										? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+										: notice.priority === 'Holiday'
+										? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+										: notice.priority === 'MockExamSchedule'
+										? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+										: 'bg-orange-500/15 text-orange-400 border-orange-500/30';
+
+								return (
+									<div
+										key={notice.id}
+										className="p-3.5 rounded-lg border border-slate-800/80 bg-slate-950/60 space-y-1.5"
+									>
+										<div className="flex flex-wrap items-center justify-between gap-1.5">
+											<div className="flex items-center gap-2">
+												<span
+													className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${priorityBadgeColor}`}
+												>
+													{notice.priorityName}
+												</span>
+												<h3 className="text-xs sm:text-sm font-bold text-white">{notice.title}</h3>
+											</div>
+											<span className="text-[10px] text-slate-500 flex items-center gap-1">
+												<Calendar className="h-2.5 w-2.5" />
+												{new Date(notice.createdAt).toLocaleDateString()}
+											</span>
+										</div>
+
+										<p className="text-xs text-slate-300 whitespace-pre-line leading-relaxed pl-0.5">
+											{notice.content}
+										</p>
+
+										<div className="text-[10px] text-slate-500 pl-0.5">
+											Posted by <span className="text-slate-400 font-medium">{notice.authorName}</span>
+										</div>
+									</div>
+								);
+							})}
 						</div>
 					)}
 				</div>

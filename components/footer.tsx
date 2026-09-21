@@ -64,12 +64,21 @@ export function Footer() {
 
         <div className="text-xs text-slate-400 text-center md:text-right flex flex-col md:items-end gap-1">
           <div>© {new Date().getFullYear()} Trailblazer Academy & Edukonsult. All rights reserved.</div>
-          <a
-            href={getStaffLoginUrl()}
-            className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
-          >
-            Staff Portal Login
-          </a>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/guardian/portal"
+              className="text-[11px] text-orange-400/80 hover:text-orange-400 transition-colors font-medium"
+            >
+              Guardian / Parent Portal
+            </Link>
+            <span className="text-slate-700">&bull;</span>
+            <a
+              href={getStaffLoginUrl()}
+              className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              Staff Portal Login
+            </a>
+          </div>
         </div>
       </div>
     </footer>

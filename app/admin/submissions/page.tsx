@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck, Megaphone } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +14,9 @@ import { ContactSubmissionsView } from '@/features/admin-dashboard/components/Co
 import { RegistrationSubmissionsView } from '@/features/admin-dashboard/components/RegistrationSubmissionsView';
 import { AttendanceManagementView } from '@/features/admin-dashboard/components/AttendanceManagementView';
 import { StaffManagementView } from '@/features/admin-dashboard/components/StaffManagementView';
+import { NoticeboardManagementView } from '@/features/admin-dashboard/components/NoticeboardManagementView';
 
-type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff';
+type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff' | 'noticeboard';
 
 function SubmissionsDashboardContent() {
 	const router = useRouter();
@@ -31,7 +32,7 @@ function SubmissionsDashboardContent() {
 	// Active tab derived from query parameter ?tab (defaults to 'students')
 	const tabParam = searchParams.get('tab') as AdminTab | null;
 	const activeTab: AdminTab =
-		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff'].includes(tabParam)
+		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff', 'noticeboard'].includes(tabParam)
 			? tabParam
 			: 'students';
 
@@ -170,6 +171,12 @@ function SubmissionsDashboardContent() {
 							subtitle: 'Invite faculty members, manage roles, and review administrative access privileges.',
 							icon: ShieldCheck,
 							color: 'text-purple-400 bg-purple-500/10 border-purple-500/20'
+						},
+						noticeboard: {
+							title: 'Academy Noticeboard & Broadcasts',
+							subtitle: 'Publish official announcements, schedule alerts, and manage school broadcasts.',
+							icon: Megaphone,
+							color: 'text-orange-400 bg-orange-500/10 border-orange-500/20'
 						}
 					};
 
@@ -208,6 +215,7 @@ function SubmissionsDashboardContent() {
 					{activeTab === 'contact' && <ContactSubmissionsView apiKey={apiKey} />}
 					{activeTab === 'attendance' && <AttendanceManagementView apiKey={apiKey} />}
 					{activeTab === 'staff' && <StaffManagementView apiKey={apiKey} />}
+					{activeTab === 'noticeboard' && <NoticeboardManagementView apiKey={apiKey} />}
 				</div>
 			</div>
 		</div>
