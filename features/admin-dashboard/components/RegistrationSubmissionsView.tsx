@@ -1,7 +1,24 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { getSubmissions, deleteSubmission } from '@/core/services/submissionsService';
-import { ChevronLeft, ChevronRight, MessageSquare, Mail, Clock, User, Phone, BookOpen, Trash2, AlertTriangle } from 'lucide-react';
+import { getSubmissions, deleteSubmission, createStudentAccount } from '@/core/services/submissionsService';
+import {
+	ChevronLeft,
+	ChevronRight,
+	MessageSquare,
+	Mail,
+	Clock,
+	User,
+	Phone,
+	BookOpen,
+	Trash2,
+	AlertTriangle,
+	UserCheck,
+	Loader2,
+	Copy,
+	Check,
+	ShieldCheck,
+	HeartHandshake
+} from 'lucide-react';
 import { FilterBar } from '@/components/ui/FilterBar';
 import { RegistrationTable, RegistrationSubmissionDTO } from './RegistrationTable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +52,64 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 	const [selectedItem, setSelectedItem] = useState<RegistrationSubmissionDTO | null>(null);
 	const [itemToDelete, setItemToDelete] = useState<RegistrationSubmissionDTO | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
+
+	// Account Provisioning State
+	const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+	const [createAccountResult, setCreateAccountResult] = useState<{
+		message: string;
+		inviteUrl?: string;
+		emailSent?: boolean;
+		emailStatusMessage?: string;
+	} | null>(null);
+	const [createAccountError, setCreateAccountError] = useState<string | null>(null);
+	const [copiedLink, setCopiedLink] = useState(false);
+
+	const handleCreateAccount = async () => {
+		if (!selectedItem) return;
+		setIsCreatingAccount(true);
+		setCreateAccountError(null);
+		setCreateAccountResult(null);
+
+		try {
+			const res = await createStudentAccount(selectedItem.id, apiKey);
+			setCreateAccountResult({
+				message: res.message,
+				inviteUrl: res.invitation?.inviteUrl,
+				emailSent: res.invitation?.emailSent,
+				emailStatusMessage: res.invitation?.emailStatusMessage
+			});
+
+			const currentMeta = (() => {
+				try {
+					return JSON.parse(selectedItem.metadata);
+				} catch {
+					return {};
+				}
+			})();
+			currentMeta.AccountCreated = true;
+			currentMeta.AccountCreatedAt = new Date().toISOString();
+			currentMeta.AccountInviteUrl = res.invitation?.inviteUrl;
+			currentMeta.AccountEmailSent = res.invitation?.emailSent;
+
+			const updated = {
+				...selectedItem,
+				metadata: JSON.stringify(currentMeta)
+			};
+			setSelectedItem(updated);
+			fetchRegistrations();
+		} catch (err: any) {
+			setCreateAccountError(err.message || 'Failed to create student account.');
+		} finally {
+			setIsCreatingAccount(false);
+		}
+	};
+
+	const handleCopyLink = (url: string) => {
+		if (!url) return;
+		navigator.clipboard.writeText(url);
+		setCopiedLink(true);
+		setTimeout(() => setCopiedLink(false), 2000);
+	};
 
 	const handleConfirmDelete = async () => {
 		if (!itemToDelete) return;
@@ -214,7 +289,8 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 								</DialogDescription>
 							</DialogHeader>
 
-							<div className="py-4 space-y-4">
+							<div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+								{/* 1. Student Profile & Academic Details */}
 								<div>
 									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Student Profile & Academic Details</h4>
 									<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 space-y-2.5 text-sm">
@@ -281,6 +357,156 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 											</div>
 										)}
 									</div>
+								</div>
+
+								{/* 2. Parent / Guardian Details */}
+								<div>
+									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+										<HeartHandshake className="h-3.5 w-3.5 text-orange-400" />
+										Parent / Guardian Information
+									</h4>
+									<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 space-y-2.5 text-sm">
+										<div className="flex justify-between border-b border-slate-800/60 pb-2">
+											<span className="text-slate-400">Guardian Name</span>
+											<span className="text-slate-200 font-semibold">
+												{getMetadataProperty(selectedItem.metadata, 'GuardianName') || 'Not provided'}
+												{getMetadataProperty(selectedItem.metadata, 'GuardianRelationship') && (
+													<span className="text-xs text-slate-400 font-normal ml-1">
+														({getMetadataProperty(selectedItem.metadata, 'GuardianRelationship')})
+													</span>
+												)}
+											</span>
+										</div>
+										<div className="flex justify-between border-b border-slate-800/60 pb-2">
+											<span className="text-slate-400">Guardian Phone</span>
+											<span className="text-slate-200 font-medium">
+												{getMetadataProperty(selectedItem.metadata, 'GuardianPhone') ? (
+													<a href={`tel:${getMetadataProperty(selectedItem.metadata, 'GuardianPhone')}`} className="text-primary hover:underline">
+														{getMetadataProperty(selectedItem.metadata, 'GuardianPhone')}
+													</a>
+												) : (
+													'Not provided'
+												)}
+											</span>
+										</div>
+										<div className="flex justify-between pt-1">
+											<span className="text-slate-400">Guardian Email</span>
+											<span className="text-slate-200 font-medium">
+												{getMetadataProperty(selectedItem.metadata, 'GuardianEmail') ? (
+													<a href={`mailto:${getMetadataProperty(selectedItem.metadata, 'GuardianEmail')}`} className="text-primary hover:underline">
+														{getMetadataProperty(selectedItem.metadata, 'GuardianEmail')}
+													</a>
+												) : (
+													'Not provided'
+												)}
+											</span>
+										</div>
+									</div>
+								</div>
+
+								{/* 3. Account Provisioning Section */}
+								<div>
+									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+										<ShieldCheck className="h-3.5 w-3.5 text-orange-400" />
+										Student Portal Account
+									</h4>
+									{(() => {
+										const isAccountCreated =
+											getMetadataProperty(selectedItem.metadata, 'AccountCreated') === 'true' ||
+											getMetadataProperty(selectedItem.metadata, 'AccountCreated') === true;
+										const inviteUrl =
+											getMetadataProperty(selectedItem.metadata, 'AccountInviteUrl') ||
+											createAccountResult?.inviteUrl;
+
+										if (isAccountCreated) {
+											return (
+												<div className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-3">
+													<div className="flex items-center justify-between">
+														<div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+															<ShieldCheck className="h-4 w-4 text-emerald-400" />
+															Account Provisioned
+														</div>
+														<Badge variant="outline" className="border-emerald-500/40 bg-emerald-950/40 text-emerald-400 text-xs">
+															Role: Student
+														</Badge>
+													</div>
+													<p className="text-xs text-slate-300">
+														An account activation link was generated for <span className="font-semibold text-white">{selectedItem.email}</span>.
+													</p>
+													{inviteUrl && (
+														<div className="space-y-1.5 pt-1">
+															<div className="text-[11px] text-slate-400 font-medium">Activation Link:</div>
+															<div className="flex items-center gap-2">
+																<input
+																	type="text"
+																	readOnly
+																	value={inviteUrl}
+																	className="flex-1 bg-slate-950/80 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-300 font-mono select-all"
+																/>
+																<Button
+																	size="sm"
+																	variant="outline"
+																	onClick={() => handleCopyLink(inviteUrl)}
+																	className="border-slate-800 hover:bg-slate-800 text-xs cursor-pointer"
+																>
+																	{copiedLink ? (
+																		<>
+																			<Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+																			Copied
+																		</>
+																	) : (
+																		<>
+																			<Copy className="h-3.5 w-3.5 mr-1 text-slate-400" />
+																			Copy Link
+																		</>
+																	)}
+																</Button>
+															</div>
+														</div>
+													)}
+												</div>
+											);
+										}
+
+										return (
+											<div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+												<div className="flex items-center justify-between">
+													<div className="flex items-center gap-2 text-slate-200 font-semibold text-sm">
+														<UserCheck className="h-4 w-4 text-orange-400" />
+														Account Not Yet Created
+													</div>
+													<Badge variant="outline" className="border-amber-500/40 bg-amber-950/40 text-amber-400 text-xs">
+														Pending Enrollment
+													</Badge>
+												</div>
+												<p className="text-xs text-slate-400 leading-relaxed">
+													After following up with the student and guardian, click below to enroll the student and dispatch an account activation link to their email.
+												</p>
+												{createAccountError && (
+													<div className="p-3 rounded-md bg-red-950/40 border border-red-800/40 text-red-400 text-xs">
+														{createAccountError}
+													</div>
+												)}
+												<Button
+													onClick={handleCreateAccount}
+													disabled={isCreatingAccount}
+													className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs py-2 cursor-pointer shadow-md shadow-orange-600/20"
+												>
+													{isCreatingAccount ? (
+														<>
+															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+															Enrolling & Dispatching Activation Email...
+														</>
+													) : (
+														<>
+															<UserCheck className="mr-2 h-4 w-4" />
+															Enroll & Create Student Account
+														</>
+													)}
+												</Button>
+											</div>
+										);
+									})()}
 								</div>
 							</div>
 

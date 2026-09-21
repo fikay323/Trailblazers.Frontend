@@ -11,6 +11,10 @@ export interface RegisterSubmissionPayload {
 	email: string;
 	phoneNumber: string;
 	targetExam: string;
+	guardianName?: string;
+	guardianPhone?: string;
+	guardianEmail?: string;
+	guardianRelationship?: string;
 	dateOfBirth?: string;
 	gender?: string;
 	address?: string;
@@ -112,6 +116,24 @@ export async function getSubmissions(params: GetSubmissionsParams, apiKey: strin
 export async function deleteSubmission(id: string, apiKey: string): Promise<{ message: string }> {
 	const response = await fetch(`${getApiUrl()}/api/submissions/${id}`, {
 		method: 'DELETE',
+		headers: getAuthHeaders(apiKey),
+		credentials: 'include'
+	});
+
+	if (!response.ok) {
+		const errData = await response.json().catch(() => ({}));
+		throw new Error(errData.error || `Server error: ${response.statusText}`);
+	}
+
+	return response.json();
+}
+
+export async function createStudentAccount(
+	id: string,
+	apiKey?: string
+): Promise<{ message: string; invitation: any }> {
+	const response = await fetch(`${getApiUrl()}/api/submissions/${id}/create-student-account`, {
+		method: 'POST',
 		headers: getAuthHeaders(apiKey),
 		credentials: 'include'
 	});

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, CheckCircle2, ClipboardList } from "lucide-react"
+import { ArrowRight, CheckCircle2, ClipboardList, Loader2 } from "lucide-react"
 
 import { submitRegistration } from "@/core/services/submissionsService"
 
@@ -23,6 +23,10 @@ export default function RegisterPage() {
 		phone: "",
 		email: "",
 		address: "",
+		guardianName: "",
+		guardianRelationship: "Parent",
+		guardianPhone: "",
+		guardianEmail: "",
 		lastSchool: "",
 		classCompleted: "",
 		programmes: [] as string[],
@@ -52,18 +56,33 @@ export default function RegisterPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setSubmitting(true);
 		setSubmitError(null);
+
+		if (!formData.guardianName.trim()) {
+			setSubmitError("Parent/Guardian full name is required.");
+			return;
+		}
+
+		if (!formData.guardianPhone.trim() && !formData.guardianEmail.trim()) {
+			setSubmitError("Please provide at least one parent/guardian contact method (phone number or email).");
+			return;
+		}
+
+		setSubmitting(true);
 
 		try {
 			// Map frontend fields to match backend API validation with all captured details
 			const registrationPayload = {
-				name: formData.fullName,
+				name: formData.fullName.trim(),
 				email: formData.email.trim() || `${formData.fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'}@trailblazer-academy.com`,
-				phoneNumber: formData.phone,
+				phoneNumber: formData.phone.trim(),
 				targetExam: formData.programmes.length > 0
 					? formData.programmes.map(p => p.toUpperCase()).join(', ')
 					: "General Program",
+				guardianName: formData.guardianName.trim(),
+				guardianPhone: formData.guardianPhone.trim() || undefined,
+				guardianEmail: formData.guardianEmail.trim() || undefined,
+				guardianRelationship: formData.guardianRelationship.trim() || undefined,
 				dateOfBirth: formData.dob,
 				gender: formData.gender,
 				address: formData.address,
@@ -220,12 +239,70 @@ export default function RegisterPage() {
 								</div>
 							</div>
 
-							{/* Academic History */}
+							{/* Parent / Guardian Information */}
 							<div className="space-y-8 pt-4">
-								<h3 className="text-lg font-semibold border-b pb-2">2. Academic Background</h3>
+								<div>
+									<h3 className="text-lg font-semibold border-b pb-2">2. Parent / Guardian Information</h3>
+									<p className="text-xs text-muted-foreground mt-1">
+										Please provide parent or guardian details. At least one contact method (phone or email) is required for progress updates and reports.
+									</p>
+								</div>
 								<div className="grid gap-6 md:grid-cols-2">
 									<div className="space-y-2">
-										<Label htmlFor="lastSchool">7. Last School Attended</Label>
+										<Label htmlFor="guardianName">7. Parent / Guardian Full Name *</Label>
+										<Input
+											id="guardianName"
+											name="guardianName"
+											required
+											placeholder="e.g. Mr. Johnathan Doe"
+											value={formData.guardianName}
+											onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="guardianRelationship">8. Relationship to Student</Label>
+										<Input
+											id="guardianRelationship"
+											name="guardianRelationship"
+											placeholder="e.g. Father, Mother, Guardian, Sponsor"
+											value={formData.guardianRelationship}
+											onChange={(e) => setFormData({ ...formData, guardianRelationship: e.target.value })}
+										/>
+									</div>
+								</div>
+
+								<div className="grid gap-6 md:grid-cols-2">
+									<div className="space-y-2">
+										<Label htmlFor="guardianPhone">9. Guardian Phone Number</Label>
+										<Input
+											id="guardianPhone"
+											name="guardianPhone"
+											type="tel"
+											placeholder="e.g. 08012345678"
+											value={formData.guardianPhone}
+											onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="guardianEmail">10. Guardian Email Address</Label>
+										<Input
+											id="guardianEmail"
+											name="guardianEmail"
+											type="email"
+											placeholder="guardian@example.com"
+											value={formData.guardianEmail}
+											onChange={(e) => setFormData({ ...formData, guardianEmail: e.target.value })}
+										/>
+									</div>
+								</div>
+							</div>
+
+							{/* Academic History */}
+							<div className="space-y-8 pt-4">
+								<h3 className="text-lg font-semibold border-b pb-2">3. Academic Background</h3>
+								<div className="grid gap-6 md:grid-cols-2">
+									<div className="space-y-2">
+										<Label htmlFor="lastSchool">11. Last School Attended</Label>
 										<Input
 											id="lastSchool"
 											name="lastSchool"
@@ -236,7 +313,7 @@ export default function RegisterPage() {
 										/>
 									</div>
 									<div className="space-y-2">
-										<Label htmlFor="classCompleted">8. Class Completed</Label>
+										<Label htmlFor="classCompleted">12. Class Completed</Label>
 										<Input
 											id="classCompleted"
 											name="classCompleted"
@@ -251,9 +328,9 @@ export default function RegisterPage() {
 
 							{/* Programme Selection */}
 							<div className="space-y-8 pt-4">
-								<h3 className="text-lg font-semibold border-b pb-2">3. Programme Details</h3>
+								<h3 className="text-lg font-semibold border-b pb-2">4. Programme Details</h3>
 								<fieldset className="space-y-4">
-									<legend className="text-sm font-medium text-foreground">9. Programme Registering For (Select all that apply)</legend>
+									<legend className="text-sm font-medium text-foreground">13. Programme Registering For (Select all that apply)</legend>
 									<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
 										{programmesList.map((prog) => (
 											<div key={prog.id} className="flex items-center space-x-2">
@@ -269,7 +346,7 @@ export default function RegisterPage() {
 								</fieldset>
 
 								<div className="space-y-2">
-									<Label htmlFor="subjects">10. Subject Combination (for WAEC/UTME/JUPEB)</Label>
+									<Label htmlFor="subjects">14. Subject Combination (for WAEC/UTME/JUPEB)</Label>
 									<Input
 										id="subjects"
 										name="subjects"
@@ -280,7 +357,7 @@ export default function RegisterPage() {
 								</div>
 
 								<fieldset className="space-y-3">
-									<legend id="classmode-label" className="text-sm font-medium text-foreground">11. Preferred Class Mode</legend>
+									<legend id="classmode-label" className="text-sm font-medium text-foreground">15. Preferred Class Mode</legend>
 									<RadioGroup
 										aria-labelledby="classmode-label"
 										onValueChange={(val) => setFormData({ ...formData, classMode: val })}
@@ -303,7 +380,7 @@ export default function RegisterPage() {
 								</fieldset>
 
 								<div className="space-y-2">
-									<Label htmlFor="referral">12. How Did You Hear About Us?</Label>
+									<Label htmlFor="referral">16. How Did You Hear About Us?</Label>
 									<Input
 										id="referral"
 										name="referral"
@@ -319,10 +396,19 @@ export default function RegisterPage() {
 									type="submit"
 									size="lg"
 									disabled={submitting}
-									className="px-12 py-6 text-lg shadow-lg hover:shadow-primary/20 transition-all"
+									className="px-12 py-6 text-lg shadow-lg hover:shadow-primary/20 transition-all cursor-pointer"
 								>
-									{submitting ? "Submitting..." : "Submit Application"}
-									{!submitting && <ArrowRight className="ml-2 h-5 w-5" />}
+									{submitting ? (
+										<>
+											<Loader2 className="mr-2 h-5 w-5 animate-spin" />
+											Submitting Application...
+										</>
+									) : (
+										<>
+											Submit Application
+											<ArrowRight className="ml-2 h-5 w-5" />
+										</>
+									)}
 								</Button>
 							</div>
 						</form>

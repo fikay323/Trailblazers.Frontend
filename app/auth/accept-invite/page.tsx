@@ -108,7 +108,11 @@ function AcceptInviteContent() {
 
 			// Redirect into the portal after brief visual confirmation
 			setTimeout(() => {
-				const destination = getPortalUrl(authRes.user?.role || 'Instructor', '/admin/submissions?tab=students');
+				const isStudent = authRes.user?.role === 'Student';
+				const destination = getPortalUrl(
+					authRes.user?.role || 'Student',
+					isStudent ? '/student/dashboard' : '/admin/submissions?tab=students'
+				);
 				window.location.href = destination;
 			}, 1800);
 		} catch (err: any) {
