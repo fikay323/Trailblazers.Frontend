@@ -145,3 +145,43 @@ export function parseJwtUser(token: string): UserDto | null {
 	}
 }
 
+export interface ForgotPasswordPayload {
+	email: string;
+}
+
+export interface ResetPasswordPayload {
+	email: string;
+	token: string;
+	newPassword: string;
+}
+
+export async function forgotPassword(payload: ForgotPasswordPayload): Promise<{ message: string }> {
+	const res = await fetch(`${getApiUrl()}/api/auth/forgot-password`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to request password reset. Please try again.');
+	}
+
+	return res.json();
+}
+
+export async function resetPassword(payload: ResetPasswordPayload): Promise<{ message: string }> {
+	const res = await fetch(`${getApiUrl()}/api/auth/reset-password`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to reset password. The link may have expired.');
+	}
+
+	return res.json();
+}
+
