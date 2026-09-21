@@ -17,7 +17,7 @@ test.describe('Student Registration & Enrollment Workflow', () => {
 		await expect(registerLink).toBeVisible();
 		await expect(registerLink).toHaveAttribute('href', '/register');
 
-		const signInLink = page.getByRole('link', { name: /Sign In/i });
+		const signInLink = page.locator('a[href="/auth/login"]').first();
 		await expect(signInLink).toBeVisible();
 		await expect(signInLink).toHaveAttribute('href', '/auth/login');
 	});

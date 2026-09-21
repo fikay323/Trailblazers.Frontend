@@ -29,9 +29,18 @@ import {
 	X,
 	FileText,
 	ShieldAlert,
-	Phone
+	Phone,
+	Send,
+	Mail,
+	MessageSquare,
+	Loader2
 } from 'lucide-react';
 import { DataPagination } from '@/components/ui/DataPagination';
+import {
+	getGuardianReportPreview,
+	sendGuardianReport,
+	GuardianReportPreviewDto
+} from '@/core/services/guardianReportService';
 
 interface StudentManagementViewProps {
 	apiKey: string;
@@ -95,6 +104,27 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 	const [historyStudent, setHistoryStudent] = useState<AdminStudentListItem | null>(null);
 	const [studentHistory, setStudentHistory] = useState<StudentHistoryResult | null>(null);
 	const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+	// Guardian Report Modal State
+	const [guardianModalStudent, setGuardianModalStudent] = useState<AdminStudentListItem | null>(null);
+	const [guardianStartDate, setGuardianStartDate] = useState<string>(() => {
+		const d = new Date();
+		d.setDate(d.getDate() - 30);
+		return d.toISOString().split('T')[0];
+	});
+	const [guardianEndDate, setGuardianEndDate] = useState<string>(() => {
+		return new Date().toISOString().split('T')[0];
+	});
+	const [guardianName, setGuardianName] = useState<string>('');
+	const [guardianEmail, setGuardianEmail] = useState<string>('');
+	const [guardianPhone, setGuardianPhone] = useState<string>('');
+	const [reportChannel, setReportChannel] = useState<'Email' | 'Sms' | 'Both'>('Email');
+	const [customRemarks, setCustomRemarks] = useState<string>('');
+	const [reportPreview, setReportPreview] = useState<GuardianReportPreviewDto | null>(null);
+	const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(false);
+	const [isSendingReport, setIsSendingReport] = useState<boolean>(false);
+	const [reportSuccessMessage, setReportSuccessMessage] = useState<string | null>(null);
+	const [reportErrorMessage, setReportErrorMessage] = useState<string | null>(null);
 
 	useEffect(() => {
 		loadStudents();
@@ -168,6 +198,88 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			console.error('Failed to load student history:', err);
 		} finally {
 			setIsLoadingHistory(false);
+		}
+	};
+
+	const handleOpenGuardianReportModal = async (student: AdminStudentListItem) => {
+		setGuardianModalStudent(student);
+		const defaultStart = (() => {
+			const d = new Date();
+			d.setDate(d.getDate() - 30);
+			return d.toISOString().split('T')[0];
+		})();
+		const defaultEnd = new Date().toISOString().split('T')[0];
+		setGuardianStartDate(defaultStart);
+		setGuardianEndDate(defaultEnd);
+		setReportSuccessMessage(null);
+		setReportErrorMessage(null);
+		setCustomRemarks('');
+		setReportPreview(null);
+		setIsLoadingPreview(true);
+
+		try {
+			const preview = await getGuardianReportPreview(student.email, defaultStart, defaultEnd, apiKey);
+			setReportPreview(preview);
+			setGuardianName(preview.guardianName || '');
+			setGuardianEmail(preview.guardianEmail || '');
+			setGuardianPhone(preview.guardianPhone || '');
+			if (!preview.guardianEmail && preview.guardianPhone) {
+				setReportChannel('Sms');
+			} else {
+				setReportChannel('Email');
+			}
+		} catch (err: any) {
+			setReportErrorMessage(err.message || 'Failed to fetch report preview.');
+		} finally {
+			setIsLoadingPreview(false);
+		}
+	};
+
+	const handleRefreshPreview = async () => {
+		if (!guardianModalStudent) return;
+		setIsLoadingPreview(true);
+		setReportErrorMessage(null);
+		try {
+			const preview = await getGuardianReportPreview(
+				guardianModalStudent.email,
+				guardianStartDate,
+				guardianEndDate,
+				apiKey
+			);
+			setReportPreview(preview);
+		} catch (err: any) {
+			setReportErrorMessage(err.message || 'Failed to refresh preview.');
+		} finally {
+			setIsLoadingPreview(false);
+		}
+	};
+
+	const handleSendGuardianReport = async () => {
+		if (!guardianModalStudent) return;
+		setIsSendingReport(true);
+		setReportErrorMessage(null);
+		setReportSuccessMessage(null);
+
+		try {
+			const res = await sendGuardianReport(
+				{
+					studentEmail: guardianModalStudent.email,
+					guardianName: guardianName.trim() || undefined,
+					guardianEmail: guardianEmail.trim() || undefined,
+					guardianPhone: guardianPhone.trim() || undefined,
+					startDate: new Date(guardianStartDate).toISOString(),
+					endDate: new Date(guardianEndDate + 'T23:59:59Z').toISOString(),
+					channel: reportChannel,
+					customRemarks: customRemarks.trim() || undefined
+				},
+				apiKey
+			);
+
+			setReportSuccessMessage(res.message || 'Guardian performance report sent successfully.');
+		} catch (err: any) {
+			setReportErrorMessage(err.message || 'Failed to send guardian report.');
+		} finally {
+			setIsSendingReport(false);
 		}
 	};
 
@@ -405,6 +517,18 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 													>
 														<Eye className="h-3.5 w-3.5" />
 														History
+													</Button>
+
+													{/* Guardian Academic Performance Report Button */}
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => handleOpenGuardianReportModal(s)}
+														className="border-orange-800/60 bg-orange-950/40 text-orange-300 hover:bg-orange-900/60 hover:text-white text-xs h-8 cursor-pointer flex items-center gap-1"
+														title="Send Guardian Performance Report"
+													>
+														<Send className="h-3.5 w-3.5" />
+														Report
 													</Button>
 
 													{/* Deactivate / Activate Button (Only visible to Admin) */}
@@ -687,7 +811,20 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							)}
 						</CardContent>
 
-						<div className="border-t border-slate-800 px-6 py-3 flex justify-end shrink-0 bg-slate-950/40">
+						<div className="border-t border-slate-800 px-6 py-3 flex items-center justify-between shrink-0 bg-slate-950/40">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									const student = historyStudent;
+									setHistoryStudent(null);
+									handleOpenGuardianReportModal(student);
+								}}
+								className="border-orange-800/60 bg-orange-950/30 text-orange-300 hover:bg-orange-900/50 hover:text-white text-xs h-8 cursor-pointer flex items-center gap-1.5"
+							>
+								<Send className="h-3.5 w-3.5" />
+								Send Guardian Report
+							</Button>
 							<Button
 								variant="outline"
 								size="sm"
@@ -696,6 +833,273 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							>
 								Close
 							</Button>
+						</div>
+					</Card>
+				</div>
+			)}
+
+			{/* MODAL: Send Guardian Academic & Attendance Report */}
+			{guardianModalStudent && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+					<Card className="w-full max-w-2xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] flex flex-col">
+						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
+							<div>
+								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+									<Mail className="h-5 w-5 text-orange-400" />
+									Guardian Academic Report Dispatch
+								</CardTitle>
+								<CardDescription className="text-xs text-slate-400 mt-0.5">
+									Student: <strong className="text-white">{guardianModalStudent.fullName}</strong> ({guardianModalStudent.email})
+								</CardDescription>
+							</div>
+							<button
+								onClick={() => setGuardianModalStudent(null)}
+								className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+								aria-label="Close modal"
+							>
+								<X className="h-5 w-5" />
+							</button>
+						</CardHeader>
+
+						<CardContent className="space-y-4 pt-4 overflow-y-auto flex-1">
+							{reportErrorMessage && (
+								<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
+									<AlertCircle className="h-4 w-4" />
+									<AlertDescription>{reportErrorMessage}</AlertDescription>
+								</Alert>
+							)}
+
+							{reportSuccessMessage ? (
+								<div className="py-8 text-center space-y-3">
+									<div className="mx-auto w-12 h-12 rounded-full bg-emerald-950/60 border border-emerald-800/80 flex items-center justify-center text-emerald-400">
+										<CheckCircle className="h-6 w-6" />
+									</div>
+									<h3 className="text-base font-bold text-white">Report Dispatched Successfully</h3>
+									<p className="text-xs text-slate-300 max-w-md mx-auto">{reportSuccessMessage}</p>
+									<p className="text-[11px] text-slate-500">
+										The student&apos;s guardian has been notified with the official Trailblazers academic report card.
+									</p>
+								</div>
+							) : (
+								<div className="space-y-4">
+									{/* Timeframe Selection */}
+									<div className="bg-slate-950/60 p-3 rounded-lg border border-slate-800 space-y-2">
+										<label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+											<Calendar className="h-3.5 w-3.5 text-orange-400" />
+											Report Timeframe
+										</label>
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+											<div>
+												<span className="text-[11px] text-slate-400 block mb-1">Start Date</span>
+												<Input
+													type="date"
+													value={guardianStartDate}
+													onChange={(e) => setGuardianStartDate(e.target.value)}
+													className="border-slate-800 bg-slate-900 text-white text-xs h-8"
+												/>
+											</div>
+											<div>
+												<span className="text-[11px] text-slate-400 block mb-1">End Date</span>
+												<Input
+													type="date"
+													value={guardianEndDate}
+													onChange={(e) => setGuardianEndDate(e.target.value)}
+													className="border-slate-800 bg-slate-900 text-white text-xs h-8"
+												/>
+											</div>
+										</div>
+										<div className="flex justify-end pt-1">
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={handleRefreshPreview}
+												disabled={isLoadingPreview}
+												className="text-xs h-7 text-orange-400 hover:text-orange-300 hover:bg-orange-950/30 cursor-pointer flex items-center gap-1"
+											>
+												{isLoadingPreview ? (
+													<Loader2 className="h-3 w-3 animate-spin" />
+												) : (
+													<RefreshCw className="h-3 w-3" />
+												)}
+												Update Metrics Preview
+											</Button>
+										</div>
+									</div>
+
+									{/* Live Performance Preview */}
+									<div className="space-y-2">
+										<label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+											Timeframe Performance Summary
+										</label>
+										{isLoadingPreview ? (
+											<div className="py-6 text-center text-slate-400 bg-slate-950/40 rounded-lg border border-slate-800">
+												<Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-orange-500" />
+												<p className="text-xs">Aggregating test results and attendance records...</p>
+											</div>
+										) : reportPreview ? (
+											<div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
+												<div className="bg-slate-950 p-2.5 rounded border border-slate-800">
+													<span className="text-[10px] uppercase text-slate-400 block">Tests</span>
+													<span className="text-lg font-bold text-white">{reportPreview.totalTestsTaken}</span>
+												</div>
+												<div className="bg-slate-950 p-2.5 rounded border border-slate-800">
+													<span className="text-[10px] uppercase text-slate-400 block">Avg Score</span>
+													<span className="text-lg font-bold text-cyan-400">{reportPreview.averagePercentage}%</span>
+												</div>
+												<div className="bg-slate-950 p-2.5 rounded border border-slate-800">
+													<span className="text-[10px] uppercase text-slate-400 block">Peak Score</span>
+													<span className="text-lg font-bold text-emerald-400">{reportPreview.highestPercentage}%</span>
+												</div>
+												<div className="bg-slate-950 p-2.5 rounded border border-slate-800">
+													<span className="text-[10px] uppercase text-slate-400 block">Pass Rate</span>
+													<span className="text-lg font-bold text-purple-400">{reportPreview.passRatePercentage}%</span>
+												</div>
+												<div className="bg-slate-950 p-2.5 rounded border border-slate-800 col-span-2 sm:col-span-1">
+													<span className="text-[10px] uppercase text-slate-400 block">Attendance</span>
+													<span className="text-xs font-bold text-amber-300 block mt-1">
+														{reportPreview.attendancePresentDays}d present / {reportPreview.attendanceLateDays}d late
+													</span>
+												</div>
+											</div>
+										) : (
+											<div className="p-3 text-center text-xs text-slate-500 bg-slate-950/30 rounded border border-slate-800">
+												No preview available yet.
+											</div>
+										)}
+									</div>
+
+									{/* Guardian Contact Information */}
+									<div className="space-y-3 bg-slate-950/60 p-3.5 rounded-lg border border-slate-800">
+										<label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+											Guardian Recipient Details
+										</label>
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+											<div>
+												<span className="text-[11px] text-slate-400 block mb-1">Guardian Name</span>
+												<Input
+													placeholder="e.g. Mr. John Doe"
+													value={guardianName}
+													onChange={(e) => setGuardianName(e.target.value)}
+													className="border-slate-800 bg-slate-900 text-white text-xs h-8"
+												/>
+											</div>
+											<div>
+												<span className="text-[11px] text-slate-400 block mb-1">Guardian Email</span>
+												<Input
+													type="email"
+													placeholder="guardian@example.com"
+													value={guardianEmail}
+													onChange={(e) => setGuardianEmail(e.target.value)}
+													className="border-slate-800 bg-slate-900 text-white text-xs h-8"
+												/>
+											</div>
+											<div>
+												<span className="text-[11px] text-slate-400 block mb-1">Guardian Phone (SMS)</span>
+												<Input
+													type="tel"
+													placeholder="08012345678"
+													value={guardianPhone}
+													onChange={(e) => setGuardianPhone(e.target.value)}
+													className="border-slate-800 bg-slate-900 text-white text-xs h-8"
+												/>
+											</div>
+										</div>
+
+										{/* Delivery Channel Selector */}
+										<div>
+											<span className="text-[11px] text-slate-400 block mb-1.5 font-semibold">Delivery Channel</span>
+											<div className="flex flex-wrap gap-2">
+												<button
+													type="button"
+													onClick={() => setReportChannel('Email')}
+													className={`px-3 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition-colors flex items-center gap-1.5 ${
+														reportChannel === 'Email'
+															? 'border-orange-500 bg-orange-950/40 text-orange-300'
+															: 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+													}`}
+												>
+													<Mail className="h-3.5 w-3.5" />
+													Email Only (Branded HTML)
+												</button>
+												<button
+													type="button"
+													onClick={() => setReportChannel('Sms')}
+													className={`px-3 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition-colors flex items-center gap-1.5 ${
+														reportChannel === 'Sms'
+															? 'border-orange-500 bg-orange-950/40 text-orange-300'
+															: 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+													}`}
+												>
+													<MessageSquare className="h-3.5 w-3.5" />
+													SMS Only (Summary Text)
+												</button>
+												<button
+													type="button"
+													onClick={() => setReportChannel('Both')}
+													className={`px-3 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition-colors flex items-center gap-1.5 ${
+														reportChannel === 'Both'
+															? 'border-orange-500 bg-orange-950/40 text-orange-300'
+															: 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+													}`}
+												>
+													<Send className="h-3.5 w-3.5" />
+													Both (Email &amp; SMS)
+												</button>
+											</div>
+										</div>
+									</div>
+
+									{/* Instructor Custom Remarks */}
+									<div>
+										<label htmlFor="instructor-remarks" className="text-xs font-semibold text-slate-300 block mb-1">
+											Instructor Commendations &amp; Remarks (Optional):
+										</label>
+										<textarea
+											id="instructor-remarks"
+											rows={2}
+											placeholder="e.g. Excellent focus and steady improvement in mathematics this month. Needs to dedicate more review time to English comprehension."
+											value={customRemarks}
+											onChange={(e) => setCustomRemarks(e.target.value)}
+											className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+										/>
+									</div>
+								</div>
+							)}
+						</CardContent>
+
+						<div className="border-t border-slate-800 px-6 py-3 flex items-center justify-end gap-3 shrink-0 bg-slate-950/40">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setGuardianModalStudent(null)}
+								className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer text-xs"
+							>
+								{reportSuccessMessage ? 'Done' : 'Cancel'}
+							</Button>
+							{!reportSuccessMessage && (
+								<Button
+									size="sm"
+									disabled={
+										isSendingReport ||
+										isLoadingPreview ||
+										(!guardianEmail.trim() && !guardianPhone.trim())
+									}
+									onClick={handleSendGuardianReport}
+									className="bg-orange-600 hover:bg-orange-700 text-white text-xs cursor-pointer flex items-center gap-1.5"
+								>
+									{isSendingReport ? (
+										<>
+											<Loader2 className="h-3.5 w-3.5 animate-spin" />
+											Dispatching...
+										</>
+									) : (
+										<>
+											<Send className="h-3.5 w-3.5" />
+											Send Report to Guardian
+										</>
+									)}
+								</Button>
+							)}
 						</div>
 					</Card>
 				</div>
