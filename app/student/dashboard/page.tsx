@@ -25,6 +25,8 @@ import {
 	Flame,
 	GraduationCap,
 	Lock,
+	LogOut,
+	Loader2,
 	MapPin,
 	Navigation,
 	Play,
@@ -35,6 +37,7 @@ import {
 } from 'lucide-react';
 import {
 	clockInToAttendance,
+	clockOutFromAttendance,
 	getStudentTodayStatus,
 	getCurrentGpsPosition,
 	StudentAttendanceStatsDto
@@ -51,6 +54,9 @@ export default function StudentDashboardPage() {
 	const [isClockingIn, setIsClockingIn] = useState(false);
 	const [clockInError, setClockInError] = useState<string | null>(null);
 	const [clockInSuccess, setClockInSuccess] = useState<string | null>(null);
+	const [isClockingOut, setIsClockingOut] = useState(false);
+	const [clockOutError, setClockOutError] = useState<string | null>(null);
+	const [clockOutSuccess, setClockOutSuccess] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!authLoading && !user) {
@@ -123,6 +129,37 @@ export default function StudentDashboardPage() {
 		}
 	};
 
+	const handleClockOut = async () => {
+		setIsClockingOut(true);
+		setClockOutError(null);
+		setClockOutSuccess(null);
+
+		try {
+			const position = await getCurrentGpsPosition();
+			const record = await clockOutFromAttendance(
+				{
+					latitude: position.latitude,
+					longitude: position.longitude,
+					accuracyMeters: position.accuracyMeters,
+					clientTimestamp: position.clientTimestamp
+				},
+				token || undefined
+			);
+
+			setClockOutSuccess(
+				`Successfully clocked out at ${record.clockOutTime ? new Date(record.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'now'} (${Math.round(record.clockOutDistanceMeters ?? 0)}m from campus). Have a safe trip home!`
+			);
+
+			// Refresh attendance stats
+			const freshStats = await getStudentTodayStatus(token || undefined);
+			setAttendanceStats(freshStats);
+		} catch (err: any) {
+			setClockOutError(err.message || 'Failed to clock out. Please ensure you are inside the tutorial center and try again.');
+		} finally {
+			setIsClockingOut(false);
+		}
+	};
+
 	if (authLoading || (isLoading && !history)) {
 		return (
 			<div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400">
@@ -189,11 +226,15 @@ export default function StudentDashboardPage() {
 					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 						<div className="flex items-start gap-3.5">
 							<div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 border ${
-								attendanceStats?.hasClockedInToday
+								attendanceStats?.hasClockedOutToday
+									? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+									: attendanceStats?.hasClockedInToday
 									? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
 									: 'bg-orange-500/10 text-orange-400 border-orange-500/20'
 							}`}>
-								{attendanceStats?.hasClockedInToday ? (
+								{attendanceStats?.hasClockedOutToday ? (
+									<CheckCircle2 className="h-4 w-4" />
+								) : attendanceStats?.hasClockedInToday ? (
 									<CheckCircle2 className="h-4 w-4" />
 								) : (
 									<MapPin className="h-4 w-4" />
@@ -201,8 +242,13 @@ export default function StudentDashboardPage() {
 							</div>
 							<div className="space-y-1">
 								<div className="flex flex-wrap items-center gap-2">
-									<h2 className="text-sm sm:text-base font-semibold text-white">Daily Check-In</h2>
-									{attendanceStats?.hasClockedInToday ? (
+									<h2 className="text-sm sm:text-base font-semibold text-white">Daily Attendance</h2>
+									{attendanceStats?.hasClockedOutToday ? (
+										<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30">
+											<CheckCircle2 className="h-3 w-3" />
+											Day Completed
+										</span>
+									) : attendanceStats?.hasClockedInToday ? (
 										<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
 											attendanceStats.todayRecord?.status === 'Late'
 												? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
@@ -225,7 +271,22 @@ export default function StudentDashboardPage() {
 								</div>
 
 								<p className="text-xs text-slate-400">
-									{attendanceStats?.hasClockedInToday ? (
+									{attendanceStats?.hasClockedOutToday ? (
+										<>
+											Clocked in at{' '}
+											<span className="text-slate-200 font-medium">
+												{attendanceStats.todayRecord?.clockInTime
+													? new Date(attendanceStats.todayRecord.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+													: 'Recorded'}
+											</span>
+											{' '}• Clocked out at{' '}
+											<span className="text-blue-300 font-medium">
+												{attendanceStats.todayRecord?.clockOutTime
+													? new Date(attendanceStats.todayRecord.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+													: 'Recorded'}
+											</span>
+										</>
+									) : attendanceStats?.hasClockedInToday ? (
 										<>
 											Clocked in at{' '}
 											<span className="text-slate-200 font-medium">
@@ -244,13 +305,32 @@ export default function StudentDashboardPage() {
 							</div>
 						</div>
 
-						{/* Clock-In Action / Confirmed Tag */}
+						{/* Clock-In / Clock-Out Actions */}
 						<div>
-							{attendanceStats?.hasClockedInToday ? (
-								<span className="hidden sm:inline-flex text-xs text-emerald-400 font-medium px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-800/40 items-center gap-1.5">
+							{attendanceStats?.hasClockedOutToday ? (
+								<span className="inline-flex text-xs text-blue-400 font-medium px-3 py-1.5 rounded-lg bg-blue-950/40 border border-blue-800/40 items-center gap-1.5">
 									<CheckCircle2 className="h-3.5 w-3.5" />
-									Presence Confirmed
+									Presence Completed
 								</span>
+							) : attendanceStats?.hasClockedInToday ? (
+								<Button
+									onClick={handleClockOut}
+									disabled={isClockingOut}
+									size="sm"
+									className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs sm:text-sm px-4 py-2 cursor-pointer shrink-0 transition-colors shadow-none flex items-center justify-center gap-1.5"
+								>
+									{isClockingOut ? (
+										<>
+											<Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400" />
+											<span>Clocking Out...</span>
+										</>
+									) : (
+										<>
+											<LogOut className="h-3.5 w-3.5 text-orange-400" />
+											<span>Clock Out</span>
+										</>
+									)}
+								</Button>
 							) : (
 								<Button
 									onClick={handleClockIn}
@@ -260,7 +340,7 @@ export default function StudentDashboardPage() {
 								>
 									{isClockingIn ? (
 										<>
-											<RefreshCw className="h-3.5 w-3.5 animate-spin" />
+											<Loader2 className="h-3.5 w-3.5 animate-spin" />
 											<span>Locating...</span>
 										</>
 									) : (
@@ -289,6 +369,26 @@ export default function StudentDashboardPage() {
 							</div>
 							<button
 								onClick={() => setClockInError(null)}
+								className="text-[11px] text-red-400 hover:text-red-200 underline shrink-0 ml-2"
+							>
+								Dismiss
+							</button>
+						</div>
+					)}
+					{clockOutSuccess && (
+						<div className="mt-3 p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-800/50 text-emerald-300 text-xs flex items-center gap-2">
+							<CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+							<span>{clockOutSuccess}</span>
+						</div>
+					)}
+					{clockOutError && (
+						<div className="mt-3 p-2.5 rounded-lg bg-red-950/40 border border-red-800/50 text-red-300 text-xs flex items-center justify-between gap-2">
+							<div className="flex items-center gap-2 min-w-0">
+								<AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+								<span className="truncate">{clockOutError}</span>
+							</div>
+							<button
+								onClick={() => setClockOutError(null)}
 								className="text-[11px] text-red-400 hover:text-red-200 underline shrink-0 ml-2"
 							>
 								Dismiss

@@ -7,6 +7,7 @@ import {
 	getAttendanceSettings,
 	updateAttendanceSettings,
 	getCurrentGpsPosition,
+	exportAttendanceReport,
 	DailyRosterResponseDto,
 	RosterStudentItemDto,
 	AttendanceSettingDto,
@@ -32,7 +33,9 @@ import {
 	Download,
 	X,
 	ShieldCheck,
-	Navigation
+	Navigation,
+	Loader2,
+	LogOut
 } from 'lucide-react';
 
 interface AttendanceManagementViewProps {
@@ -75,6 +78,17 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 	const [isSavingSettings, setIsSavingSettings] = useState(false);
 	const [isAcquiringLocation, setIsAcquiringLocation] = useState(false);
 	const [settingsFeedback, setSettingsFeedback] = useState<string | null>(null);
+
+	// Export Modal
+	const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+	const [exportStartDate, setExportStartDate] = useState(() => {
+		const d = new Date();
+		d.setDate(d.getDate() - 30);
+		return d.toISOString().split('T')[0];
+	});
+	const [exportEndDate, setExportEndDate] = useState(getTodayStr());
+	const [isExporting, setIsExporting] = useState(false);
+	const [exportError, setExportError] = useState<string | null>(null);
 
 	useEffect(() => {
 		loadRoster(selectedDate);
@@ -189,11 +203,40 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 		}
 	};
 
-	// Export to CSV
+	// Export Attendance Report (CSV) via Backend Service
+	const handleDownloadReport = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsExporting(true);
+		setExportError(null);
+		try {
+			const blob = await exportAttendanceReport(
+				exportStartDate,
+				exportEndDate,
+				undefined,
+				searchTerm.trim() || undefined,
+				apiKey
+			);
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `trailblazers-attendance-report-${exportStartDate}-to-${exportEndDate}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+			setIsExportModalOpen(false);
+		} catch (err: any) {
+			setExportError(err.message || 'Failed to export attendance report.');
+		} finally {
+			setIsExporting(false);
+		}
+	};
+
+	// Fallback Quick Day Export
 	const handleExportCsv = () => {
 		if (!roster || roster.students.length === 0) return;
 
-		const headers = ['Student Name', 'Email', 'Phone', 'Date', 'Status', 'Clock-In Time', 'Distance (m)', 'Verification Source', 'Remarks'];
+		const headers = ['Student Name', 'Email', 'Phone', 'Date', 'Status', 'Clock-In Time', 'Clock-Out Time', 'Distance (m)', 'Verification Source', 'Remarks'];
 		const rows = roster.students.map((s) => [
 			`"${s.studentName.replace(/"/g, '""')}"`,
 			`"${s.studentEmail}"`,
@@ -201,6 +244,7 @@ export function AttendanceManagementView({ apiKey }: AttendanceManagementViewPro
 			selectedDate,
 			s.status,
 			s.clockInTime ? new Date(s.clockInTime).toLocaleTimeString() : '',
+			s.clockOutTime ? new Date(s.clockOutTime).toLocaleTimeString() : '',
 			s.distanceMeters ?? '',
 			s.verificationType === 'Geolocated' ? 'GPS Geolocated' : s.verificationType === 'ManualStaff' ? `Manual (${s.markedByUserName || 'Staff'})` : 'None',
 			`"${(s.remarks || '').replace(/"/g, '""')}"`
@@ -314,16 +358,15 @@ function normalizeAttendanceStatus(val: any): AttendanceStatus {
 						Refresh
 					</Button>
 
-					{/* Export CSV */}
+					{/* Export Report CSV */}
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={handleExportCsv}
-						disabled={!roster || roster.students.length === 0}
-						className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-8 px-2.5 cursor-pointer flex items-center gap-1"
+						onClick={() => setIsExportModalOpen(true)}
+						className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-8 px-2.5 cursor-pointer flex items-center gap-1.5"
 					>
-						<Download className="h-3.5 w-3.5 text-slate-400" />
-						Export CSV
+						<Download className="h-3.5 w-3.5 text-orange-400" />
+						<span>Export Report</span>
 					</Button>
 
 					{/* Admin Geofence Settings */}
@@ -511,7 +554,8 @@ function normalizeAttendanceStatus(val: any): AttendanceStatus {
 										<tr>
 											<th className="py-3.5 px-4 sm:px-6">Student</th>
 											<th className="py-3.5 px-4">Status</th>
-											<th className="py-3.5 px-4">Arrival Time</th>
+											<th className="py-3.5 px-4">Clock In</th>
+											<th className="py-3.5 px-4">Clock Out</th>
 											<th className="py-3.5 px-4">Verification & Distance</th>
 											<th className="py-3.5 px-4">Remarks / Audit Note</th>
 											<th className="py-3.5 px-4 sm:px-6 text-right">Instructor Actions</th>
@@ -552,12 +596,27 @@ function normalizeAttendanceStatus(val: any): AttendanceStatus {
 														</span>
 													</td>
 
-													{/* Arrival Time */}
+													{/* Clock In */}
 													<td className="py-3.5 px-4 font-mono text-xs text-slate-200">
 														{s.clockInTime ? (
 															<span className="flex items-center gap-1 text-white">
 																<Clock className="h-3.5 w-3.5 text-orange-400" />
 																{new Date(s.clockInTime).toLocaleTimeString([], {
+																	hour: '2-digit',
+																	minute: '2-digit'
+																})}
+															</span>
+														) : (
+															<span className="text-slate-600">—</span>
+														)}
+													</td>
+
+													{/* Clock Out */}
+													<td className="py-3.5 px-4 font-mono text-xs text-slate-200">
+														{s.clockOutTime ? (
+															<span className="flex items-center gap-1 text-slate-200">
+																<LogOut className="h-3.5 w-3.5 text-blue-400" />
+																{new Date(s.clockOutTime).toLocaleTimeString([], {
 																	hour: '2-digit',
 																	minute: '2-digit'
 																})}
@@ -919,6 +978,97 @@ function normalizeAttendanceStatus(val: any): AttendanceStatus {
 									</div>
 								</>
 							) : null}
+						</form>
+					</Card>
+				</div>
+			)}
+
+			{/* Export Attendance Report Modal */}
+			{isExportModalOpen && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+					<Card className="w-full max-w-md border-slate-800 bg-slate-900 shadow-2xl">
+						<CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-800">
+							<div>
+								<CardTitle className="text-base font-bold text-white flex items-center gap-2">
+									<Download className="h-4 w-4 text-orange-400" />
+									Export Attendance Report
+								</CardTitle>
+								<CardDescription className="text-xs text-slate-400">
+									Download a comprehensive CSV attendance report for students.
+								</CardDescription>
+							</div>
+							<button
+								onClick={() => setIsExportModalOpen(false)}
+								className="text-slate-400 hover:text-white p-1 rounded-md"
+							>
+								<X className="h-4 w-4" />
+							</button>
+						</CardHeader>
+						<form onSubmit={handleDownloadReport}>
+							<CardContent className="space-y-4 pt-4 text-xs">
+								{exportError && (
+									<Alert className="border-red-800 bg-red-950/40 text-red-300 py-2">
+										<AlertCircle className="h-4 w-4 text-red-400" />
+										<AlertDescription className="text-xs">{exportError}</AlertDescription>
+									</Alert>
+								)}
+
+								<div className="space-y-1.5">
+									<label className="text-slate-300 font-medium">Start Date</label>
+									<Input
+										type="date"
+										value={exportStartDate}
+										onChange={(e) => setExportStartDate(e.target.value)}
+										className="border-slate-800 bg-slate-950 text-white text-xs h-9"
+										required
+									/>
+								</div>
+
+								<div className="space-y-1.5">
+									<label className="text-slate-300 font-medium">End Date</label>
+									<Input
+										type="date"
+										value={exportEndDate}
+										onChange={(e) => setExportEndDate(e.target.value)}
+										className="border-slate-800 bg-slate-950 text-white text-xs h-9"
+										required
+									/>
+								</div>
+
+								<p className="text-[11px] text-slate-500">
+									Includes student name, email, phone, date, status, clock-in, clock-out, total hours, distance from campus center, verification type, and instructor remarks.
+								</p>
+
+								<div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setIsExportModalOpen(false)}
+										className="border-slate-800 text-slate-300 hover:bg-slate-800 cursor-pointer"
+									>
+										Cancel
+									</Button>
+									<Button
+										type="submit"
+										size="sm"
+										disabled={isExporting}
+										className="bg-orange-600 hover:bg-orange-700 text-white font-bold cursor-pointer flex items-center gap-1.5"
+									>
+										{isExporting ? (
+											<>
+												<Loader2 className="h-3.5 w-3.5 animate-spin" />
+												<span>Generating CSV...</span>
+											</>
+										) : (
+											<>
+												<Download className="h-3.5 w-3.5" />
+												<span>Download CSV</span>
+											</>
+										)}
+									</Button>
+								</div>
+							</CardContent>
 						</form>
 					</Card>
 				</div>

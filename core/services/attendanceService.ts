@@ -18,10 +18,15 @@ export interface AttendanceRecordDto {
 	studentPhone?: string | null;
 	date: string;
 	clockInTime: string;
+	clockOutTime?: string | null;
 	latitude?: number | null;
 	longitude?: number | null;
 	accuracyMeters?: number | null;
 	distanceMeters?: number | null;
+	clockOutLatitude?: number | null;
+	clockOutLongitude?: number | null;
+	clockOutAccuracyMeters?: number | null;
+	clockOutDistanceMeters?: number | null;
 	status: AttendanceStatus;
 	verificationType: VerificationType;
 	markedByUserName?: string | null;
@@ -36,6 +41,7 @@ export interface RosterStudentItemDto {
 	isActive: boolean;
 	status: AttendanceStatus;
 	clockInTime?: string | null;
+	clockOutTime?: string | null;
 	distanceMeters?: number | null;
 	accuracyMeters?: number | null;
 	verificationType?: VerificationType | null;
@@ -76,6 +82,7 @@ export interface AttendanceSettingDto {
 export interface StudentAttendanceStatsDto {
 	date: string;
 	hasClockedInToday: boolean;
+	hasClockedOutToday: boolean;
 	todayRecord?: AttendanceRecordDto | null;
 	totalDays: number;
 	presentDays: number;
@@ -113,7 +120,7 @@ export async function getCurrentGpsPosition(): Promise<GpsLocationResult> {
 			(err) => {
 				switch (err.code) {
 					case err.PERMISSION_DENIED:
-						reject(new Error('Location access was denied. Please allow location permissions in your browser or device settings to clock in.'));
+						reject(new Error('Location access was denied. Please allow location permissions in your browser or device settings to clock in/out.'));
 						break;
 					case err.POSITION_UNAVAILABLE:
 						reject(new Error('Unable to determine location. Please ensure device Location / GPS is turned ON and retry.'));
@@ -151,6 +158,28 @@ export async function clockInToAttendance(payload: ClockInPayload, token?: strin
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({}));
 		throw new Error(err.error || 'Failed to complete clock-in.');
+	}
+
+	return res.json();
+}
+
+/**
+ * Student: Clock out from tutorial center with device GPS coordinates.
+ */
+export async function clockOutFromAttendance(payload: ClockInPayload, token?: string): Promise<AttendanceRecordDto> {
+	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+	if (token) headers['Authorization'] = `Bearer ${token}`;
+
+	const res = await fetch(`${getApiUrl()}/api/attendance/clock-out`, {
+		method: 'POST',
+		headers,
+		credentials: 'include',
+		body: JSON.stringify(payload)
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to complete clock-out.');
 	}
 
 	return res.json();
@@ -265,10 +294,40 @@ export async function updateAttendanceSettings(payload: AttendanceSettingDto, ap
 		body: JSON.stringify(payload)
 	});
 
-	if (!res.ok) {
-		const err = await res.json().catch(() => ({}));
-		throw new Error(err.error || 'Failed to save attendance settings.');
+	return res.json();
+}
+
+/**
+ * Staff / Admin: Export attendance report as CSV blob.
+ */
+export async function exportAttendanceReport(
+	startDate?: string,
+	endDate?: string,
+	studentId?: string,
+	searchTerm?: string,
+	apiKey?: string
+): Promise<Blob> {
+	const headers: Record<string, string> = {};
+	if (apiKey) {
+		headers['X-API-KEY'] = apiKey;
+		headers['Authorization'] = `Bearer ${apiKey}`;
 	}
 
-	return res.json();
+	const params = new URLSearchParams();
+	if (startDate) params.append('startDate', startDate);
+	if (endDate) params.append('endDate', endDate);
+	if (studentId) params.append('studentId', studentId);
+	if (searchTerm) params.append('searchTerm', searchTerm);
+
+	const res = await fetch(`${getApiUrl()}/api/attendance/report/export?${params.toString()}`, {
+		headers,
+		credentials: 'include'
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to export attendance CSV report.');
+	}
+
+	return res.blob();
 }
