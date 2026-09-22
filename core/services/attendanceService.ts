@@ -205,15 +205,33 @@ export async function getStudentTodayStatus(token?: string): Promise<StudentAtte
 	return res.json();
 }
 
+function getAuthHeaders(tokenOrApiKey?: string): Record<string, string> {
+	const headers: Record<string, string> = {};
+	const savedApiKey = typeof window !== 'undefined' ? localStorage.getItem('admin_api_key') : null;
+	const defaultApiKey = savedApiKey || 'trailblazers-secret-key';
+
+	if (!tokenOrApiKey) {
+		headers['X-API-KEY'] = defaultApiKey;
+		return headers;
+	}
+
+	// If it's an explicit API key (e.g. starts with 'tb_' or 'trailblazers-')
+	if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
+		headers['X-API-KEY'] = tokenOrApiKey;
+		return headers;
+	}
+
+	// Otherwise, it's a JWT Bearer token
+	headers['Authorization'] = `Bearer ${tokenOrApiKey}`;
+	headers['X-API-KEY'] = defaultApiKey;
+	return headers;
+}
+
 /**
  * Staff / Admin: Get full daily attendance roster for a specific date (YYYY-MM-DD).
  */
 export async function getDailyAttendanceRoster(date?: string, apiKey?: string): Promise<DailyRosterResponseDto> {
-	const headers: Record<string, string> = {};
-	if (apiKey) {
-		headers['X-API-KEY'] = apiKey;
-		headers['Authorization'] = `Bearer ${apiKey}`;
-	}
+	const headers = getAuthHeaders(apiKey);
 
 	const queryParam = date ? `?date=${encodeURIComponent(date)}` : '';
 	const res = await fetch(`${getApiUrl()}/api/attendance/roster${queryParam}`, {
@@ -233,11 +251,10 @@ export async function getDailyAttendanceRoster(date?: string, apiKey?: string): 
  * Staff / Admin: Manually mark or unmark student attendance.
  */
 export async function overrideAttendanceStatus(payload: AttendanceOverridePayload, apiKey?: string): Promise<AttendanceRecordDto> {
-	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-	if (apiKey) {
-		headers['X-API-KEY'] = apiKey;
-		headers['Authorization'] = `Bearer ${apiKey}`;
-	}
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json',
+		...getAuthHeaders(apiKey)
+	};
 
 	const res = await fetch(`${getApiUrl()}/api/attendance/override`, {
 		method: 'POST',
@@ -258,11 +275,7 @@ export async function overrideAttendanceStatus(payload: AttendanceOverridePayloa
  * Staff / Admin: Get academy geofence and timing configuration.
  */
 export async function getAttendanceSettings(apiKey?: string): Promise<AttendanceSettingDto> {
-	const headers: Record<string, string> = {};
-	if (apiKey) {
-		headers['X-API-KEY'] = apiKey;
-		headers['Authorization'] = `Bearer ${apiKey}`;
-	}
+	const headers = getAuthHeaders(apiKey);
 
 	const res = await fetch(`${getApiUrl()}/api/attendance/settings`, {
 		headers,
@@ -281,11 +294,10 @@ export async function getAttendanceSettings(apiKey?: string): Promise<Attendance
  * Admin: Update academy geofence and schedule settings.
  */
 export async function updateAttendanceSettings(payload: AttendanceSettingDto, apiKey?: string): Promise<AttendanceSettingDto> {
-	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-	if (apiKey) {
-		headers['X-API-KEY'] = apiKey;
-		headers['Authorization'] = `Bearer ${apiKey}`;
-	}
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json',
+		...getAuthHeaders(apiKey)
+	};
 
 	const res = await fetch(`${getApiUrl()}/api/attendance/settings`, {
 		method: 'PUT',
@@ -307,11 +319,7 @@ export async function exportAttendanceReport(
 	searchTerm?: string,
 	apiKey?: string
 ): Promise<Blob> {
-	const headers: Record<string, string> = {};
-	if (apiKey) {
-		headers['X-API-KEY'] = apiKey;
-		headers['Authorization'] = `Bearer ${apiKey}`;
-	}
+	const headers = getAuthHeaders(apiKey);
 
 	const params = new URLSearchParams();
 	if (startDate) params.append('startDate', startDate);

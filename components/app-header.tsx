@@ -153,7 +153,7 @@ export function AppHeader() {
 					</Link>
 
 					{/* Desktop App Navigation Links */}
-					<nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+					<nav className="hidden xl:flex items-center gap-1 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 						{currentLinks.map((item) => {
 							const Icon = item.icon;
 							return (
@@ -174,8 +174,8 @@ export function AppHeader() {
 					</nav>
 				</div>
 
-				{/* User Profile Info & Sign Out Button */}
-				<div className="hidden md:flex items-center gap-2 shrink-0">
+				{/* Desktop User Profile Info & Sign Out Button */}
+				<div className="hidden xl:flex items-center gap-2 shrink-0">
 					{/* Profile Chip */}
 					<div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800/80">
 						<div
@@ -213,31 +213,42 @@ export function AppHeader() {
 					</button>
 				</div>
 
-				{/* Mobile Hamburger Button with Smooth Icon Transition */}
-				<button
-					onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-					className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors relative cursor-pointer"
-					aria-label="Toggle App Menu"
-				>
-					<div className="relative h-6 w-6">
-						<Menu
-							className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
-								mobileMenuOpen ? 'opacity-0 rotate-90 scale-75' : 'opacity-100 rotate-0 scale-100'
-							}`}
-						/>
-						<X
-							className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
-								mobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-75'
-							}`}
-						/>
+				{/* Mobile / Tablet Actions: Compact Profile Avatar + Hamburger Button */}
+				<div className="flex items-center gap-2 xl:hidden">
+					<div
+						className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 ${
+							isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+						}`}
+						title={user.fullName || user.email}
+					>
+						{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
 					</div>
-				</button>
+
+					<button
+						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors relative cursor-pointer"
+						aria-label="Toggle App Menu"
+					>
+						<div className="relative h-6 w-6">
+							<Menu
+								className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
+									mobileMenuOpen ? 'opacity-0 rotate-90 scale-75' : 'opacity-100 rotate-0 scale-100'
+								}`}
+							/>
+							<X
+								className={`h-6 w-6 transition-all duration-300 absolute inset-0 ${
+									mobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-75'
+								}`}
+							/>
+						</div>
+					</button>
+				</div>
 			</div>
 		</header>
 
 		{/* Mobile Backdrop Blur & Darkening Overlay */}
 		<div
-			className={`fixed inset-x-0 top-16 bottom-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-in-out md:hidden ${
+			className={`fixed inset-x-0 top-14 bottom-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-in-out xl:hidden ${
 				mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
 			}`}
 			onClick={() => setMobileMenuOpen(false)}
@@ -246,7 +257,7 @@ export function AppHeader() {
 
 		{/* Mobile App Drawer Panel with Smooth Slide/Fade Transition */}
 		<div
-			className={`fixed inset-x-0 top-16 z-50 md:hidden border-b border-slate-800 bg-slate-950/98 p-4 space-y-4 shadow-2xl transition-all duration-300 ease-out origin-top max-h-[calc(100vh-4rem)] overflow-y-auto ${
+			className={`fixed inset-x-0 top-14 z-50 xl:hidden border-b border-slate-800 bg-slate-950/98 p-4 space-y-4 shadow-2xl transition-all duration-300 ease-out origin-top max-h-[calc(100vh-3.5rem)] overflow-y-auto ${
 				mobileMenuOpen
 					? 'opacity-100 translate-y-0 pointer-events-auto'
 					: 'opacity-0 -translate-y-3 pointer-events-none'

@@ -8,6 +8,7 @@ import {
 	RegisterPayload,
 	login as apiLogin,
 	register as apiRegister,
+	refreshAccessToken,
 	getCurrentUser,
 	logoutUser,
 	parseJwtUser
@@ -81,8 +82,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					localStorage.setItem('auth_user', JSON.stringify(freshUser));
 					setSharedAuthCookie(activeToken!, freshUser);
 				})
-				.catch((err) => {
+				.catch(async (err) => {
 					console.warn('Silent user profile sync noticed:', err);
+					const refreshToken = localStorage.getItem('auth_refresh_token');
+					if (refreshToken) {
+						try {
+							const refreshed = await refreshAccessToken(refreshToken);
+							setToken(refreshed.token);
+							setUser(refreshed.user);
+							localStorage.setItem('auth_token', refreshed.token);
+							localStorage.setItem('auth_refresh_token', refreshed.refreshToken);
+							localStorage.setItem('auth_user', JSON.stringify(refreshed.user));
+							setSharedAuthCookie(refreshed.token, refreshed.user);
+						} catch (refreshErr) {
+							console.warn('Silent session refresh failed:', refreshErr);
+						}
+					}
 				});
 		}
 
