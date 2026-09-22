@@ -72,13 +72,13 @@ export function AppHeader() {
 	const staffNavLinks = [
 		{
 			href: '/admin/submissions?tab=students',
-			label: 'Students Directory',
+			label: 'Students',
 			icon: Users,
 			isActive: pathname.startsWith('/admin') && currentTab === 'students'
 		},
 		...(user?.role === 'Admin' ? [{
 			href: '/admin/submissions?tab=staff',
-			label: 'Staff Directory',
+			label: 'Staff',
 			icon: ShieldCheck,
 			isActive: pathname.startsWith('/admin') && currentTab === 'staff'
 		}] : []),
@@ -90,7 +90,7 @@ export function AppHeader() {
 		},
 		{
 			href: '/admin/submissions?tab=questions',
-			label: 'Question Bank',
+			label: 'Questions',
 			icon: BookOpen,
 			isActive: pathname.startsWith('/admin') && currentTab === 'questions'
 		},
@@ -119,54 +119,54 @@ export function AppHeader() {
 	return (
 		<>
 			<header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md text-slate-100 shadow-lg">
-			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+			<div className="mx-auto flex h-14 max-w-[96rem] items-center justify-between px-3 sm:px-5 lg:px-6">
 				{/* LMS Brand */}
-				<div className="flex items-center gap-8">
+				<div className="flex items-center gap-4 lg:gap-6">
 					<Link
 						href={isAdminOrTutor ? '/admin/submissions' : '/student/dashboard'}
-						className="flex items-center gap-3 group focus:outline-none"
+						className="flex items-center gap-2.5 group focus:outline-none shrink-0"
 					>
 						<div className="relative">
 							<Image
 								className="rounded-full ring-2 ring-orange-500/30 group-hover:ring-orange-500/60 transition-all"
 								src="/trailblazer.jpeg"
 								alt="Trailblazer LMS"
-								width={36}
-								height={36}
+								width={32}
+								height={32}
 							/>
-							<span className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-slate-950 ${
+							<span className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-slate-950 ${
 								user.isActive ? 'bg-emerald-500' : 'bg-red-500'
 							}`} />
 						</div>
 
 						<div>
-							<div className="flex items-center gap-1.5">
-								<span className="font-extrabold tracking-tight text-white text-base">Trailblazer</span>
-								<span className="font-black text-orange-500 text-xs tracking-wider bg-orange-950/60 px-1.5 py-0.2 rounded border border-orange-800/60">
+							<div className="flex items-center gap-1.5 leading-none">
+								<span className="font-extrabold tracking-tight text-white text-sm">Trailblazer</span>
+								<span className="font-black text-orange-500 text-[10px] tracking-wider bg-orange-950/60 px-1.5 py-0.5 rounded border border-orange-800/60">
 									LMS
 								</span>
 							</div>
-							<p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
-								{isAdminOrTutor ? 'Staff Management' : 'Student Portal'}
+							<p className="text-[9px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">
+								{isAdminOrTutor ? 'Staff Portal' : 'Student Portal'}
 							</p>
 						</div>
 					</Link>
 
-					{/* Desktop App Navigation Links (No Website Links) */}
-					<nav className="hidden md:flex items-center gap-2">
+					{/* Desktop App Navigation Links */}
+					<nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
 						{currentLinks.map((item) => {
 							const Icon = item.icon;
 							return (
 								<Link
 									key={item.label}
 									href={item.href}
-									className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+									className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
 										item.isActive
-											? 'bg-slate-800 text-white shadow-sm border border-slate-700'
-											: 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80'
+											? 'bg-slate-800 text-white font-semibold shadow-xs border border-slate-700/70'
+											: 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
 									}`}
 								>
-									<Icon className={`h-4 w-4 ${item.isActive ? 'text-orange-400' : 'text-slate-500'}`} />
+									<Icon className={`h-3.5 w-3.5 shrink-0 ${item.isActive ? 'text-orange-400' : 'text-slate-500'}`} />
 									<span>{item.label}</span>
 								</Link>
 							);
@@ -175,51 +175,41 @@ export function AppHeader() {
 				</div>
 
 				{/* User Profile Info & Sign Out Button */}
-				<div className="hidden md:flex items-center gap-3">
+				<div className="hidden md:flex items-center gap-2 shrink-0">
 					{/* Profile Chip */}
-					<div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800/80 shadow-inner">
+					<div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800/80">
 						<div
-							className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-xs ${
+							className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 ${
 								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
 							}`}
 						>
 							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
 						</div>
 
-						<div className="flex flex-col text-left">
-							<span className="font-bold text-xs text-white max-w-[140px] truncate leading-tight">
+						<div className="flex items-center gap-1.5 text-left">
+							<span className="font-semibold text-xs text-white max-w-[100px] truncate">
 								{user.fullName || user.email}
 							</span>
-							<div className="flex items-center gap-1.5 mt-0.5">
-								<span
-									className={`text-[9px] uppercase font-extrabold px-1.5 py-0.2 rounded border leading-none ${
-										isAdminOrTutor
-											? 'bg-cyan-950 text-cyan-300 border-cyan-800'
-											: 'bg-orange-950 text-orange-300 border-orange-800'
-									}`}
-								>
-									{user.role}
-								</span>
-								<span className="text-[10px] text-slate-500">•</span>
-								<span
-									className={`text-[10px] font-medium ${
-										user.isActive ? 'text-emerald-400' : 'text-red-400'
-									}`}
-								>
-									{user.isActive ? 'Active' : 'Suspended'}
-								</span>
-							</div>
+							<span
+								className={`text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded border leading-none ${
+									isAdminOrTutor
+										? 'bg-cyan-950 text-cyan-300 border-cyan-800'
+										: 'bg-orange-950 text-orange-300 border-orange-800'
+								}`}
+							>
+								{user.role}
+							</span>
 						</div>
 					</div>
 
 					{/* Sign Out CTA */}
 					<button
 						onClick={logout}
-						className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-red-400 hover:bg-red-950/20 border border-transparent hover:border-red-900/40 transition-all cursor-pointer"
+						className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-950/20 border border-transparent hover:border-red-900/40 transition-all cursor-pointer"
 						title="Sign Out of Session"
 					>
-						<LogOut className="h-4 w-4" />
-						<span>Sign Out</span>
+						<LogOut className="h-3.5 w-3.5" />
+						<span className="hidden lg:inline">Sign Out</span>
 					</button>
 				</div>
 
