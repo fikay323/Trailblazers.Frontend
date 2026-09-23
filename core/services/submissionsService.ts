@@ -4,6 +4,8 @@ export interface ContactSubmissionPayload {
 	name: string;
 	email: string;
 	message: string;
+	honeypot?: string;
+	formLoadTimestamp?: number;
 }
 
 export interface RegisterSubmissionPayload {
@@ -24,6 +26,8 @@ export interface RegisterSubmissionPayload {
 	classMode?: string;
 	referral?: string;
 	programmes?: string[];
+	honeypot?: string;
+	formLoadTimestamp?: number;
 }
 
 export interface GetSubmissionsParams {
@@ -70,24 +74,31 @@ export async function submitRegistration(payload: RegisterSubmissionPayload): Pr
 }
 
 function getAuthHeaders(tokenOrApiKey?: string): HeadersInit {
-	const defaultKey = 'trailblazers-secret-key';
-	if (!tokenOrApiKey) {
-		return {
-			'Accept': 'application/json',
-			'X-API-KEY': defaultKey
-		};
+	const savedApiKey = typeof window !== 'undefined' ? localStorage.getItem('admin_api_key') : null;
+	const savedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+	const defaultApiKey = savedApiKey || 'trailblazers-secret-key';
+
+	let effectiveApiKey = defaultApiKey;
+	let effectiveToken = savedToken;
+
+	if (tokenOrApiKey) {
+		if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
+			effectiveApiKey = tokenOrApiKey;
+		} else {
+			effectiveToken = tokenOrApiKey;
+		}
 	}
-	if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
-		return {
-			'Accept': 'application/json',
-			'X-API-KEY': tokenOrApiKey
-		};
-	}
-	return {
+
+	const headers: Record<string, string> = {
 		'Accept': 'application/json',
-		'Authorization': `Bearer ${tokenOrApiKey}`,
-		'X-API-KEY': defaultKey
+		'X-API-KEY': effectiveApiKey
 	};
+
+	if (effectiveToken) {
+		headers['Authorization'] = `Bearer ${effectiveToken}`;
+	}
+
+	return headers;
 }
 
 export async function getSubmissions(params: GetSubmissionsParams, apiKey: string): Promise<any> {

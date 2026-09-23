@@ -412,8 +412,7 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 									</h4>
 									{(() => {
 										const isAccountCreated =
-											getMetadataProperty(selectedItem.metadata, 'AccountCreated') === 'true' ||
-											getMetadataProperty(selectedItem.metadata, 'AccountCreated') === true;
+											String(getMetadataProperty(selectedItem.metadata, 'AccountCreated')).toLowerCase() === 'true';
 										const inviteUrl =
 											getMetadataProperty(selectedItem.metadata, 'AccountInviteUrl') ||
 											createAccountResult?.inviteUrl;

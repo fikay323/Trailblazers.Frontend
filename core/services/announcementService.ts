@@ -40,18 +40,31 @@ export interface AnnouncementsListResponse {
 }
 
 function getAuthHeaders(tokenOrApiKey?: string): HeadersInit {
-	const key = tokenOrApiKey || 'trailblazers-secret-key';
-	if (key.startsWith('tb_') || key.startsWith('trailblazers-')) {
-		return {
-			'Content-Type': 'application/json',
-			'X-API-KEY': key
-		};
+	const savedApiKey = typeof window !== 'undefined' ? localStorage.getItem('admin_api_key') : null;
+	const savedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+	const defaultApiKey = savedApiKey || 'trailblazers-secret-key';
+
+	let effectiveApiKey = defaultApiKey;
+	let effectiveToken = savedToken;
+
+	if (tokenOrApiKey) {
+		if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
+			effectiveApiKey = tokenOrApiKey;
+		} else {
+			effectiveToken = tokenOrApiKey;
+		}
 	}
-	return {
+
+	const headers: Record<string, string> = {
 		'Content-Type': 'application/json',
-		'Authorization': `Bearer ${key}`,
-		'X-API-KEY': 'trailblazers-secret-key'
+		'X-API-KEY': effectiveApiKey
 	};
+
+	if (effectiveToken) {
+		headers['Authorization'] = `Bearer ${effectiveToken}`;
+	}
+
+	return headers;
 }
 
 /**

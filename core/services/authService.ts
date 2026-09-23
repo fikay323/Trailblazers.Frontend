@@ -7,6 +7,7 @@ export interface UserDto {
 	role: string;
 	isActive: boolean;
 	disabledReason?: string | null;
+	phoneNumber?: string | null;
 }
 
 export interface AuthResponseDto {

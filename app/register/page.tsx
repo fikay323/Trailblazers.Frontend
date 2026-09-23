@@ -15,6 +15,8 @@ export default function RegisterPage() {
 	const [submitting, setSubmitting] = useState(false)
 	const [succeeded, setSucceeded] = useState(false)
 	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [formLoadTimestamp] = useState<number>(() => Date.now())
+	const [honeypot, setHoneypot] = useState<string>('')
 
 	const [formData, setFormData] = useState({
 		fullName: "",
@@ -91,7 +93,9 @@ export default function RegisterPage() {
 				subjectCombination: formData.subjectCombination,
 				classMode: formData.classMode,
 				referral: formData.referral,
-				programmes: formData.programmes
+				programmes: formData.programmes,
+				honeypot: honeypot || undefined,
+				formLoadTimestamp
 			};
 
 			await submitRegistration(registrationPayload);
@@ -152,6 +156,20 @@ export default function RegisterPage() {
 							</div>
 						)}
 						<form onSubmit={handleSubmit} className="space-y-12">
+							{/* Anti-Bot Honeypot Trap (invisible to humans, filled by spam bots) */}
+							<div className="absolute -left-[9999px] top-0 h-0 w-0 opacity-0 pointer-events-none overflow-hidden" aria-hidden="true" tabIndex={-1}>
+								<label htmlFor="hp_website_reg">Leave this empty</label>
+								<input
+									id="hp_website_reg"
+									type="text"
+									name="website_url"
+									value={honeypot}
+									onChange={(e) => setHoneypot(e.target.value)}
+									autoComplete="off"
+									tabIndex={-1}
+								/>
+							</div>
+
 							{/* Personal Information */}
 							<div className="space-y-8">
 								<h3 className="text-lg font-semibold border-b pb-2">1. Personal Information</h3>

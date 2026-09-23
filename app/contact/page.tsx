@@ -23,9 +23,11 @@ export default function ContactPage() {
     email: "trailblazeredukonsult@gmail.com"
   })
 
+  const [formLoadTimestamp] = useState<number>(() => Date.now())
+  const [honeypot, setHoneypot] = useState<string>("")
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitting(false) // Wait, let's set it to true
     setSubmitting(true)
     setSubmitError(null)
 
@@ -33,7 +35,9 @@ export default function ContactPage() {
       const payload = {
         name: formData.fullName,
         email: formData.email,
-        message: `Phone: ${formData.phone}\nProgram: ${formData.program}\n\n${formData.message}`
+        message: `Phone: ${formData.phone}\nProgram: ${formData.program}\n\n${formData.message}`,
+        honeypot: honeypot || undefined,
+        formLoadTimestamp
       }
       await submitContact(payload)
       setSucceeded(true)
@@ -159,6 +163,20 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                    {/* Anti-Bot Honeypot Trap */}
+                    <div className="absolute -left-[9999px] top-0 h-0 w-0 opacity-0 pointer-events-none overflow-hidden" aria-hidden="true" tabIndex={-1}>
+                      <label htmlFor="hp_website_contact">Leave this empty</label>
+                      <input
+                        id="hp_website_contact"
+                        type="text"
+                        name="website_url"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                        autoComplete="off"
+                        tabIndex={-1}
+                      />
+                    </div>
+
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
                         <label htmlFor="fullName" className="text-sm font-medium text-foreground">

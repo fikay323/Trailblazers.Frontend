@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck, Megaphone } from 'lucide-react';
+import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck, Megaphone, Newspaper } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,13 +38,13 @@ function SubmissionsDashboardContent() {
 
 	// Auto-authorize if user is logged in as Admin or Instructor
 	useEffect(() => {
+		const savedKey = localStorage.getItem('admin_api_key') || 'trailblazers-secret-key';
 		if (user && (user.role === 'Admin' || user.role === 'Instructor')) {
-			setApiKey(token || 'trailblazers-secret-key');
+			setApiKey(savedKey);
 			setIsAuthorized(true);
 			return;
 		}
 
-		const savedKey = localStorage.getItem('admin_api_key');
 		if (savedKey) {
 			setApiKey(savedKey);
 			setIsAuthorized(true);

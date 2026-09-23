@@ -206,24 +206,29 @@ export async function getStudentTodayStatus(token?: string): Promise<StudentAtte
 }
 
 function getAuthHeaders(tokenOrApiKey?: string): Record<string, string> {
-	const headers: Record<string, string> = {};
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json'
+	};
 	const savedApiKey = typeof window !== 'undefined' ? localStorage.getItem('admin_api_key') : null;
+	const savedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
 	const defaultApiKey = savedApiKey || 'trailblazers-secret-key';
 
-	if (!tokenOrApiKey) {
-		headers['X-API-KEY'] = defaultApiKey;
-		return headers;
+	let effectiveApiKey = defaultApiKey;
+	let effectiveToken = savedToken;
+
+	if (tokenOrApiKey) {
+		if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
+			effectiveApiKey = tokenOrApiKey;
+		} else {
+			effectiveToken = tokenOrApiKey;
+		}
 	}
 
-	// If it's an explicit API key (e.g. starts with 'tb_' or 'trailblazers-')
-	if (tokenOrApiKey.startsWith('tb_') || tokenOrApiKey.startsWith('trailblazers-')) {
-		headers['X-API-KEY'] = tokenOrApiKey;
-		return headers;
+	headers['X-API-KEY'] = effectiveApiKey;
+	if (effectiveToken) {
+		headers['Authorization'] = `Bearer ${effectiveToken}`;
 	}
 
-	// Otherwise, it's a JWT Bearer token
-	headers['Authorization'] = `Bearer ${tokenOrApiKey}`;
-	headers['X-API-KEY'] = defaultApiKey;
 	return headers;
 }
 
