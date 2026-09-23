@@ -49,22 +49,36 @@ export function getStudentLoginUrl(): string {
 }
 
 /**
- * Returns the direct URL to the Student Portal Registration page.
+ * Resolves destination URLs on the main website domain across subdomains.
  */
-export function getStudentRegisterUrl(): string {
-	if (typeof window === 'undefined') return '/auth/register';
+export function getMainSiteUrl(path: string = '/'): string {
+	const cleanPath = path.startsWith('/') ? path : `/${path}`;
+	if (typeof window === 'undefined') return cleanPath;
 
 	const { hostname, protocol, port } = window.location;
 	const portSuffix = port ? `:${port}` : '';
 
-	if (hostname.startsWith('learn.')) return '/auth/register';
-	if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
-		return `${protocol}//learn.localhost${portSuffix}/auth/register`;
+	const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+	const isProduction = hostname === 'trailblazer-academy.com' || hostname.endsWith('.trailblazer-academy.com');
+
+	if (isLocalhost) {
+		if (hostname === 'localhost') return cleanPath;
+		return `${protocol}//localhost${portSuffix}${cleanPath}`;
 	}
-	if (hostname === 'trailblazer-academy.com' || hostname.endsWith('.trailblazer-academy.com')) {
-		return `https://learn.trailblazer-academy.com/auth/register`;
+
+	if (isProduction) {
+		if (hostname === 'trailblazer-academy.com') return cleanPath;
+		return `https://trailblazer-academy.com${cleanPath}`;
 	}
-	return '/auth/register';
+
+	return cleanPath;
+}
+
+/**
+ * Returns the direct URL to the official Student Registration page.
+ */
+export function getStudentRegisterUrl(): string {
+	return getMainSiteUrl('/register');
 }
 
 /**

@@ -37,6 +37,25 @@ export function middleware(request: NextRequest) {
 	// 1. STAFF PORTAL SUBDOMAIN (staff.trailblazer-academy.com or staff.localhost)
 	// =========================================================================
 	if (isStaffSubdomain) {
+		// If accessing public marketing or registration routes on staff subdomain, redirect to main site
+		if (
+			pathname === '/register' ||
+			pathname.startsWith('/register') ||
+			pathname === '/about' ||
+			pathname === '/contact' ||
+			pathname === '/programs'
+		) {
+			const mainUrl = new URL(pathname + request.nextUrl.search, request.url);
+			if (hostname.startsWith('staff.localhost')) {
+				mainUrl.host = hostname.replace(/^staff\./, '');
+			} else if (hostname.endsWith('.trailblazer-academy.com') || hostname === 'staff.trailblazer-academy.com') {
+				mainUrl.protocol = 'https:';
+				mainUrl.host = 'trailblazer-academy.com';
+				mainUrl.port = '';
+			}
+			return NextResponse.redirect(mainUrl);
+		}
+
 		// If a Student account accesses the staff subdomain, block and redirect to student portal
 		if (userRole === 'Student' && pathname !== '/auth/login' && pathname !== '/login') {
 			const learnUrl = new URL('/student/dashboard', request.url);
@@ -70,6 +89,27 @@ export function middleware(request: NextRequest) {
 	// 2. STUDENT LMS SUBDOMAIN (learn.trailblazer-academy.com or learn.localhost)
 	// =========================================================================
 	if (isLearnSubdomain) {
+		// If accessing public marketing or registration routes on learn subdomain, redirect to main site
+		if (
+			pathname === '/register' ||
+			pathname.startsWith('/register') ||
+			pathname === '/auth/register' ||
+			pathname === '/about' ||
+			pathname === '/contact' ||
+			pathname === '/programs'
+		) {
+			const targetPath = pathname === '/auth/register' ? '/register' : pathname;
+			const mainUrl = new URL(targetPath + request.nextUrl.search, request.url);
+			if (hostname.startsWith('learn.localhost')) {
+				mainUrl.host = hostname.replace(/^learn\./, '');
+			} else if (hostname.endsWith('.trailblazer-academy.com') || hostname === 'learn.trailblazer-academy.com') {
+				mainUrl.protocol = 'https:';
+				mainUrl.host = 'trailblazer-academy.com';
+				mainUrl.port = '';
+			}
+			return NextResponse.redirect(mainUrl);
+		}
+
 		// If accessing admin routes on learn subdomain, redirect to staff portal
 		if (pathname.startsWith('/admin')) {
 			const staffUrl = new URL(pathname + request.nextUrl.search, request.url);
@@ -85,11 +125,6 @@ export function middleware(request: NextRequest) {
 
 		if (pathname === '/login') {
 			url.pathname = '/auth/login';
-			return NextResponse.rewrite(url);
-		}
-
-		if (pathname === '/register') {
-			url.pathname = '/auth/register';
 			return NextResponse.rewrite(url);
 		}
 

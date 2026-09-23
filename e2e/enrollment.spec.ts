@@ -68,4 +68,12 @@ test.describe('Student Registration & Enrollment Workflow', () => {
 		const submitBtn = page.getByRole('button', { name: /Submit Application/i });
 		await expect(submitBtn).toBeVisible();
 	});
+
+	test('Sign In page (/auth/login) links directly to public registration form (/register)', async ({ page }) => {
+		await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
+
+		const registerLink = page.getByRole('link', { name: /Register new account/i });
+		await expect(registerLink).toBeVisible();
+		await expect(registerLink).toHaveAttribute('href', /register/);
+	});
 });

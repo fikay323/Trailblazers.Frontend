@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GraduationCap, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
-import { getPortalUrl } from '@/core/utils/subdomain';
+import { getPortalUrl, getStudentRegisterUrl } from '@/core/utils/subdomain';
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -20,11 +20,13 @@ export default function LoginPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isStaffSubdomain, setIsStaffSubdomain] = useState(false);
+	const [registerUrl, setRegisterUrl] = useState('/register');
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
 			const host = window.location.hostname.toLowerCase();
 			setIsStaffSubdomain(host.startsWith('staff.'));
+			setRegisterUrl(getStudentRegisterUrl());
 		}
 	}, []);
 
@@ -152,9 +154,12 @@ export default function LoginPage() {
 					{!isStaffSubdomain ? (
 						<p className="text-xs text-slate-400">
 							Don't have an account yet?{' '}
-							<Link href="/auth/register" className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2">
-								Create Student Account
-							</Link>
+							<a
+								href={registerUrl}
+								className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2"
+							>
+								Register new account
+							</a>
 						</p>
 					) : (
 						<p className="text-xs text-slate-400">

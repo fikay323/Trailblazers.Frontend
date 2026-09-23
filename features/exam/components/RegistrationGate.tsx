@@ -23,10 +23,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/core/contexts/AuthContext';
 import { getExamMetadata, startExam } from '@/core/services/examService';
+import { getStudentRegisterUrl, getMainSiteUrl } from '@/core/utils/subdomain';
 
 export function RegistrationGate() {
 	const router = useRouter();
 	const { user, isLoading: authLoading } = useAuth();
+	const [registerUrl, setRegisterUrl] = useState('/register');
+	const [homeUrl, setHomeUrl] = useState('/');
+
+	useEffect(() => {
+		setRegisterUrl(getStudentRegisterUrl());
+		setHomeUrl(getMainSiteUrl('/'));
+	}, []);
 
 	const [metadata, setMetadata] = useState<{ subjects: string[]; years: number[] } | null>(null);
 	const [isLoadingMeta, setIsLoadingMeta] = useState(true);
@@ -146,7 +154,7 @@ export function RegistrationGate() {
 						</Button>
 					</Link>
 
-					<Link href="/auth/register" className="block w-full">
+					<a href={registerUrl} className="block w-full">
 						<Button
 							variant="outline"
 							className="w-full border-slate-700 bg-slate-950/60 hover:bg-slate-800 text-slate-200 font-semibold py-6 text-sm flex items-center justify-center gap-2 cursor-pointer"
@@ -154,13 +162,13 @@ export function RegistrationGate() {
 							<UserPlus className="h-4 w-4 text-orange-400" />
 							Create New Student Account
 						</Button>
-					</Link>
+					</a>
 				</CardContent>
 
 				<CardFooter className="flex justify-center border-t border-slate-800/80 pt-4">
-					<Link href="/" className="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2">
+					<a href={homeUrl} className="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2">
 						← Return to Academy Homepage
-					</Link>
+					</a>
 				</CardFooter>
 			</Card>
 		);

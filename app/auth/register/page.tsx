@@ -1,13 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, ArrowRight, LogIn, PhoneCall, CheckCircle2 } from 'lucide-react';
+import { getStudentRegisterUrl, getMainSiteUrl } from '@/core/utils/subdomain';
 
 export default function RegisterClosedPage() {
+	const [registerUrl, setRegisterUrl] = useState('/register');
+	const [contactUrl, setContactUrl] = useState('/contact');
+
+	useEffect(() => {
+		setRegisterUrl(getStudentRegisterUrl());
+		setContactUrl(getMainSiteUrl('/contact'));
+	}, []);
 	return (
 		<div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-950 text-slate-100">
 			<Card className="w-full max-w-lg border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-2xl">
@@ -62,10 +70,10 @@ export default function RegisterClosedPage() {
 							asChild
 							className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 cursor-pointer shadow-lg shadow-orange-600/20"
 						>
-							<Link href="/register">
+							<a href={registerUrl}>
 								Complete Student Registration
 								<ArrowRight className="ml-2 h-4 w-4" />
-							</Link>
+							</a>
 						</Button>
 
 						<div className="grid grid-cols-2 gap-3">
@@ -84,10 +92,10 @@ export default function RegisterClosedPage() {
 								variant="outline"
 								className="w-full border-slate-800 hover:bg-slate-800 text-slate-300 cursor-pointer"
 							>
-								<Link href="/contact">
+								<a href={contactUrl}>
 									<PhoneCall className="mr-2 h-4 w-4" />
 									Contact Desk
-								</Link>
+								</a>
 							</Button>
 						</div>
 					</div>
