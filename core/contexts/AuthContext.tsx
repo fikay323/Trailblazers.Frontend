@@ -104,17 +104,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		setIsLoading(false);
 	}, []);
 
-	const saveAuth = (auth: AuthResponseDto) => {
+	const saveAuth = (auth: any) => {
+		const userObj: UserDto = auth.user || {
+			id: auth.userId || auth.id || '',
+			email: auth.email || '',
+			fullName: auth.fullName || '',
+			role: auth.role || 'Student',
+			isActive: auth.isActive ?? true
+		};
 		setToken(auth.token);
-		setUser(auth.user);
+		setUser(userObj);
 		localStorage.setItem('auth_token', auth.token);
-		localStorage.setItem('auth_refresh_token', auth.refreshToken);
-		localStorage.setItem('auth_user', JSON.stringify(auth.user));
-		if (auth.user.role === 'Admin' || auth.user.role === 'Instructor') {
+		localStorage.setItem('auth_refresh_token', auth.refreshToken || '');
+		localStorage.setItem('auth_user', JSON.stringify(userObj));
+		if (userObj.role === 'Admin' || userObj.role === 'Instructor') {
 			localStorage.setItem('admin_api_key', 'trailblazers-secret-key');
+		} else {
+			localStorage.removeItem('admin_api_key');
 		}
 		// Write shared wildcard cookie for cross-subdomain SSO
-		setSharedAuthCookie(auth.token, auth.user);
+		setSharedAuthCookie(auth.token, userObj);
 	};
 
 	const login = async (payload: LoginPayload): Promise<UserDto> => {

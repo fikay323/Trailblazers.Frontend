@@ -104,13 +104,30 @@ function AcceptInviteContent() {
 			});
 
 			setIsSuccess(true);
-			setSession(authRes);
+
+			const effectiveRole = authRes.user?.role || authRes.role || inviteInfo?.role || 'Student';
+			const isStudent = effectiveRole === 'Student';
+
+			const normalizedUser = authRes.user || {
+				id: authRes.userId || authRes.id || '',
+				email: authRes.email || email,
+				fullName: authRes.fullName || inviteInfo?.fullName || '',
+				role: effectiveRole,
+				isActive: true
+			};
+
+			const normalizedAuth = {
+				token: authRes.token,
+				refreshToken: authRes.refreshToken || '',
+				user: normalizedUser
+			};
+
+			setSession(normalizedAuth);
 
 			// Redirect into the portal after brief visual confirmation
 			setTimeout(() => {
-				const isStudent = authRes.user?.role === 'Student';
 				const destination = getPortalUrl(
-					authRes.user?.role || 'Student',
+					effectiveRole,
 					isStudent ? '/student/dashboard' : '/admin/submissions?tab=students'
 				);
 				window.location.href = destination;
@@ -120,6 +137,8 @@ function AcceptInviteContent() {
 			setIsSubmitting(false);
 		}
 	};
+
+	const isStudentInvite = inviteInfo?.role === 'Student';
 
 	// 1. Loading State
 	if (isValidating) {
@@ -157,13 +176,13 @@ function AcceptInviteContent() {
 							Invitation Link Expired or Invalid
 						</CardTitle>
 						<CardDescription className="text-slate-400 text-xs sm:text-sm">
-							{validationError || 'This staff invitation could not be verified.'}
+							{validationError || 'This invitation could not be verified.'}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-xs text-slate-400 leading-relaxed">
-							Staff invitation links remain valid for <strong className="text-white">48 hours</strong> from issuance.
-							If your link has expired, please ask an administrator to resend your invite from the Staff Directory.
+							Invitation links remain valid for <strong className="text-white">48 hours</strong> from issuance.
+							If your link has expired, please ask an administrator or admissions officer to resend your invite.
 						</div>
 					</CardContent>
 					<CardFooter className="flex flex-col gap-2">
@@ -172,7 +191,7 @@ function AcceptInviteContent() {
 							onClick={() => router.push('/auth/login')}
 							className="w-full border-slate-800 hover:bg-slate-800 text-slate-300 cursor-pointer"
 						>
-							Return to Staff Sign In
+							{isStudentInvite ? 'Return to Student Sign In' : 'Return to Staff Sign In'}
 						</Button>
 					</CardFooter>
 				</Card>
@@ -191,12 +210,12 @@ function AcceptInviteContent() {
 					<div className="space-y-2">
 						<h2 className="text-2xl font-bold text-white tracking-tight">Account Activated!</h2>
 						<p className="text-sm text-slate-400">
-							Welcome aboard, <span className="text-white font-medium">{inviteInfo.fullName}</span>. You are being redirected to the staff management workspace.
+							Welcome aboard, <span className="text-white font-medium">{inviteInfo.fullName}</span>. You are being redirected to your {isStudentInvite ? 'student learning dashboard' : 'staff workspace'}.
 						</p>
 					</div>
 					<div className="flex items-center justify-center gap-2 text-xs text-emerald-400 font-medium bg-emerald-950/40 py-2.5 rounded-lg border border-emerald-900/60">
 						<Loader2 className="h-3.5 w-3.5 animate-spin" />
-						Launching your staff session...
+						Launching your {isStudentInvite ? 'student' : 'staff'} session...
 					</div>
 				</Card>
 			</div>
@@ -224,13 +243,17 @@ function AcceptInviteContent() {
 					<div className="space-y-1">
 						<div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
 							<Sparkles className="h-3 w-3" />
-							{inviteInfo.role} Invitation
+							{isStudentInvite ? 'Student Account Activation' : `${inviteInfo.role} Invitation`}
 						</div>
 						<CardTitle className="text-2xl font-extrabold tracking-tight text-white">
-							Set Up Your Staff Account
+							{isStudentInvite ? 'Activate Your Student Account' : 'Set Up Your Staff Account'}
 						</CardTitle>
 						<CardDescription className="text-xs sm:text-sm text-slate-400">
-							Hello <span className="text-white font-medium">{inviteInfo.fullName}</span>, create your password to activate your faculty account.
+							{isStudentInvite ? (
+								<>Hello <span className="text-white font-medium">{inviteInfo.fullName}</span>, create your password to activate your CBT testing portal.</>
+							) : (
+								<>Hello <span className="text-white font-medium">{inviteInfo.fullName}</span>, create your password to activate your faculty account.</>
+							)}
 						</CardDescription>
 					</div>
 				</CardHeader>
