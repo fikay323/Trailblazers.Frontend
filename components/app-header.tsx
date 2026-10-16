@@ -126,14 +126,16 @@ export function AppHeader() {
 						href={isAdminOrTutor ? '/admin/submissions' : '/student/dashboard'}
 						className="flex items-center gap-2.5 group focus:outline-none shrink-0"
 					>
-						<div className="relative">
-							<Image
-								className="rounded-full ring-2 ring-orange-500/30 group-hover:ring-orange-500/60 transition-all"
-								src="/trailblazer.jpeg"
-								alt="Trailblazer LMS"
-								width={32}
-								height={32}
-							/>
+						<div className="relative shrink-0">
+							<div className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-orange-500/30 group-hover:ring-orange-500/60 transition-all aspect-square bg-slate-900">
+								<Image
+									className="rounded-full object-cover"
+									src="/trailblazer.jpeg"
+									alt="Trailblazer LMS"
+									fill
+									sizes="32px"
+								/>
+							</div>
 							<span className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-slate-950 ${
 								user.isActive ? 'bg-emerald-500' : 'bg-red-500'
 							}`} />

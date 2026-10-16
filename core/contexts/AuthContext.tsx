@@ -38,30 +38,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		let activeToken = localStorage.getItem('auth_token');
+		const isBrowser = typeof window !== 'undefined';
+		if (!isBrowser) {
+			setIsLoading(false);
+			return;
+		}
+
+		const hostname = window.location.hostname.toLowerCase();
+		const isProductionDomain = hostname === 'trailblazer-academy.com' || hostname.endsWith('.trailblazer-academy.com');
+
+		const shared = getSharedAuthCookie();
+
+		let activeToken: string | null = null;
 		let activeUser: UserDto | null = null;
 
-		const storedUser = localStorage.getItem('auth_user');
-		if (storedUser) {
-			try {
-				activeUser = JSON.parse(storedUser);
-			} catch {
-				localStorage.removeItem('auth_user');
-			}
-		}
-
-		// Fallback 1: Check shared wildcard cookie across subdomains (Single Sign-On bridge)
-		if (!activeToken || !activeUser) {
-			const shared = getSharedAuthCookie();
+		if (isProductionDomain) {
+			// In production, the shared wildcard cookie (.trailblazer-academy.com) is the single source of truth across subdomains.
 			if (shared && shared.token) {
-				activeToken = activeToken || shared.token;
-				activeUser = activeUser || shared.user;
+				activeToken = shared.token;
+				activeUser = shared.user || parseJwtUser(shared.token);
+			} else {
+				// User logged out or session expired on another subdomain — purge local storage to prevent session resurrection
+				localStorage.removeItem('auth_token');
+				localStorage.removeItem('auth_user');
+				localStorage.removeItem('auth_refresh_token');
+				localStorage.removeItem('admin_api_key');
 			}
-		}
-
-		// Fallback 2: If we have a token but user profile is missing, extract claims from JWT
-		if (activeToken && !activeUser) {
-			activeUser = parseJwtUser(activeToken);
+		} else {
+			// Local development / non-production environment
+			if (shared && shared.token) {
+				activeToken = shared.token;
+				activeUser = shared.user;
+			} else {
+				activeToken = localStorage.getItem('auth_token');
+				const storedUser = localStorage.getItem('auth_user');
+				if (storedUser) {
+					try {
+						activeUser = JSON.parse(storedUser);
+					} catch {
+						localStorage.removeItem('auth_user');
+					}
+				}
+				if (activeToken && !activeUser) {
+					activeUser = parseJwtUser(activeToken);
+				}
+			}
 		}
 
 		if (activeToken && activeUser) {
@@ -99,6 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 						}
 					}
 				});
+		} else {
+			setUser(null);
+			setToken(null);
 		}
 
 		setIsLoading(false);
@@ -138,8 +162,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		return auth.user;
 	};
 
-	const logout = () => {
-		logoutUser();
+	const logout = async () => {
+		try {
+			await logoutUser();
+		} catch (e) {
+			console.error('Logout error on backend:', e);
+		}
 		clearSharedAuthCookie();
 		setUser(null);
 		setToken(null);
@@ -148,7 +176,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		localStorage.removeItem('auth_user');
 		localStorage.removeItem('admin_api_key');
 		if (typeof window !== 'undefined') {
-			window.location.href = '/auth/login';
+			const host = window.location.hostname.toLowerCase();
+			if (host.startsWith('staff.') || host.startsWith('learn.')) {
+				window.location.href = '/auth/login';
+			} else {
+				window.location.href = '/';
+			}
 		}
 	};
 

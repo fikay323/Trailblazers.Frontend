@@ -170,16 +170,33 @@ export function clearSharedAuthCookie(): void {
 	if (typeof document === 'undefined' || typeof window === 'undefined') return;
 
 	try {
-		const { hostname } = window.location;
-		let domainAttr = '';
-		if (hostname === 'trailblazer-academy.com' || hostname.endsWith('.trailblazer-academy.com')) {
-			domainAttr = '; domain=.trailblazer-academy.com';
-		} else if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
-			domainAttr = '; domain=localhost';
-		}
+		const { hostname, protocol } = window.location;
+		const isSecure = protocol === 'https:';
+		const cookieNames = [COOKIE_NAME, 'auth_token', 'refresh_token'];
+		const domains = [
+			'', // host-only
+			hostname,
+			`.${hostname}`,
+			'.trailblazer-academy.com',
+			'trailblazer-academy.com',
+			'staff.trailblazer-academy.com',
+			'learn.trailblazer-academy.com',
+			'localhost',
+			'.localhost'
+		];
 
-		document.cookie = `${COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT${domainAttr}`;
-		document.cookie = `${COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+		const uniqueDomains = Array.from(new Set(domains));
+
+		for (const name of cookieNames) {
+			for (const domain of uniqueDomains) {
+				const domainClause = domain ? `; domain=${domain}` : '';
+				// Clear with standard path
+				document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0${domainClause}; SameSite=Lax`;
+				if (isSecure) {
+					document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0${domainClause}; SameSite=Lax; Secure`;
+				}
+			}
+		}
 	} catch (e) {
 		console.warn('Failed to clear shared auth cookie:', e);
 	}

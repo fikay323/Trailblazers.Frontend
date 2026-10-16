@@ -43,13 +43,15 @@ export function WebsiteHeader() {
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 				{/* Brand Logo & Name */}
 				<Link href="/" className="text-lg font-bold text-foreground flex items-center gap-2.5">
-					<Image
-						className="dark:invert rounded-full"
-						src="/trailblazer.jpeg"
-						alt="Trailblazer Academy & Edukonsult"
-						width={40}
-						height={40}
-					/>
+					<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full aspect-square ring-2 ring-orange-500/20 bg-slate-100 dark:bg-slate-900">
+						<Image
+							className="rounded-full object-cover dark:invert"
+							src="/trailblazer.jpeg"
+							alt="Trailblazer Academy & Edukonsult"
+							fill
+							sizes="40px"
+						/>
+					</div>
 					<span className="hidden sm:inline text-base font-extrabold tracking-tight">
 						Trailblazer Academy
 					</span>
