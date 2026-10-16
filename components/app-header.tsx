@@ -180,13 +180,21 @@ export function AppHeader() {
 				<div className="hidden xl:flex items-center gap-2 shrink-0">
 					{/* Profile Chip */}
 					<div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800/80">
-						<div
-							className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 ${
-								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
-							}`}
-						>
-							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
-						</div>
+						{user.profilePictureUrl ? (
+							<img
+								src={user.profilePictureUrl}
+								alt={user.fullName || user.email}
+								className="h-6 w-6 rounded-full object-cover shrink-0 border border-slate-700"
+							/>
+						) : (
+							<div
+								className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 ${
+									isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+								}`}
+							>
+								{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
+							</div>
+						)}
 
 						<div className="flex items-center gap-1.5 text-left">
 							<span className="font-semibold text-xs text-white max-w-[100px] truncate">
@@ -217,14 +225,23 @@ export function AppHeader() {
 
 				{/* Mobile / Tablet Actions: Compact Profile Avatar + Hamburger Button */}
 				<div className="flex items-center gap-2 xl:hidden">
-					<div
-						className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 ${
-							isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
-						}`}
-						title={user.fullName || user.email}
-					>
-						{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
-					</div>
+					{user.profilePictureUrl ? (
+						<img
+							src={user.profilePictureUrl}
+							alt={user.fullName || user.email}
+							className="h-7 w-7 rounded-full object-cover shrink-0 border border-slate-700"
+							title={user.fullName || user.email}
+						/>
+					) : (
+						<div
+							className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 ${
+								isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+							}`}
+							title={user.fullName || user.email}
+						>
+							{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
+						</div>
+					)}
 
 					<button
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -267,13 +284,21 @@ export function AppHeader() {
 		>
 			{/* User Card */}
 			<div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
-				<div
-					className={`h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-sm text-white shrink-0 ${
-						isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
-					}`}
-				>
-					{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
-				</div>
+				{user.profilePictureUrl ? (
+					<img
+						src={user.profilePictureUrl}
+						alt={user.fullName || user.email}
+						className="h-10 w-10 rounded-full object-cover shrink-0 border border-slate-700"
+					/>
+				) : (
+					<div
+						className={`h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-sm text-white shrink-0 ${
+							isAdminOrTutor ? 'bg-cyan-600' : 'bg-orange-600'
+						}`}
+					>
+						{(user.fullName || user.email)?.charAt(0).toUpperCase() || 'U'}
+					</div>
+				)}
 				<div className="overflow-hidden">
 					<div className="text-sm font-bold text-white truncate">{user.fullName || user.email}</div>
 					<div className="text-xs text-slate-400 font-mono truncate">{user.email}</div>

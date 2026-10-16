@@ -27,6 +27,7 @@ interface AuthContextType {
 	register: (payload: RegisterPayload) => Promise<UserDto>;
 	logout: () => void;
 	refreshUserProfile: () => Promise<void>;
+	updateUserProfilePicture: (url: string | null) => void;
 	setSession: (auth: AuthResponseDto) => void;
 }
 
@@ -128,13 +129,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		setIsLoading(false);
 	}, []);
 
-	const saveAuth = (auth: any) => {
-		const userObj: UserDto = auth.user || {
-			id: auth.userId || auth.id || '',
-			email: auth.email || '',
-			fullName: auth.fullName || '',
-			role: auth.role || 'Student',
-			isActive: auth.isActive ?? true
+	const saveAuth = (auth: AuthResponseDto | { token: string; refreshToken?: string; user?: UserDto; [key: string]: unknown }) => {
+		const rawUser = auth.user as UserDto | undefined;
+		const userObj: UserDto = rawUser || {
+			id: (auth.userId as string) || (auth.id as string) || '',
+			email: (auth.email as string) || '',
+			fullName: (auth.fullName as string) || '',
+			role: (auth.role as string) || 'Student',
+			isActive: (auth.isActive as boolean) ?? true,
+			profilePictureUrl: (auth.profilePictureUrl as string | null) ?? null
 		};
 		setToken(auth.token);
 		setUser(userObj);
@@ -197,6 +200,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		}
 	};
 
+	const updateUserProfilePicture = (profilePictureUrl: string | null) => {
+		setUser((prev) => {
+			if (!prev) return null;
+			const updated: UserDto = { ...prev, profilePictureUrl };
+			localStorage.setItem('auth_user', JSON.stringify(updated));
+			if (token) {
+				setSharedAuthCookie(token, updated);
+			}
+			return updated;
+		});
+	};
+
 	return (
 		<AuthContext.Provider
 			value={{
@@ -207,6 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				register,
 				logout,
 				refreshUserProfile,
+				updateUserProfilePicture,
 				setSession: saveAuth
 			}}
 		>

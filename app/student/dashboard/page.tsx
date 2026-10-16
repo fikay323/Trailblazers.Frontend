@@ -7,6 +7,8 @@ import { useAuth } from '@/core/contexts/AuthContext';
 import {
 	getMyExamHistory,
 	getMyProfile,
+	uploadProfilePicture,
+	deleteProfilePicture,
 	StudentExamAttemptDto,
 	StudentHistoryResponseDto
 } from '@/core/services/studentService';
@@ -19,6 +21,7 @@ import {
 	Award,
 	BookOpen,
 	Calendar,
+	Camera,
 	CheckCircle2,
 	ChevronRight,
 	Clock,
@@ -32,6 +35,7 @@ import {
 	Play,
 	RefreshCw,
 	ShieldAlert,
+	Trash2,
 	TrendingUp,
 	User,
 	Megaphone,
@@ -48,10 +52,12 @@ import {
 	getActiveAnnouncements,
 	AnnouncementDto
 } from '@/core/services/announcementService';
+import { ProfilePictureCropModal } from '@/features/student/components/ProfilePictureCropModal';
+import { DeleteProfilePictureModal } from '@/features/student/components/DeleteProfilePictureModal';
 
 export default function StudentDashboardPage() {
 	const router = useRouter();
-	const { user, token, isLoading: authLoading, logout, refreshUserProfile } = useAuth();
+	const { user, token, isLoading: authLoading, logout, refreshUserProfile, updateUserProfilePicture } = useAuth();
 
 	const [history, setHistory] = useState<StudentHistoryResponseDto | null>(null);
 	const [attendanceStats, setAttendanceStats] = useState<StudentAttendanceStatsDto | null>(null);
@@ -64,6 +70,13 @@ export default function StudentDashboardPage() {
 	const [isClockingOut, setIsClockingOut] = useState(false);
 	const [clockOutError, setClockOutError] = useState<string | null>(null);
 	const [clockOutSuccess, setClockOutSuccess] = useState<string | null>(null);
+
+	// Profile Picture state
+	const fileInputRef = React.useRef<HTMLInputElement>(null);
+	const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+	const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+	const [profilePicFeedback, setProfilePicFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
 	useEffect(() => {
 		if (!authLoading && !user) {
@@ -105,10 +118,53 @@ export default function StudentDashboardPage() {
 			} else {
 				console.error('Failed to load announcements:', annData.reason);
 			}
-		} catch (err: any) {
-			setError(err.message || 'Failed to load dashboard data.');
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : 'Failed to load dashboard data.';
+			setError(message);
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		setProfilePicFeedback(null);
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === 'string') {
+				setSelectedImageSrc(reader.result);
+				setIsCropModalOpen(true);
+			}
+		};
+		reader.readAsDataURL(file);
+		e.target.value = '';
+	};
+
+	const handleConfirmUpload = async (blob: Blob) => {
+		try {
+			const res = await uploadProfilePicture(blob, token || undefined, user?.email);
+			updateUserProfilePicture(res.profilePictureUrl);
+			setProfilePicFeedback({ type: 'success', message: 'Profile picture updated successfully.' });
+			setTimeout(() => setProfilePicFeedback(null), 5000);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to upload profile picture.';
+			setProfilePicFeedback({ type: 'error', message: msg });
+			throw err;
+		}
+	};
+
+	const handleConfirmDelete = async () => {
+		try {
+			await deleteProfilePicture(token || undefined, user?.email);
+			updateUserProfilePicture(null);
+			setProfilePicFeedback({ type: 'success', message: 'Profile picture removed successfully.' });
+			setTimeout(() => setProfilePicFeedback(null), 5000);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to delete profile picture.';
+			setProfilePicFeedback({ type: 'error', message: msg });
+			throw err;
 		}
 	};
 
@@ -136,8 +192,9 @@ export default function StudentDashboardPage() {
 			// Refresh attendance stats
 			const freshStats = await getStudentTodayStatus(token || undefined);
 			setAttendanceStats(freshStats);
-		} catch (err: any) {
-			setClockInError(err.message || 'Failed to verify attendance. Please ensure you are inside the tutorial center.');
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : 'Failed to verify attendance. Please ensure you are inside the tutorial center.';
+			setClockInError(message);
 		} finally {
 			setIsClockingIn(false);
 		}
@@ -167,8 +224,9 @@ export default function StudentDashboardPage() {
 			// Refresh attendance stats
 			const freshStats = await getStudentTodayStatus(token || undefined);
 			setAttendanceStats(freshStats);
-		} catch (err: any) {
-			setClockOutError(err.message || 'Failed to clock out. Please ensure you are inside the tutorial center and try again.');
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : 'Failed to clock out. Please ensure you are inside the tutorial center and try again.';
+			setClockOutError(message);
 		} finally {
 			setIsClockingOut(false);
 		}
@@ -189,11 +247,34 @@ export default function StudentDashboardPage() {
 		<div className="min-h-screen bg-slate-950 text-slate-100 py-6 sm:py-10 px-3.5 sm:px-6 lg:px-8">
 			<div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
 				{/* Top Welcome Bar */}
-				<div className="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-5">
-					<div className="flex items-center gap-3 min-w-0">
-						<div className="h-10 w-10 rounded-full bg-orange-600/15 text-orange-400 flex items-center justify-center font-bold text-base border border-orange-500/30 shrink-0">
-							{user?.fullName?.charAt(0) || 'S'}
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+					<div className="flex items-center gap-3.5 min-w-0">
+						{/* Interactive Profile Avatar */}
+						<div className="relative group shrink-0">
+							<div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden border-2 border-orange-500/40 bg-orange-600/15 flex items-center justify-center font-bold text-lg sm:text-xl text-orange-400 shadow-md">
+								{user?.profilePictureUrl ? (
+									<img
+										src={user.profilePictureUrl}
+										alt={user.fullName || 'Student'}
+										className="h-full w-full object-cover"
+									/>
+								) : (
+									<span>{user?.fullName?.charAt(0) || 'S'}</span>
+								)}
+							</div>
+
+							<button
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+								className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer"
+								title="Change photo"
+								aria-label="Change profile picture"
+							>
+								<Camera className="w-4 h-4" />
+								<span className="text-[8px] font-bold tracking-wider uppercase mt-0.5">Edit</span>
+							</button>
 						</div>
+
 						<div className="min-w-0">
 							<h1 className="text-lg sm:text-2xl font-bold text-white truncate">
 								Welcome, {user?.fullName || 'Student'}
@@ -201,10 +282,35 @@ export default function StudentDashboardPage() {
 							<p className="text-xs text-slate-400 font-mono truncate">
 								{user?.email}
 							</p>
+
+							{/* Photo action buttons */}
+							<div className="flex items-center gap-2 mt-1">
+								<button
+									type="button"
+									onClick={() => fileInputRef.current?.click()}
+									className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-400 hover:text-orange-300 hover:underline cursor-pointer"
+								>
+									<Camera className="w-3 h-3" />
+									{user?.profilePictureUrl ? 'Change photo' : 'Upload photo'}
+								</button>
+								{user?.profilePictureUrl && (
+									<>
+										<span className="text-slate-600 text-xs">•</span>
+										<button
+											type="button"
+											onClick={() => setIsDeleteModalOpen(true)}
+											className="inline-flex items-center gap-1 text-[11px] font-medium text-red-400 hover:text-red-300 hover:underline cursor-pointer"
+										>
+											<Trash2 className="w-3 h-3" />
+											Remove
+										</button>
+									</>
+								)}
+							</div>
 						</div>
 					</div>
 
-					<div className="flex items-center gap-2 shrink-0">
+					<div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
 						<Button
 							variant="outline"
 							size="sm"
@@ -216,6 +322,26 @@ export default function StudentDashboardPage() {
 						</Button>
 					</div>
 				</div>
+
+				{/* Feedback banner for photo actions */}
+				{profilePicFeedback && (
+					<div
+						className={`p-3 rounded-lg text-xs font-medium border flex items-center justify-between transition-all ${
+							profilePicFeedback.type === 'success'
+								? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
+								: 'bg-red-950/60 border-red-800 text-red-300'
+						}`}
+					>
+						<span>{profilePicFeedback.message}</span>
+						<button
+							type="button"
+							onClick={() => setProfilePicFeedback(null)}
+							className="text-slate-400 hover:text-white ml-2 cursor-pointer font-bold"
+						>
+							✕
+						</button>
+					</div>
+				)}
 
 				{/* Account Suspension Banner */}
 				{isDeactivated && (
@@ -759,6 +885,33 @@ export default function StudentDashboardPage() {
 						)}
 					</CardContent>
 				</Card>
+
+				{/* Hidden file input for avatar upload */}
+				<input
+					type="file"
+					ref={fileInputRef}
+					onChange={handleFileSelect}
+					accept="image/jpeg,image/png,image/webp"
+					className="hidden"
+				/>
+
+				{/* Cropping Modal */}
+				<ProfilePictureCropModal
+					isOpen={isCropModalOpen}
+					imageSrc={selectedImageSrc}
+					onClose={() => {
+						setIsCropModalOpen(false);
+						setSelectedImageSrc(null);
+					}}
+					onConfirmUpload={handleConfirmUpload}
+				/>
+
+				{/* Delete Confirmation Modal */}
+				<DeleteProfilePictureModal
+					isOpen={isDeleteModalOpen}
+					onClose={() => setIsDeleteModalOpen(false)}
+					onConfirmDelete={handleConfirmDelete}
+				/>
 			</div>
 		</div>
 	);

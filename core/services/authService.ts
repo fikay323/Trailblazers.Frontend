@@ -8,6 +8,7 @@ export interface UserDto {
 	isActive: boolean;
 	disabledReason?: string | null;
 	phoneNumber?: string | null;
+	profilePictureUrl?: string | null;
 }
 
 export interface AuthResponseDto {

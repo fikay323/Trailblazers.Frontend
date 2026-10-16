@@ -26,6 +26,12 @@ export interface StudentProfileDto {
 	isActive: boolean;
 	disabledReason?: string | null;
 	createdAt: string;
+	profilePictureUrl?: string | null;
+}
+
+export interface ProfilePictureResponseDto {
+	message: string;
+	profilePictureUrl: string;
 }
 
 export async function getMyExamHistory(email?: string, token?: string): Promise<StudentHistoryResponseDto> {
@@ -69,3 +75,61 @@ export async function getMyProfile(email?: string, token?: string): Promise<Stud
 
 	return res.json();
 }
+
+export async function uploadProfilePicture(
+	imageBlob: Blob,
+	token?: string,
+	email?: string
+): Promise<ProfilePictureResponseDto> {
+	const formData = new FormData();
+	formData.append('file', imageBlob, 'avatar.webp');
+
+	const headers: Record<string, string> = {
+		'Accept': 'application/json'
+	};
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
+	const queryParam = email ? `?email=${encodeURIComponent(email)}` : '';
+	const res = await fetch(`${getApiUrl()}/api/students/me/profile-picture${queryParam}`, {
+		method: 'POST',
+		headers,
+		body: formData,
+		credentials: 'include'
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to upload profile picture.');
+	}
+
+	return res.json();
+}
+
+export async function deleteProfilePicture(
+	token?: string,
+	email?: string
+): Promise<{ message: string }> {
+	const headers: Record<string, string> = {
+		'Accept': 'application/json'
+	};
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
+	const queryParam = email ? `?email=${encodeURIComponent(email)}` : '';
+	const res = await fetch(`${getApiUrl()}/api/students/me/profile-picture${queryParam}`, {
+		method: 'DELETE',
+		headers,
+		credentials: 'include'
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to delete profile picture.');
+	}
+
+	return res.json();
+}
+
