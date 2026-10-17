@@ -48,8 +48,9 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 					setPost(data);
 					setError(null);
 				})
-				.catch(err => {
-					setError(err.message || 'Failed to load article.');
+				.catch((err: unknown) => {
+					const msg = err instanceof Error ? err.message : 'Failed to load article.';
+					setError(msg);
 				})
 				.finally(() => {
 					setIsLoading(false);
@@ -60,9 +61,9 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 	if (isLoading) {
 		return (
 			<div className="max-w-4xl mx-auto px-4 py-16 space-y-6">
-				<div className="h-8 w-48 bg-slate-800 animate-pulse rounded" />
-				<div className="h-12 w-full bg-slate-800 animate-pulse rounded" />
-				<div className="h-64 w-full bg-slate-800 animate-pulse rounded-2xl" />
+				<div className="h-8 w-48 bg-slate-200 animate-pulse rounded" />
+				<div className="h-12 w-full bg-slate-200 animate-pulse rounded" />
+				<div className="h-64 w-full bg-slate-200 animate-pulse rounded-2xl" />
 			</div>
 		);
 	}
@@ -70,12 +71,12 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 	if (!post || error) {
 		return (
 			<div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-				<BookOpen className="h-12 w-12 text-slate-600 mx-auto" />
-				<h2 className="text-xl font-bold text-white">Article Not Found</h2>
-				<p className="text-xs text-slate-400">
-					{error || "The article you are looking for might have been removed or is temporarily unavailable."}
+				<BookOpen className="h-12 w-12 text-slate-400 mx-auto" />
+				<h2 className="text-xl font-bold text-slate-800">Article Not Found</h2>
+				<p className="text-xs text-slate-500">
+					{error || 'The article you are looking for might have been removed or is temporarily unavailable.'}
 				</p>
-				<Button asChild className="bg-orange-600 hover:bg-orange-700 text-white cursor-pointer mt-2">
+				<Button asChild className="bg-orange-600 hover:bg-orange-700 text-white cursor-pointer mt-2 shadow-md">
 					<Link href="/blog">Browse All Articles</Link>
 				</Button>
 			</div>
@@ -106,37 +107,33 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 		post.title
 	)}&url=${encodeURIComponent(currentUrl)}`;
 
-	const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-		currentUrl
-	)}`;
-
 	return (
-		<article className="w-full">
+		<article className="w-full bg-slate-50/50 min-h-screen text-slate-900">
 			{/* Breadcrumb & Back navigation */}
-			<div className="bg-slate-950 border-b border-slate-800/80 py-4 px-4 sm:px-6 lg:px-8">
-				<div className="max-w-4xl mx-auto flex items-center justify-between text-xs text-slate-400">
+			<div className="bg-white border-b border-slate-200 py-3.5 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-4xl mx-auto flex items-center justify-between text-xs text-slate-500">
 					<Link
 						href="/blog"
-						className="inline-flex items-center gap-1.5 text-slate-400 hover:text-orange-400 transition-colors font-medium"
+						className="inline-flex items-center gap-1.5 text-slate-600 hover:text-orange-600 transition-colors font-medium"
 					>
 						<ArrowLeft className="h-3.5 w-3.5" />
 						Back to Knowledge Hub
 					</Link>
-					<span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-orange-400">
+					<span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 font-medium">
 						{post.category}
 					</span>
 				</div>
 			</div>
 
 			{/* Article Header & Hero */}
-			<header className="bg-slate-950 text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-b border-slate-800">
+			<header className="bg-gradient-to-b from-orange-50/40 via-white to-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-b border-slate-200">
 				<div className="max-w-4xl mx-auto space-y-6">
-					<div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+					<div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
 						<span className="px-3 py-1 rounded-full font-bold bg-orange-600 text-white shadow-sm uppercase tracking-wider text-[11px]">
 							{post.category}
 						</span>
 						<span className="flex items-center gap-1">
-							<Calendar className="h-3.5 w-3.5 text-slate-500" />
+							<Calendar className="h-3.5 w-3.5 text-slate-400" />
 							{new Date(post.publishedAt || post.createdAt).toLocaleDateString(undefined, {
 								month: 'long',
 								day: 'numeric',
@@ -145,47 +142,47 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 						</span>
 						<span>&bull;</span>
 						<span className="flex items-center gap-1">
-							<Clock className="h-3.5 w-3.5 text-slate-500" />
+							<Clock className="h-3.5 w-3.5 text-slate-400" />
 							{readingTimeMinutes} min read
 						</span>
 						<span>&bull;</span>
 						<span className="flex items-center gap-1">
-							<Eye className="h-3.5 w-3.5 text-slate-500" />
+							<Eye className="h-3.5 w-3.5 text-slate-400" />
 							{post.viewCount || 1} views
 						</span>
 					</div>
 
-					<h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+					<h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
 						{post.title}
 					</h1>
 
-					<p className="text-sm sm:text-lg text-slate-300 leading-relaxed max-w-3xl">
+					<p className="text-sm sm:text-lg text-slate-600 leading-relaxed max-w-3xl">
 						{post.excerpt}
 					</p>
 
 					{/* Author & Share Bar */}
-					<div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+					<div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 						{/* Author Info */}
 						<div className="flex items-center gap-3">
-							<div className="h-11 w-11 rounded-full bg-orange-600/20 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-sm">
+							<div className="h-11 w-11 rounded-full bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700 font-bold text-sm">
 								{post.authorName.charAt(0)}
 							</div>
 							<div>
-								<p className="text-sm font-bold text-white">{post.authorName}</p>
-								<p className="text-xs text-slate-400">Trailblazer Academy Faculty</p>
+								<p className="text-sm font-bold text-slate-900">{post.authorName}</p>
+								<p className="text-xs text-slate-500">Trailblazer Academy Faculty</p>
 							</div>
 						</div>
 
 						{/* Social Share Buttons */}
 						<div className="flex items-center gap-2">
-							<span className="text-xs font-semibold text-slate-400 mr-1 hidden sm:inline">
+							<span className="text-xs font-semibold text-slate-500 mr-1 hidden sm:inline">
 								Share:
 							</span>
 							<a
 								href={whatsappShareUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 transition-all cursor-pointer"
+								className="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all cursor-pointer"
 								title="Share on WhatsApp"
 							>
 								<WhatsAppIcon className="h-4 w-4" />
@@ -194,7 +191,7 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 								href={twitterShareUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 transition-all cursor-pointer"
+								className="p-2 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition-all cursor-pointer"
 								title="Share on Twitter / X"
 							>
 								<Share2 className="h-4 w-4" />
@@ -202,10 +199,10 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 							<button
 								type="button"
 								onClick={handleCopyLink}
-								className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition-all cursor-pointer text-xs font-medium"
+								className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer text-xs font-medium shadow-sm"
 								title="Copy Article Link"
 							>
-								{copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+								{copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
 								{copied ? 'Copied!' : 'Copy Link'}
 							</button>
 						</div>
@@ -217,7 +214,7 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
 				{/* Featured Cover Image */}
 				{post.coverImageUrl && (
-					<div className="overflow-hidden rounded-2xl border border-slate-800 shadow-2xl bg-slate-950">
+					<div className="overflow-hidden rounded-2xl border border-slate-200 shadow-md bg-white">
 						<img
 							src={post.coverImageUrl}
 							alt={post.title}
@@ -227,18 +224,18 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 				)}
 
 				{/* Markdown Content */}
-				<div className="prose prose-invert prose-orange max-w-none text-slate-200 leading-relaxed text-sm sm:text-base space-y-6">
+				<div className="prose prose-slate prose-orange max-w-none text-slate-800 leading-relaxed text-base sm:text-lg space-y-6">
 					<ReactMarkdown>{post.content}</ReactMarkdown>
 				</div>
 
 				{/* Tags */}
 				{post.tags && post.tags.length > 0 && (
-					<div className="pt-6 border-t border-slate-800 flex flex-wrap items-center gap-2">
-						<Tag className="h-4 w-4 text-slate-500 mr-1" />
+					<div className="pt-6 border-t border-slate-200 flex flex-wrap items-center gap-2">
+						<Tag className="h-4 w-4 text-slate-400 mr-1" />
 						{post.tags.map(tag => (
 							<span
 								key={tag}
-								className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 text-slate-300 border border-slate-800"
+								className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200"
 							>
 								#{tag}
 							</span>
@@ -247,20 +244,20 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 				)}
 
 				{/* Author Bio Box */}
-				<div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-					<div className="h-14 w-14 rounded-2xl bg-orange-600/20 border border-orange-500/30 flex items-center justify-center text-orange-400 font-extrabold text-xl shrink-0">
+				<div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4">
+					<div className="h-14 w-14 rounded-2xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700 font-extrabold text-xl shrink-0">
 						{post.authorName.charAt(0)}
 					</div>
 					<div className="space-y-1">
-						<h3 className="text-base font-bold text-white">{post.authorName}</h3>
-						<p className="text-xs text-slate-400 leading-relaxed">
+						<h3 className="text-base font-bold text-slate-900">{post.authorName}</h3>
+						<p className="text-xs text-slate-600 leading-relaxed">
 							Educator & Content Contributor at Trailblazer Academy & Edukonsult. Committed to helping Nigerian students navigate exam success and secure tertiary admissions.
 						</p>
 					</div>
 				</div>
 
 				{/* Academy Conversion Banner */}
-				<section className="rounded-2xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 p-8 sm:p-10 text-white text-center shadow-2xl relative overflow-hidden">
+				<section className="rounded-2xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 p-8 sm:p-10 text-white text-center shadow-xl relative overflow-hidden">
 					<div className="max-w-xl mx-auto space-y-4">
 						<GraduationCap className="h-10 w-10 mx-auto text-amber-200" />
 						<h3 className="text-2xl font-black tracking-tight">
@@ -278,7 +275,7 @@ export function ArticleClient({ initialPost, slug }: ArticleClientProps) {
 							</Link>
 							<Link
 								href="/contact"
-								className="px-6 py-2.5 rounded-xl bg-orange-800/40 hover:bg-orange-800 text-white border border-white/20 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
+								className="px-6 py-2.5 rounded-xl bg-orange-800/50 hover:bg-orange-800 text-white border border-white/20 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
 							>
 								Contact Academy Office
 							</Link>

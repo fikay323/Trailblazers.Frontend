@@ -615,12 +615,12 @@ export default function StudentDashboardPage() {
 							</div>
 							<div>
 								<h2 className="text-sm sm:text-base font-semibold text-white">Academy Noticeboard</h2>
-								<p className="text-[11px] text-slate-400">Official announcements, holiday updates, and exam alerts</p>
+								<p className="text-[11px] text-slate-400">Official announcements, holiday updates, and direct student notices</p>
 							</div>
 						</div>
-						{announcements.length > 0 && (
+						{(announcements.length + unreadNotifications.length) > 0 && (
 							<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-950 text-orange-400 border border-orange-800">
-								{announcements.length} {announcements.length === 1 ? 'Notice' : 'Notices'}
+								{announcements.length + unreadNotifications.length} {(announcements.length + unreadNotifications.length) === 1 ? 'Notice' : 'Notices'}
 							</span>
 						)}
 					</div>
@@ -630,12 +630,52 @@ export default function StudentDashboardPage() {
 							<div className="h-16 rounded-lg bg-slate-800/40 animate-pulse" />
 							<div className="h-16 rounded-lg bg-slate-800/40 animate-pulse" />
 						</div>
-					) : announcements.length === 0 ? (
+					) : (announcements.length === 0 && unreadNotifications.length === 0) ? (
 						<div className="p-4 text-center text-xs text-slate-500 bg-slate-950/40 rounded-lg border border-slate-800/60">
-							No active announcements at this time. Check back later for academy updates.
+							No active announcements or notices at this time. Check back later for academy updates.
 						</div>
 					) : (
 						<div className="space-y-2.5 pt-1">
+							{/* Direct Personal Notices to this student (e.g. Profile Picture Removal with Reason) */}
+							{unreadNotifications.map((notif) => (
+								<div
+									key={notif.id}
+									className="p-3.5 rounded-lg border border-red-500/40 bg-red-950/30 space-y-2"
+								>
+									<div className="flex flex-wrap items-center justify-between gap-1.5">
+										<div className="flex items-center gap-2">
+											<span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-red-500/15 text-red-400 border-red-500/30">
+												DIRECT NOTICE
+											</span>
+											<h3 className="text-xs sm:text-sm font-bold text-white">{notif.title}</h3>
+										</div>
+										<div className="flex items-center gap-2">
+											<span className="text-[10px] text-slate-400 flex items-center gap-1">
+												<Calendar className="h-2.5 w-2.5" />
+												{new Date(notif.createdAt).toLocaleDateString()}
+											</span>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => handleAcknowledgeNotification(notif.id)}
+												className="border-red-800 bg-red-950/80 text-red-200 hover:text-white text-[11px] h-6 px-2 shrink-0 cursor-pointer"
+											>
+												Acknowledge
+											</Button>
+										</div>
+									</div>
+
+									<p className="text-xs text-red-200/90 whitespace-pre-line leading-relaxed pl-0.5">
+										{notif.message}
+									</p>
+
+									<div className="text-[10px] text-slate-400 pl-0.5">
+										Issued by <span className="text-slate-300 font-medium">{notif.createdBy || 'Academy Administration'}</span>
+									</div>
+								</div>
+							))}
+
+							{/* General Academy Announcements */}
 							{announcements.map((notice) => {
 								const priorityBadgeColor =
 									notice.priority === 'Urgent'

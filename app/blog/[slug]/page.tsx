@@ -110,7 +110,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 		: null;
 
 	return (
-		<div className="min-h-screen flex flex-col bg-background text-foreground">
+		<div className="min-h-screen flex flex-col bg-slate-50/60 text-slate-900">
 			{/* JSON-LD Structured Data */}
 			{jsonLd && (
 				<script

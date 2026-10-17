@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function BlogPage() {
 	return (
-		<main className="min-h-screen bg-background text-foreground">
+		<main className="min-h-screen bg-slate-50/60 text-slate-900">
 			<BlogCatalogClient />
 		</main>
 	);

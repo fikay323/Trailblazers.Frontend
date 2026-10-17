@@ -13,6 +13,7 @@ const publicNavLinks = [
 	{ href: '/summer-coaching', label: 'Summer Lessons', badge: 'NEW' },
 	{ href: '/programs', label: 'Programs' },
 	{ href: '/gallery', label: 'Gallery' },
+	{ href: '/blog', label: 'Blog' },
 	{ href: '/contact', label: 'Contact' },
 ];
 

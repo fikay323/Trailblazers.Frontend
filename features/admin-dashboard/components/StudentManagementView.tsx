@@ -216,11 +216,10 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 
 		try {
 			await deleteStudentProfilePictureByAdmin(photoDeleteStudent.id, finalReason, apiKey);
-			setStudents(prev =>
-				prev.map(s => (s.id === photoDeleteStudent.id ? { ...s, profilePictureUrl: null } : s))
-			);
-			setPhotoDeleteSuccessMessage(`Profile picture for ${photoDeleteStudent.fullName} removed and notice sent.`);
+			const studentName = photoDeleteStudent.fullName;
 			setPhotoDeleteStudent(null);
+			setPhotoDeleteSuccessMessage(`Profile picture for ${studentName} removed and notice sent.`);
+			await loadStudents();
 			setTimeout(() => setPhotoDeleteSuccessMessage(null), 6000);
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : 'Failed to remove student photo.';
