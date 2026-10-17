@@ -18,3 +18,6 @@ node_modules
 # Playwright test artifacts
 test-results/
 playwright-report/
+
+# TypeScript build info
+*.tsbuildinfo
