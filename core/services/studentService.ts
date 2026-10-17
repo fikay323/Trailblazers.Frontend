@@ -133,3 +133,58 @@ export async function deleteProfilePicture(
 	return res.json();
 }
 
+export interface StudentNotificationDto {
+	id: string;
+	title: string;
+	message: string;
+	type: string;
+	isRead: boolean;
+	createdAt: string;
+	createdBy?: string | null;
+}
+
+export async function getMyNotifications(email?: string, token?: string): Promise<StudentNotificationDto[]> {
+	const headers: Record<string, string> = {
+		'Accept': 'application/json'
+	};
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
+	const queryParam = email ? `?email=${encodeURIComponent(email)}` : '';
+	try {
+		const res = await fetch(`${getApiUrl()}/api/students/me/notifications${queryParam}`, {
+			headers,
+			credentials: 'include'
+		});
+
+		if (!res.ok) {
+			return [];
+		}
+
+		const data = await res.json();
+		return Array.isArray(data) ? data : [];
+	} catch {
+		return [];
+	}
+}
+
+export async function markNotificationAsRead(id: string, token?: string): Promise<void> {
+	const headers: Record<string, string> = {
+		'Accept': 'application/json'
+	};
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
+	try {
+		await fetch(`${getApiUrl()}/api/students/me/notifications/${id}/read`, {
+			method: 'POST',
+			headers,
+			credentials: 'include'
+		});
+	} catch {
+		// Non-fatal
+	}
+}
+

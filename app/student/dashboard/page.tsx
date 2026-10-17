@@ -9,6 +9,9 @@ import {
 	getMyProfile,
 	uploadProfilePicture,
 	deleteProfilePicture,
+	getMyNotifications,
+	markNotificationAsRead,
+	StudentNotificationDto,
 	StudentExamAttemptDto,
 	StudentHistoryResponseDto
 } from '@/core/services/studentService';
@@ -62,6 +65,7 @@ export default function StudentDashboardPage() {
 	const [history, setHistory] = useState<StudentHistoryResponseDto | null>(null);
 	const [attendanceStats, setAttendanceStats] = useState<StudentAttendanceStatsDto | null>(null);
 	const [announcements, setAnnouncements] = useState<AnnouncementDto[]>([]);
+	const [notifications, setNotifications] = useState<StudentNotificationDto[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isClockingIn, setIsClockingIn] = useState(false);
@@ -78,27 +82,30 @@ export default function StudentDashboardPage() {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 	const [profilePicFeedback, setProfilePicFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+	const hasLoadedUserIdRef = React.useRef<string | null>(null);
+
 	useEffect(() => {
 		if (!authLoading && !user) {
 			router.push('/auth/login');
 			return;
 		}
 
-		if (user) {
+		if (user && hasLoadedUserIdRef.current !== user.id) {
+			hasLoadedUserIdRef.current = user.id;
 			loadData();
 		}
-	}, [user, authLoading]);
+	}, [user?.id, authLoading]);
 
 	const loadData = async () => {
 		if (!user) return;
 		setIsLoading(true);
 		setError(null);
 		try {
-			await refreshUserProfile();
-			const [examData, attData, annData] = await Promise.allSettled([
+			const [examData, attData, annData, notifData] = await Promise.allSettled([
 				getMyExamHistory(user.email, token || undefined),
 				getStudentTodayStatus(token || undefined),
-				getActiveAnnouncements('All', token || undefined)
+				getActiveAnnouncements('All', token || undefined),
+				getMyNotifications(user.email, token || undefined)
 			]);
 
 			if (examData.status === 'fulfilled') {
@@ -118,11 +125,28 @@ export default function StudentDashboardPage() {
 			} else {
 				console.error('Failed to load announcements:', annData.reason);
 			}
+
+			if (notifData.status === 'fulfilled' && Array.isArray(notifData.value)) {
+				setNotifications(notifData.value);
+			} else {
+				setNotifications([]);
+			}
 		} catch (err: unknown) {
 			const message = err instanceof Error ? err.message : 'Failed to load dashboard data.';
 			setError(message);
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleAcknowledgeNotification = async (notificationId: string) => {
+		try {
+			await markNotificationAsRead(notificationId, token || undefined);
+			setNotifications(prev =>
+				prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+			);
+		} catch (err) {
+			console.error('Failed to mark notification as read:', err);
 		}
 	};
 
@@ -242,6 +266,7 @@ export default function StudentDashboardPage() {
 	}
 
 	const isDeactivated = user?.isActive === false;
+	const unreadNotifications = Array.isArray(notifications) ? notifications.filter(n => !n.isRead) : [];
 
 	return (
 		<div className="min-h-screen bg-slate-950 text-slate-100 py-6 sm:py-10 px-3.5 sm:px-6 lg:px-8">
@@ -314,7 +339,10 @@ export default function StudentDashboardPage() {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={loadData}
+							onClick={async () => {
+								await refreshUserProfile();
+								loadData();
+							}}
 							className="border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer h-8 px-3 text-xs flex items-center gap-1.5"
 						>
 							<RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-orange-400' : ''}`} />
@@ -340,6 +368,47 @@ export default function StudentDashboardPage() {
 						>
 							✕
 						</button>
+					</div>
+				)}
+
+				{/* Student Administrative Notifications (e.g. Photo Removal with Reason) */}
+				{unreadNotifications.length > 0 && (
+					<div className="space-y-3">
+						{unreadNotifications.map((notif) => (
+							<Alert
+								key={notif.id}
+								className={`border shadow-lg ${
+									notif.type === 'ProfilePictureRemoved'
+										? 'border-red-900/60 bg-red-950/40 text-red-200 border-l-4 border-l-red-500'
+										: 'border-amber-900/60 bg-amber-950/40 text-amber-200 border-l-4 border-l-amber-500'
+								}`}
+							>
+								{notif.type === 'ProfilePictureRemoved' ? (
+									<Camera className="h-5 w-5 text-red-400" />
+								) : (
+									<Bell className="h-5 w-5 text-amber-400" />
+								)}
+								<AlertTitle className="text-sm font-bold text-white flex flex-wrap items-center justify-between gap-2">
+									<span className="flex items-center gap-2">
+										{notif.title}
+										<span className="text-[10px] font-normal text-slate-400">
+											{new Date(notif.createdAt).toLocaleDateString()}
+										</span>
+									</span>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => handleAcknowledgeNotification(notif.id)}
+										className="border-slate-700 bg-slate-900/80 text-slate-300 hover:text-white text-xs h-7 px-2.5 shrink-0 cursor-pointer"
+									>
+										Acknowledge
+									</Button>
+								</AlertTitle>
+								<AlertDescription className="text-xs text-slate-300 leading-relaxed mt-1">
+									{notif.message}
+								</AlertDescription>
+							</Alert>
+						))}
 					</div>
 				)}
 

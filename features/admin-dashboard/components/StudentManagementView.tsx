@@ -5,6 +5,7 @@ import {
 	getAllStudents,
 	toggleStudentStatus,
 	getStudentHistory,
+	deleteStudentProfilePictureByAdmin,
 	AdminStudentListItem,
 	StudentHistoryResult
 } from '@/core/services/adminService';
@@ -33,7 +34,8 @@ import {
 	Send,
 	Mail,
 	MessageSquare,
-	Loader2
+	Loader2,
+	Camera
 } from 'lucide-react';
 import { DataPagination } from '@/components/ui/DataPagination';
 import {
@@ -41,6 +43,42 @@ import {
 	sendGuardianReport,
 	GuardianReportPreviewDto
 } from '@/core/services/guardianReportService';
+
+function getInitials(fullName: string): string {
+	if (!fullName) return 'S';
+	const parts = fullName.trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) return 'S';
+	if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+const PRESET_PHOTO_REMOVAL_REASONS = [
+	{
+		id: 'inappropriate',
+		label: 'Inappropriate or non-compliant image',
+		defaultText: 'Your profile picture was removed as it does not comply with our student code of conduct. Please upload an appropriate academic portrait.'
+	},
+	{
+		id: 'blurry',
+		label: 'Blurry, pixelated or low-resolution image',
+		defaultText: 'Your profile picture was removed due to poor image clarity or low resolution. Please upload a clear, focused passport-style photograph.'
+	},
+	{
+		id: 'not_student',
+		label: 'Not a clear or recognizable portrait of the student',
+		defaultText: 'Your profile picture was removed because it does not show a clear, identifiable view of your face. Please upload a genuine portrait.'
+	},
+	{
+		id: 'offensive',
+		label: 'Offensive or trademarked material',
+		defaultText: 'Your profile picture was removed because it contains unauthorized, promotional, or inappropriate graphics.'
+	},
+	{
+		id: 'custom',
+		label: 'Custom reason (specify below)',
+		defaultText: ''
+	}
+];
 
 interface StudentManagementViewProps {
 	apiKey: string;
@@ -126,6 +164,14 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 	const [reportSuccessMessage, setReportSuccessMessage] = useState<string | null>(null);
 	const [reportErrorMessage, setReportErrorMessage] = useState<string | null>(null);
 
+	// Photo Deletion Modal State
+	const [photoDeleteStudent, setPhotoDeleteStudent] = useState<AdminStudentListItem | null>(null);
+	const [selectedPhotoReasonId, setSelectedPhotoReasonId] = useState<string>('inappropriate');
+	const [customPhotoReasonNote, setCustomPhotoReasonNote] = useState<string>('');
+	const [isDeletingPhoto, setIsDeletingPhoto] = useState<boolean>(false);
+	const [photoDeleteModalError, setPhotoDeleteModalError] = useState<string | null>(null);
+	const [photoDeleteSuccessMessage, setPhotoDeleteSuccessMessage] = useState<string | null>(null);
+
 	useEffect(() => {
 		loadStudents();
 	}, [apiKey]);
@@ -136,10 +182,48 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 		try {
 			const list = await getAllStudents(apiKey);
 			setStudents(list);
-		} catch (err: any) {
-			setError(err.message || 'Failed to load students.');
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to load students.';
+			setError(msg);
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleOpenDeletePhotoModal = (student: AdminStudentListItem) => {
+		setPhotoDeleteStudent(student);
+		setSelectedPhotoReasonId('inappropriate');
+		setCustomPhotoReasonNote('');
+		setPhotoDeleteModalError(null);
+	};
+
+	const handleConfirmDeleteStudentPhoto = async () => {
+		if (!photoDeleteStudent) return;
+		setIsDeletingPhoto(true);
+		setPhotoDeleteModalError(null);
+
+		let finalReason = '';
+		if (selectedPhotoReasonId === 'custom') {
+			finalReason = customPhotoReasonNote.trim() || 'Profile photo was removed by academy administration.';
+		} else {
+			const preset = PRESET_PHOTO_REMOVAL_REASONS.find(p => p.id === selectedPhotoReasonId);
+			const base = preset?.defaultText || 'Profile photo was removed by academy administration.';
+			finalReason = customPhotoReasonNote.trim() ? `${base} Note: ${customPhotoReasonNote.trim()}` : base;
+		}
+
+		try {
+			await deleteStudentProfilePictureByAdmin(photoDeleteStudent.id, finalReason, apiKey);
+			setStudents(prev =>
+				prev.map(s => (s.id === photoDeleteStudent.id ? { ...s, profilePictureUrl: null } : s))
+			);
+			setPhotoDeleteSuccessMessage(`Profile picture for ${photoDeleteStudent.fullName} removed and notice sent.`);
+			setPhotoDeleteStudent(null);
+			setTimeout(() => setPhotoDeleteSuccessMessage(null), 6000);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to remove student photo.';
+			setPhotoDeleteModalError(msg);
+		} finally {
+			setIsDeletingPhoto(false);
 		}
 	};
 
@@ -228,8 +312,9 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			} else {
 				setReportChannel('Email');
 			}
-		} catch (err: any) {
-			setReportErrorMessage(err.message || 'Failed to fetch report preview.');
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to fetch report preview.';
+			setReportErrorMessage(msg);
 		} finally {
 			setIsLoadingPreview(false);
 		}
@@ -247,8 +332,9 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 				apiKey
 			);
 			setReportPreview(preview);
-		} catch (err: any) {
-			setReportErrorMessage(err.message || 'Failed to refresh preview.');
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to refresh preview.';
+			setReportErrorMessage(msg);
 		} finally {
 			setIsLoadingPreview(false);
 		}
@@ -276,8 +362,9 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			);
 
 			setReportSuccessMessage(res.message || 'Guardian performance report sent successfully.');
-		} catch (err: any) {
-			setReportErrorMessage(err.message || 'Failed to send guardian report.');
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : 'Failed to send guardian report.';
+			setReportErrorMessage(msg);
 		} finally {
 			setIsSendingReport(false);
 		}
@@ -431,7 +518,14 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 				</div>
 			</div>
 
-			{/* Error Alert */}
+			{/* Alerts */}
+			{photoDeleteSuccessMessage && (
+				<Alert className="border-emerald-800 bg-emerald-950/50 text-emerald-300">
+					<CheckCircle className="h-4 w-4 text-emerald-400" />
+					<AlertDescription>{photoDeleteSuccessMessage}</AlertDescription>
+				</Alert>
+			)}
+
 			{error && (
 				<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
 					<AlertCircle className="h-4 w-4" />
@@ -474,11 +568,28 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 									{paginatedStudents.map((s) => (
 										<tr key={s.id} className="hover:bg-slate-800/30 transition-colors">
 											<td className="py-4 px-4 sm:px-6">
-												<div className="font-semibold text-white">{s.fullName}</div>
-												<div className="text-xs text-slate-400 font-mono">{s.email}</div>
-												{s.phoneNumber && (
-													<div className="text-[11px] text-slate-500">{s.phoneNumber}</div>
-												)}
+												<div className="flex items-center gap-3">
+													<div className="relative shrink-0">
+														{s.profilePictureUrl ? (
+															<img
+																src={s.profilePictureUrl}
+																alt={s.fullName}
+																className="h-10 w-10 rounded-full object-cover border border-slate-700 bg-slate-800"
+															/>
+														) : (
+															<div className="h-10 w-10 rounded-full bg-slate-800 text-orange-400 font-bold text-xs flex items-center justify-center border border-slate-700/60 uppercase">
+																{getInitials(s.fullName)}
+															</div>
+														)}
+													</div>
+													<div className="min-w-0">
+														<div className="font-semibold text-white truncate">{s.fullName}</div>
+														<div className="text-xs text-slate-400 font-mono truncate">{s.email}</div>
+														{s.phoneNumber && (
+															<div className="text-[11px] text-slate-500 truncate">{s.phoneNumber}</div>
+														)}
+													</div>
+												</div>
 											</td>
 											<td className="py-4 px-4">
 												<span
@@ -530,6 +641,20 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 														<Send className="h-3.5 w-3.5" />
 														Report
 													</Button>
+
+													{/* Remove Photo Button (Visible if student has a photo) */}
+													{s.profilePictureUrl && (
+														<Button
+															variant="outline"
+															size="sm"
+															onClick={() => handleOpenDeletePhotoModal(s)}
+															className="border-red-900/60 bg-red-950/30 text-red-400 hover:bg-red-900/50 hover:text-red-200 text-xs h-8 cursor-pointer flex items-center gap-1"
+															title="Remove student profile picture"
+														>
+															<Camera className="h-3.5 w-3.5" />
+															Photo
+														</Button>
+													)}
 
 													{/* Deactivate / Activate Button (Only visible to Admin) */}
 													{isAdmin && (
@@ -1100,6 +1225,132 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 									)}
 								</Button>
 							)}
+						</div>
+					</Card>
+				</div>
+			)}
+
+			{/* MODAL: Remove Student Profile Picture with Reason */}
+			{photoDeleteStudent && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+					<Card className="w-full max-w-lg border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col overflow-hidden">
+						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
+							<div>
+								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+									<Camera className="h-5 w-5 text-red-400" />
+									Remove Student Profile Picture
+								</CardTitle>
+								<CardDescription className="text-xs text-slate-400 mt-0.5">
+									Candidate: <span className="text-white font-semibold">{photoDeleteStudent.fullName}</span> ({photoDeleteStudent.email})
+								</CardDescription>
+							</div>
+							<button
+								onClick={() => setPhotoDeleteStudent(null)}
+								className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+								aria-label="Close modal"
+							>
+								<X className="h-5 w-5" />
+							</button>
+						</CardHeader>
+
+						<CardContent className="space-y-4 pt-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-2">
+							{photoDeleteModalError && (
+								<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
+									<AlertCircle className="h-4 w-4" />
+									<AlertDescription>{photoDeleteModalError}</AlertDescription>
+								</Alert>
+							)}
+
+							<div className="flex items-center gap-4 p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+								{photoDeleteStudent.profilePictureUrl && (
+									<img
+										src={photoDeleteStudent.profilePictureUrl}
+										alt={photoDeleteStudent.fullName}
+										className="h-16 w-16 rounded-full object-cover border border-slate-700 shrink-0"
+									/>
+								)}
+								<div className="text-xs text-slate-300 space-y-1">
+									<p className="font-medium text-white">This administrative action will:</p>
+									<ul className="list-disc list-inside space-y-0.5 text-slate-400 text-[11px]">
+										<li>Permanently delete the photo from cloud storage.</li>
+										<li>Reset the student&apos;s avatar to their initials.</li>
+										<li>Send a notification and email explaining the reason.</li>
+									</ul>
+								</div>
+							</div>
+
+							<div>
+								<label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">
+									Select Reason for Removal:
+								</label>
+								<div className="space-y-2">
+									{PRESET_PHOTO_REMOVAL_REASONS.map((preset) => (
+										<label
+											key={preset.id}
+											className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedPhotoReasonId === preset.id
+												? 'border-red-500 bg-red-950/20 text-white'
+												: 'border-slate-800 bg-slate-950/40 text-slate-300 hover:bg-slate-800/40'
+												}`}
+										>
+											<input
+												type="radio"
+												name="photoRemovalReason"
+												value={preset.id}
+												checked={selectedPhotoReasonId === preset.id}
+												onChange={() => setSelectedPhotoReasonId(preset.id)}
+												className="mt-0.5 text-red-600 focus:ring-red-500"
+											/>
+											<div className="text-xs">
+												<span className="font-semibold block">{preset.label}</span>
+												{preset.defaultText && (
+													<span className="text-slate-400 block mt-0.5">{preset.defaultText}</span>
+												)}
+											</div>
+										</label>
+									))}
+								</div>
+							</div>
+
+							<div>
+								<label htmlFor="custom-photo-admin-note" className="text-xs font-semibold text-slate-300 block mb-1">
+									Additional Note or Custom Explanation:
+								</label>
+								<textarea
+									id="custom-photo-admin-note"
+									rows={3}
+									placeholder="e.g. Please provide a clear passport photograph facing the camera on a plain background."
+									value={customPhotoReasonNote}
+									onChange={(e) => setCustomPhotoReasonNote(e.target.value)}
+									className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+								/>
+							</div>
+						</CardContent>
+
+						<div className="border-t border-slate-800 px-6 py-4 flex items-center justify-end gap-3 bg-slate-950/40 shrink-0">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setPhotoDeleteStudent(null)}
+								className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer"
+							>
+								Cancel
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								disabled={isDeletingPhoto}
+								onClick={handleConfirmDeleteStudentPhoto}
+								className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+							>
+								{isDeletingPhoto ? (
+									<>
+										<Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+										Removing...
+									</>
+								) : (
+									'Remove Photo & Notify Student'
+								)}
+							</Button>
 						</div>
 					</Card>
 				</div>

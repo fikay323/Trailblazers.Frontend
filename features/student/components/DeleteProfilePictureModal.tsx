@@ -44,9 +44,9 @@ export function DeleteProfilePictureModal({
 		<Dialog open={isOpen} onOpenChange={(open) => !isDeleting && !open && onClose()}>
 			<DialogContent
 				showCloseButton={!isDeleting}
-				className="sm:max-w-md max-h-[85vh] bg-slate-950 border-slate-800 text-slate-100 p-6"
+				className="sm:max-w-md max-h-[85vh] flex flex-col overflow-hidden bg-slate-950 border-slate-800 text-slate-100 p-6"
 			>
-				<DialogHeader>
+				<DialogHeader className="shrink-0">
 					<div className="flex items-center gap-3">
 						<div className="p-2.5 rounded-full bg-red-950/80 border border-red-800/80 text-red-400">
 							<Trash2 className="w-5 h-5" />
@@ -62,13 +62,15 @@ export function DeleteProfilePictureModal({
 					</DialogDescription>
 				</DialogHeader>
 
-				{error && (
-					<div className="p-3 bg-red-950/80 border border-red-800/80 rounded-md text-red-200 text-sm">
-						{error}
-					</div>
-				)}
+				<div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 space-y-4 pr-1 py-1">
+					{error && (
+						<div className="p-3 bg-red-950/80 border border-red-800/80 rounded-md text-red-200 text-sm">
+							{error}
+						</div>
+					)}
+				</div>
 
-				<DialogFooter className="gap-2 sm:gap-0 mt-4">
+				<DialogFooter className="gap-2 sm:gap-0 mt-4 shrink-0">
 					<Button
 						type="button"
 						variant="outline"

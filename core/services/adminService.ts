@@ -7,6 +7,7 @@ export interface AdminStudentListItem {
 	phoneNumber?: string | null;
 	isActive: boolean;
 	disabledReason?: string | null;
+	profilePictureUrl?: string | null;
 	totalTestsTaken: number;
 	averageScore: number;
 	createdAt: string;
@@ -94,7 +95,7 @@ export async function toggleStudentStatus(
 	isActive: boolean,
 	reason: string | undefined,
 	tokenOrApiKey: string
-): Promise<any> {
+): Promise<{ message: string; isActive: boolean; reason?: string }> {
 	const res = await fetch(`${getApiUrl()}/api/admin/students/${id}/status`, {
 		method: 'POST',
 		headers: getAuthHeaders(tokenOrApiKey),
@@ -156,7 +157,7 @@ export async function getQuestions(
 export async function createQuestion(
 	payload: CreateQuestionPayload,
 	tokenOrApiKey: string
-): Promise<any> {
+): Promise<AdminQuestionItem> {
 	const res = await fetch(`${getApiUrl()}/api/admin/questions`, {
 		method: 'POST',
 		headers: getAuthHeaders(tokenOrApiKey),
@@ -171,7 +172,7 @@ export async function createQuestion(
 	return res.json();
 }
 
-export async function deleteQuestion(id: string, tokenOrApiKey: string): Promise<any> {
+export async function deleteQuestion(id: string, tokenOrApiKey: string): Promise<{ message: string }> {
 	const res = await fetch(`${getApiUrl()}/api/admin/questions/${id}`, {
 		method: 'DELETE',
 		headers: getAuthHeaders(tokenOrApiKey)
@@ -180,6 +181,28 @@ export async function deleteQuestion(id: string, tokenOrApiKey: string): Promise
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({}));
 		throw new Error(err.error || 'Failed to delete question.');
+	}
+
+	return res.json();
+}
+
+export async function deleteStudentProfilePictureByAdmin(
+	studentId: string,
+	reason: string,
+	tokenOrApiKey: string
+): Promise<{ message: string; studentId: string; reason: string }> {
+	const res = await fetch(`${getApiUrl()}/api/admin/students/${studentId}/profile-picture`, {
+		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+			...getAuthHeaders(tokenOrApiKey)
+		},
+		body: JSON.stringify({ reason })
+	});
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(err.error || 'Failed to remove student profile picture.');
 	}
 
 	return res.json();
