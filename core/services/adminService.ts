@@ -6,6 +6,10 @@ export interface AdminStudentListItem {
 	email: string;
 	phoneNumber?: string | null;
 	isActive: boolean;
+	status?: 'Active' | 'Pending Activation' | 'Suspended';
+	isActivated?: boolean;
+	isPendingActivation?: boolean;
+	inviteUrl?: string | null;
 	disabledReason?: string | null;
 	profilePictureUrl?: string | null;
 	totalTestsTaken: number;

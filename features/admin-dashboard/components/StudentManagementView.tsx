@@ -35,7 +35,9 @@ import {
 	Mail,
 	MessageSquare,
 	Loader2,
-	Camera
+	Camera,
+	Copy,
+	Check
 } from 'lucide-react';
 import { DataPagination } from '@/components/ui/DataPagination';
 import {
@@ -125,7 +127,8 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+	const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'suspended'>('all');
+	const [copiedInviteId, setCopiedInviteId] = useState<string | null>(null);
 
 	// Pagination State
 	const [page, setPage] = useState(1);
@@ -377,8 +380,13 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			s.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			(s.phoneNumber && s.phoneNumber.includes(searchTerm));
 
-		if (statusFilter === 'active') return matchSearch && s.isActive;
-		if (statusFilter === 'suspended') return matchSearch && !s.isActive;
+		const isSuspended = s.status === 'Suspended' || !s.isActive;
+		const isPending = s.status === 'Pending Activation' || s.isPendingActivation || (!isSuspended && s.isActivated === false);
+		const isActive = !isSuspended && !isPending;
+
+		if (statusFilter === 'active') return matchSearch && isActive;
+		if (statusFilter === 'pending') return matchSearch && isPending;
+		if (statusFilter === 'suspended') return matchSearch && isSuspended;
 		return matchSearch;
 	});
 
@@ -388,17 +396,27 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 
 	// Metrics
 	const totalStudents = students.length;
-	const activeCount = students.filter(s => s.isActive).length;
-	const suspendedCount = students.filter(s => !s.isActive).length;
+	const suspendedCount = students.filter(s => s.status === 'Suspended' || !s.isActive).length;
+	const pendingCount = students.filter(
+		s => s.status === 'Pending Activation' || s.isPendingActivation || (s.isActive && s.isActivated === false)
+	).length;
+	const activeCount = Math.max(0, totalStudents - suspendedCount - pendingCount);
 	const overallAvg =
 		students.length > 0
 			? Math.round(students.reduce((acc, s) => acc + s.averageScore, 0) / students.length)
 			: 0;
 
+	const handleCopyInviteLink = (id: string, url: string) => {
+		if (!url) return;
+		navigator.clipboard.writeText(url);
+		setCopiedInviteId(id);
+		setTimeout(() => setCopiedInviteId(null), 2500);
+	};
+
 	return (
 		<div className="space-y-6">
 			{/* KPI Summary Cards */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
 				<Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm">
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -408,7 +426,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold text-white">{totalStudents}</div>
-						<p className="text-xs text-slate-400 mt-1">Students registered in system</p>
+						<p className="text-xs text-slate-400 mt-1">Students enrolled in system</p>
 					</CardContent>
 				</Card>
 
@@ -428,7 +446,20 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 				<Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm">
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-							Suspended / Inactive
+							Pending Activation
+						</CardTitle>
+						<Clock className="h-4 w-4 text-amber-400" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-amber-400">{pendingCount}</div>
+						<p className="text-xs text-slate-400 mt-1">Awaiting email activation</p>
+					</CardContent>
+				</Card>
+
+				<Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm">
+					<CardHeader className="flex flex-row items-center justify-between pb-2">
+						<CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+							Suspended
 						</CardTitle>
 						<UserX className="h-4 w-4 text-red-400" />
 					</CardHeader>
@@ -492,6 +523,18 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 								}`}
 						>
 							Active ({activeCount})
+						</button>
+						<button
+							onClick={() => {
+								setStatusFilter('pending');
+								setPage(1);
+							}}
+							className={`px-3 py-1 text-xs font-semibold rounded cursor-pointer transition-colors ${statusFilter === 'pending'
+								? 'bg-amber-950 text-amber-300 border border-amber-800/50'
+								: 'text-slate-400 hover:text-white'
+								}`}
+						>
+							Pending ({pendingCount})
 						</button>
 						<button
 							onClick={() => {
@@ -592,14 +635,21 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 												</div>
 											</td>
 											<td className="py-4 px-4">
-												<span
-													className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${s.isActive
-														? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-														: 'bg-red-950 text-red-400 border border-red-800'
-														}`}
-												>
-													{s.isActive ? 'Active' : 'Suspended'}
-												</span>
+												{s.status === 'Suspended' || !s.isActive ? (
+													<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-950 text-red-400 border border-red-800">
+														Suspended
+													</span>
+												) : s.status === 'Pending Activation' || s.isPendingActivation || s.isActivated === false ? (
+													<span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800/80">
+														<Clock className="h-3 w-3 inline text-amber-400" />
+														Pending Activation
+													</span>
+												) : (
+													<span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+														<CheckCircle className="h-3 w-3 inline" />
+														Active
+													</span>
+												)}
 											</td>
 											<td className="py-4 px-4 max-w-xs text-xs text-slate-300">
 												{s.disabledReason ? (
@@ -653,6 +703,29 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 														>
 															<Camera className="h-3.5 w-3.5" />
 															Photo
+														</Button>
+													)}
+
+													{/* Copy Activation Link Button (Visible if invite link is available) */}
+													{s.inviteUrl && (s.status === 'Pending Activation' || s.isPendingActivation || s.isActivated === false) && (
+														<Button
+															variant="outline"
+															size="sm"
+															onClick={() => handleCopyInviteLink(s.id, s.inviteUrl!)}
+															className="border-amber-800/60 bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 hover:text-white text-xs h-8 cursor-pointer flex items-center gap-1"
+															title="Copy account activation link"
+														>
+															{copiedInviteId === s.id ? (
+																<>
+																	<Check className="h-3.5 w-3.5 text-emerald-400" />
+																	Copied
+																</>
+															) : (
+																<>
+																	<Copy className="h-3.5 w-3.5" />
+																	Activation Link
+																</>
+															)}
 														</Button>
 													)}
 

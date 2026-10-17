@@ -18,7 +18,8 @@ import {
 	CheckCircle2,
 	AlertCircle,
 	CalendarCheck,
-	Megaphone
+	Megaphone,
+	Newspaper
 } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 
@@ -111,6 +112,12 @@ export function AppHeader() {
 			label: 'Noticeboard',
 			icon: Megaphone,
 			isActive: pathname.startsWith('/admin') && currentTab === 'noticeboard'
+		},
+		{
+			href: '/admin/submissions?tab=blog',
+			label: 'Blog',
+			icon: Newspaper,
+			isActive: pathname.startsWith('/admin') && currentTab === 'blog'
 		}
 	];
 

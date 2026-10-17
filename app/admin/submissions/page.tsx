@@ -15,8 +15,9 @@ import { RegistrationSubmissionsView } from '@/features/admin-dashboard/componen
 import { AttendanceManagementView } from '@/features/admin-dashboard/components/AttendanceManagementView';
 import { StaffManagementView } from '@/features/admin-dashboard/components/StaffManagementView';
 import { NoticeboardManagementView } from '@/features/admin-dashboard/components/NoticeboardManagementView';
+import { BlogManagementView } from '@/features/admin-dashboard/components/BlogManagementView';
 
-type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff' | 'noticeboard';
+type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff' | 'noticeboard' | 'blog';
 
 function SubmissionsDashboardContent() {
 	const router = useRouter();
@@ -32,7 +33,7 @@ function SubmissionsDashboardContent() {
 	// Active tab derived from query parameter ?tab (defaults to 'students')
 	const tabParam = searchParams.get('tab') as AdminTab | null;
 	const activeTab: AdminTab =
-		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff', 'noticeboard'].includes(tabParam)
+		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff', 'noticeboard', 'blog'].includes(tabParam)
 			? tabParam
 			: 'students';
 
@@ -177,6 +178,12 @@ function SubmissionsDashboardContent() {
 							subtitle: 'Publish official announcements, schedule alerts, and manage school broadcasts.',
 							icon: Megaphone,
 							color: 'text-orange-400 bg-orange-500/10 border-orange-500/20'
+						},
+						blog: {
+							title: 'Academy Blog & Articles',
+							subtitle: 'Compose, preview, and publish academic guides, examination strategies, and school news.',
+							icon: Newspaper,
+							color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20'
 						}
 					};
 
@@ -216,6 +223,7 @@ function SubmissionsDashboardContent() {
 					{activeTab === 'attendance' && <AttendanceManagementView apiKey={apiKey} />}
 					{activeTab === 'staff' && <StaffManagementView apiKey={apiKey} />}
 					{activeTab === 'noticeboard' && <NoticeboardManagementView apiKey={apiKey} />}
+					{activeTab === 'blog' && <BlogManagementView apiKey={apiKey} />}
 				</div>
 			</div>
 		</div>
