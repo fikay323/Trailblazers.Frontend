@@ -589,8 +589,8 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			{/* MODAL: Toggle Student Status (Deactivate / Activate with Pre-selected Reasons) */}
 			{selectedStudent && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-					<Card className="w-full max-w-lg border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150">
-						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between">
+					<Card className="w-full max-w-lg border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col overflow-hidden">
+						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
 							<div>
 								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
 									{selectedStudent.isActive ? (
@@ -618,7 +618,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							</button>
 						</CardHeader>
 
-						<CardContent className="space-y-4 pt-4">
+						<CardContent className="space-y-4 pt-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-2">
 							{statusModalError && (
 								<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
 									<AlertCircle className="h-4 w-4" />
@@ -689,7 +689,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							)}
 						</CardContent>
 
-						<div className="border-t border-slate-800 px-6 py-4 flex items-center justify-end gap-3 bg-slate-950/40">
+						<div className="border-t border-slate-800 px-6 py-4 flex items-center justify-end gap-3 bg-slate-950/40 shrink-0">
 							<Button
 								variant="outline"
 								size="sm"
@@ -724,7 +724,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			{/* MODAL: Student History Inspection */}
 			{historyStudent && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-					<Card className="w-full max-w-2xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col">
+					<Card className="w-full max-w-2xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col overflow-hidden">
 						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
 							<div>
 								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
@@ -744,7 +744,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							</button>
 						</CardHeader>
 
-						<CardContent className="space-y-4 pt-4 overflow-y-auto flex-1">
+						<CardContent className="space-y-4 pt-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-2">
 							{isLoadingHistory ? (
 								<div className="py-12 text-center text-slate-400">
 									<RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-orange-500" />
@@ -841,7 +841,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 			{/* MODAL: Send Guardian Academic & Attendance Report */}
 			{guardianModalStudent && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-					<Card className="w-full max-w-2xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] flex flex-col">
+					<Card className="w-full max-w-2xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col overflow-hidden">
 						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
 							<div>
 								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
@@ -861,7 +861,7 @@ export function StudentManagementView({ apiKey }: StudentManagementViewProps) {
 							</button>
 						</CardHeader>
 
-						<CardContent className="space-y-4 pt-4 overflow-y-auto flex-1">
+						<CardContent className="space-y-4 pt-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-2">
 							{reportErrorMessage && (
 								<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
 									<AlertCircle className="h-4 w-4" />

@@ -59,9 +59,9 @@ export function ProfilePictureCropModal({
 		<Dialog open={isOpen} onOpenChange={(open) => !isProcessing && !open && onClose()}>
 			<DialogContent
 				showCloseButton={!isProcessing}
-				className="sm:max-w-md bg-slate-950 border-slate-800 text-slate-100 p-6"
+				className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-slate-950 border-slate-800 text-slate-100 p-6"
 			>
-				<DialogHeader>
+				<DialogHeader className="shrink-0">
 					<DialogTitle className="text-xl font-bold tracking-tight text-white">
 						Crop Profile Picture
 					</DialogTitle>
@@ -70,49 +70,51 @@ export function ProfilePictureCropModal({
 					</DialogDescription>
 				</DialogHeader>
 
-				{error && (
-					<div className="p-3 bg-red-950/80 border border-red-800/80 rounded-md text-red-200 text-sm">
-						{error}
-					</div>
-				)}
-
-				<div className="relative w-full h-72 sm:h-80 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 shadow-inner">
-					{imageSrc && (
-						<Cropper
-							image={imageSrc}
-							crop={crop}
-							zoom={zoom}
-							aspect={1}
-							cropShape="round"
-							showGrid={false}
-							onCropChange={setCrop}
-							onCropComplete={onCropComplete}
-							onZoomChange={setZoom}
-							minZoom={1}
-							maxZoom={3}
-						/>
+				<div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 space-y-4 pr-1">
+					{error && (
+						<div className="p-3 bg-red-950/80 border border-red-800/80 rounded-md text-red-200 text-sm">
+							{error}
+						</div>
 					)}
+
+					<div className="relative w-full h-72 sm:h-80 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 shadow-inner">
+						{imageSrc && (
+							<Cropper
+								image={imageSrc}
+								crop={crop}
+								zoom={zoom}
+								aspect={1}
+								cropShape="round"
+								showGrid={false}
+								onCropChange={setCrop}
+								onCropComplete={onCropComplete}
+								onZoomChange={setZoom}
+								minZoom={1}
+								maxZoom={3}
+							/>
+						)}
+					</div>
+
+					<div className="flex items-center gap-3 px-2 py-2 bg-slate-900/60 rounded-lg border border-slate-800">
+						<ZoomOut className="w-4 h-4 text-slate-400 shrink-0" />
+						<Slider
+							value={[zoom]}
+							min={1}
+							max={3}
+							step={0.05}
+							onValueChange={(values) => {
+								if (values[0] !== undefined) {
+									setZoom(values[0]);
+								}
+							}}
+							disabled={isProcessing}
+							className="flex-1 cursor-pointer"
+						/>
+						<ZoomIn className="w-4 h-4 text-slate-400 shrink-0" />
+					</div>
 				</div>
 
-				<div className="flex items-center gap-3 px-2 py-2 bg-slate-900/60 rounded-lg border border-slate-800">
-					<ZoomOut className="w-4 h-4 text-slate-400 shrink-0" />
-					<Slider
-						value={[zoom]}
-						min={1}
-						max={3}
-						step={0.05}
-						onValueChange={(values) => {
-							if (values[0] !== undefined) {
-								setZoom(values[0]);
-							}
-						}}
-						disabled={isProcessing}
-						className="flex-1 cursor-pointer"
-					/>
-					<ZoomIn className="w-4 h-4 text-slate-400 shrink-0" />
-				</div>
-
-				<DialogFooter className="gap-2 sm:gap-0 mt-2">
+				<DialogFooter className="gap-2 sm:gap-0 mt-2 shrink-0">
 					<Button
 						type="button"
 						variant="outline"

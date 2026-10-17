@@ -264,10 +264,10 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 
 			{/* Expand Details Dialog */}
 			<Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-xl">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-xl max-h-[85vh] flex flex-col p-6 overflow-hidden">
 					{selectedItem && (
 						<>
-							<DialogHeader className="border-b border-slate-800 pb-4">
+							<DialogHeader className="border-b border-slate-800 pb-4 shrink-0">
 								<div className="flex items-center gap-2">
 									<Badge variant="outline" className="border-indigo-500/30 bg-indigo-500/10 text-indigo-400">
 										Student Registration
@@ -289,7 +289,7 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 								</DialogDescription>
 							</DialogHeader>
 
-							<div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+							<div className="py-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
 								{/* 1. Student Profile & Academic Details */}
 								<div>
 									<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Student Profile & Academic Details</h4>
@@ -509,7 +509,7 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 								</div>
 							</div>
 
-							<div className="flex justify-between items-center pt-3 border-t border-slate-800">
+							<div className="flex justify-between items-center pt-3 border-t border-slate-800 shrink-0 mt-auto">
 								<Button
 									onClick={() => setItemToDelete(selectedItem)}
 									variant="outline"
@@ -530,7 +530,7 @@ export function RegistrationSubmissionsView({ apiKey }: RegistrationSubmissionsV
 
 			{/* Delete Confirmation Modal */}
 			<Dialog open={!!itemToDelete} onOpenChange={(open) => !open && !isDeleting && setItemToDelete(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh]">
 					<DialogHeader className="space-y-2">
 						<div className="flex items-center gap-2 text-red-400">
 							<AlertTriangle className="h-5 w-5" />

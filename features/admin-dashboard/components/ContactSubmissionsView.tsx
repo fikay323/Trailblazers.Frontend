@@ -189,10 +189,10 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 
 			{/* Expand Message Dialog */}
 			<Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-xl">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-xl max-h-[85vh] flex flex-col p-6 overflow-hidden">
 					{selectedItem && (
 						<>
-							<DialogHeader className="border-b border-slate-800 pb-4">
+							<DialogHeader className="border-b border-slate-800 pb-4 shrink-0">
 								<div className="flex items-center gap-2">
 									<Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
 										Contact Inquiry
@@ -215,14 +215,14 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 								</DialogDescription>
 							</DialogHeader>
 
-							<div className="py-4 space-y-2">
+							<div className="py-4 space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
 								<h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Message Details</h4>
-								<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 text-slate-200 text-sm whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
+								<div className="bg-slate-900/50 border border-slate-800/80 rounded-md p-4 text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">
 									{getMessage(selectedItem.metadata)}
 								</div>
 							</div>
 
-							<div className="flex justify-between items-center pt-3 border-t border-slate-800">
+							<div className="flex justify-between items-center pt-3 border-t border-slate-800 shrink-0 mt-auto">
 								<Button
 									onClick={() => setItemToDelete(selectedItem)}
 									variant="outline"
@@ -243,7 +243,7 @@ export function ContactSubmissionsView({ apiKey }: ContactSubmissionsViewProps) 
 
 			{/* Delete Confirmation Modal */}
 			<Dialog open={!!itemToDelete} onOpenChange={(open) => !open && !isDeleting && setItemToDelete(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh]">
 					<DialogHeader className="space-y-2">
 						<div className="flex items-center gap-2 text-red-400">
 							<AlertTriangle className="h-5 w-5" />

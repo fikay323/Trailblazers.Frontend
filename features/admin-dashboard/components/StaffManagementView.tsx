@@ -639,8 +639,8 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 
 			{/* Invite Staff Member Modal */}
 			<Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
-					<DialogHeader>
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh] flex flex-col overflow-hidden p-6">
+					<DialogHeader className="shrink-0">
 						<DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
 							<UserPlus className="h-5 w-5 text-orange-500" />
 							Invite Staff Member
@@ -651,13 +651,14 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 					</DialogHeader>
 
 					{inviteError && (
-						<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300 text-xs py-2.5">
+						<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300 text-xs py-2.5 shrink-0">
 							<AlertCircle className="h-4 w-4" />
 							<AlertDescription>{inviteError}</AlertDescription>
 						</Alert>
 					)}
 
-					<form onSubmit={handleSendInvite} className="space-y-4 pt-2">
+					<form onSubmit={handleSendInvite} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+						<div className="space-y-4 py-2 flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1">
 						<div className="space-y-1.5">
 							<label className="text-xs font-semibold text-slate-300">Full Name</label>
 							<Input
@@ -722,7 +723,9 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 							</div>
 						</div>
 
-						<div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+						</div>
+
+						<div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 shrink-0 mt-auto">
 							<Button
 								type="button"
 								variant="outline"
@@ -757,7 +760,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 
 			{/* Role Change Confirmation Modal */}
 			<Dialog open={!!roleChangeTarget} onOpenChange={(open) => !open && !isChangingRole && setRoleChangeTarget(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh]">
 					<DialogHeader>
 						<DialogTitle className="text-base font-bold text-white flex items-center gap-2">
 							<ShieldCheck className="h-5 w-5 text-orange-500" />
@@ -796,7 +799,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 
 			{/* Account Status Toggle Modal */}
 			<Dialog open={!!statusTarget} onOpenChange={(open) => !open && !isTogglingStatus && setStatusTarget(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh]">
 					<DialogHeader>
 						<DialogTitle className="text-base font-bold text-white">
 							{statusTarget?.isActive ? 'Suspend Staff Access' : 'Reactivate Staff Access'}
@@ -840,8 +843,8 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 
 			{/* Invite Result & Direct Link Modal */}
 			<Dialog open={!!inviteResultModal} onOpenChange={(open) => !open && setInviteResultModal(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-lg">
-					<DialogHeader className="space-y-2">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-lg max-h-[85vh] flex flex-col overflow-hidden p-6">
+					<DialogHeader className="space-y-2 shrink-0">
 						<div className="flex items-center gap-2">
 							{inviteResultModal?.emailSent ? (
 								<div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -863,7 +866,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 						</div>
 					</DialogHeader>
 
-					<div className="space-y-4 py-2">
+					<div className="space-y-4 py-2 flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1">
 						<Alert className={inviteResultModal?.emailSent ? 'border-emerald-800/60 bg-emerald-950/30 text-emerald-300' : 'border-amber-800/60 bg-amber-950/30 text-amber-300'}>
 							<AlertDescription className="text-xs leading-relaxed">
 								{inviteResultModal?.emailStatusMessage}
@@ -908,7 +911,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 						)}
 					</div>
 
-					<div className="flex justify-end pt-2 border-t border-slate-800">
+					<div className="flex justify-end pt-2 border-t border-slate-800 shrink-0 mt-auto">
 						<Button
 							size="sm"
 							onClick={() => setInviteResultModal(null)}
@@ -922,7 +925,7 @@ export function StaffManagementView({ apiKey }: StaffManagementViewProps) {
 
 			{/* Delete Pending Invitation Modal */}
 			<Dialog open={!!deleteInviteTarget} onOpenChange={(open) => !open && !isDeletingInvite && setDeleteInviteTarget(null)}>
-				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md">
+				<DialogContent className="border-slate-800 bg-slate-950 text-slate-100 max-w-md max-h-[85vh]">
 					<DialogHeader>
 						<DialogTitle className="text-base font-bold text-white flex items-center gap-2">
 							<Trash2 className="h-5 w-5 text-red-500" />

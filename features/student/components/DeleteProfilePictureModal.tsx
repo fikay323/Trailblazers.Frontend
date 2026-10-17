@@ -44,7 +44,7 @@ export function DeleteProfilePictureModal({
 		<Dialog open={isOpen} onOpenChange={(open) => !isDeleting && !open && onClose()}>
 			<DialogContent
 				showCloseButton={!isDeleting}
-				className="sm:max-w-md bg-slate-950 border-slate-800 text-slate-100 p-6"
+				className="sm:max-w-md max-h-[85vh] bg-slate-950 border-slate-800 text-slate-100 p-6"
 			>
 				<DialogHeader>
 					<div className="flex items-center gap-3">

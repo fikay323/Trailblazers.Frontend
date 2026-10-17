@@ -368,7 +368,7 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 			{/* CREATE QUESTION MODAL */}
 			{isCreateModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-					<Card className="w-full max-w-xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[95vh] flex flex-col">
+					<Card className="w-full max-w-xl border-slate-800 bg-slate-900 shadow-2xl text-slate-100 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col overflow-hidden">
 						<CardHeader className="border-b border-slate-800 pb-4 flex flex-row items-center justify-between shrink-0">
 							<div>
 								<CardTitle className="text-lg font-bold text-white flex items-center gap-2">
@@ -388,8 +388,9 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 							</button>
 						</CardHeader>
 
-						<form onSubmit={handleCreateQuestion} className="flex-1 overflow-y-auto p-5 space-y-4">
-							{createError && (
+						<form onSubmit={handleCreateQuestion} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+							<div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 min-h-0 pr-3">
+								{createError && (
 								<Alert variant="destructive" className="border-red-800 bg-red-950/50 text-red-300">
 									<AlertCircle className="h-4 w-4" />
 									<AlertDescription>{createError}</AlertDescription>
@@ -478,8 +479,9 @@ export function QuestionBankView({ apiKey }: QuestionBankViewProps) {
 									</div>
 								))}
 							</div>
+						</div>
 
-							<div className="pt-2 flex justify-end gap-3 border-t border-slate-800">
+							<div className="p-4 flex justify-end gap-3 border-t border-slate-800 shrink-0 bg-slate-950/40">
 								<Button
 									type="button"
 									variant="outline"

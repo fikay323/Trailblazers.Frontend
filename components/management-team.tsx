@@ -249,7 +249,7 @@ export function ManagementTeam() {
 								</DialogHeader>
 
 								{/* Scrollable bio text */}
-								<div className="flex-1 overflow-y-auto p-6 md:p-8">
+								<div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 pr-4">
 									<div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
 										{selectedMember.paragraphs.map((paragraph, index) => (
 											<p key={index}>{paragraph}</p>

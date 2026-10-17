@@ -131,13 +131,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const saveAuth = (auth: AuthResponseDto | { token: string; refreshToken?: string; user?: UserDto; [key: string]: unknown }) => {
 		const rawUser = auth.user as UserDto | undefined;
+		const authRecord = auth as Record<string, unknown>;
 		const userObj: UserDto = rawUser || {
-			id: (auth.userId as string) || (auth.id as string) || '',
-			email: (auth.email as string) || '',
-			fullName: (auth.fullName as string) || '',
-			role: (auth.role as string) || 'Student',
-			isActive: (auth.isActive as boolean) ?? true,
-			profilePictureUrl: (auth.profilePictureUrl as string | null) ?? null
+			id: (authRecord.userId as string) || (authRecord.id as string) || '',
+			email: (authRecord.email as string) || '',
+			fullName: (authRecord.fullName as string) || '',
+			role: (authRecord.role as string) || 'Student',
+			isActive: (authRecord.isActive as boolean) ?? true,
+			profilePictureUrl: (authRecord.profilePictureUrl as string | null) ?? null
 		};
 		setToken(auth.token);
 		setUser(userObj);
