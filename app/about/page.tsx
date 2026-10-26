@@ -2,22 +2,45 @@ import Image from "next/image"
 import { Users, BookOpen, Monitor, Eye, Target, Award, Shield, Lightbulb, Heart, Zap, Compass, CheckCircle2, Music, Milestone } from "lucide-react"
 import { Metadata } from 'next'
 import { ManagementTeam } from "@/components/management-team"
+import { managementTeam } from "@/lib/team-data"
+import { getSiteAssets, resolveAsset } from "@/core/services/siteAssetService"
 
-export const metadata: Metadata = {
-	title: 'About Us – Motto: Honesty, Integrity & Excellence is our Hallmark',
-	description:
-		'Discover Trailblazer Academy & Edukonsult — building future trailblazers through excellence in education, dedicated CBT labs, and an expert management team.',
-	alternates: {
-		canonical: 'https://trailblazer-academy.com/about',
-	},
-	openGraph: {
-		title: 'About Trailblazer Academy & Edukonsult',
+export async function generateMetadata(): Promise<Metadata> {
+	let ogImageUrl = '/trailblazer.jpeg';
+	let ogAlt = 'Trailblazer Academy campus';
+	try {
+		const assets = await getSiteAssets('seo');
+		const match = assets.find((a) => a.key === 'seo.og.about' || a.key === 'seo.og.default');
+		if (match?.imageUrl) {
+			ogImageUrl = match.imageUrl;
+			if (match.altText) ogAlt = match.altText;
+		}
+	} catch {
+		ogImageUrl = '/trailblazer.jpeg';
+	}
+
+	return {
+		title: 'About Us – Motto: Honesty, Integrity & Excellence is our Hallmark',
 		description:
-			'Discover our motto, vision, mission, and the management team behind Trailblazer Academy & Edukonsult in Ibadan.',
-		url: 'https://trailblazer-academy.com/about',
-		images: [{ url: '/trailblazer.jpeg', alt: 'Trailblazer Academy campus' }],
-	},
-};
+			'Discover Trailblazer Academy & Edukonsult — building future trailblazers through excellence in education, dedicated CBT labs, and an expert management team.',
+		alternates: {
+			canonical: 'https://trailblazer-academy.com/about',
+		},
+		openGraph: {
+			title: 'About Trailblazer Academy & Edukonsult',
+			description:
+				'Discover our motto, vision, mission, and the management team behind Trailblazer Academy & Edukonsult in Ibadan.',
+			url: 'https://trailblazer-academy.com/about',
+			images: [{ url: ogImageUrl, alt: ogAlt }],
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: 'About Trailblazer Academy & Edukonsult',
+			description: 'Discover our motto, vision, mission, and the management team in Ibadan.',
+			images: [ogImageUrl]
+		}
+	};
+}
 
 const coreValues = [
 	{
@@ -77,7 +100,29 @@ const growthPlan = [
 
 
 
-export default function AboutPage() {
+export default async function AboutPage() {
+	let assets = [];
+	try {
+		assets = await getSiteAssets();
+	} catch {
+		assets = [];
+	}
+
+	const heroBg = resolveAsset(assets, 'about.hero.background', '/images/image-5.jpeg', 'Student illustration');
+	const heroFg = resolveAsset(assets, 'about.hero.foreground', '/images/image-3.jpeg', 'Teacher explaining');
+	const objBanner = resolveAsset(assets, 'about.objectives.banner', '/images/image-10.jpeg', 'Students in classroom');
+	const cbtLab = resolveAsset(assets, 'about.cbt_lab', '/images/image-10.jpeg', 'Dedicated CBT Lab');
+
+	const dynamicTeam = managementTeam.map((member, index) => {
+		const slotKey = `team.member.${index + 1}`;
+		const asset = assets.find((a) => a.key === slotKey);
+		return {
+			...member,
+			name: asset?.title && asset.title.trim() ? asset.title.trim() : member.name,
+			title: asset?.caption && asset.caption.trim() ? asset.caption.trim() : member.title,
+			image: asset?.imageUrl && asset.imageUrl.trim() ? asset.imageUrl.trim() : member.image
+		};
+	});
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<main className="flex-1">
@@ -104,8 +149,8 @@ export default function AboutPage() {
 									{/* Background image */}
 									<div className="absolute right-0 top-0 h-87.5 w-[80%] overflow-hidden rounded-2xl">
 										<Image
-											src="/images/image-5.jpeg"
-											alt="Student illustration"
+											src={heroBg.imageUrl}
+											alt={heroBg.altText || "Student illustration"}
 											fill
 											className="object-cover"
 										/>
@@ -113,8 +158,8 @@ export default function AboutPage() {
 									{/* Foreground image */}
 									<div className="absolute bottom-0 left-0 h-62.5 w-[60%] overflow-hidden rounded-2xl border-4 border-background shadow-xl">
 										<Image
-											src="/images/image-3.jpeg"
-											alt="Teacher explaining"
+											src={heroFg.imageUrl}
+											alt={heroFg.altText || "Teacher explaining"}
 											fill
 											className="object-cover"
 										/>
@@ -229,8 +274,8 @@ export default function AboutPage() {
 
 							<div className="relative overflow-hidden rounded-2xl aspect-video lg:aspect-square">
 								<Image
-									src="/images/image-10.jpeg"
-									alt="Students in classroom"
+									src={objBanner.imageUrl}
+									alt={objBanner.altText || "Students in classroom"}
 									fill
 									className="object-cover"
 								/>
@@ -283,8 +328,8 @@ export default function AboutPage() {
 							<div className="overflow-hidden rounded-2xl bg-card shadow-sm">
 								<div className="relative h-75 w-full">
 									<Image
-										src="/images/image-10.jpeg"
-										alt="Dedicated CBT Lab"
+										src={cbtLab.imageUrl}
+										alt={cbtLab.altText || "Dedicated CBT Lab"}
 										fill
 										className="object-cover"
 									/>
@@ -362,7 +407,7 @@ export default function AboutPage() {
 				</section>
 
 				{/* Management Team */}
-				<ManagementTeam />
+				<ManagementTeam teamMembers={dynamicTeam} />
 			</main>
 		</div>
 	)

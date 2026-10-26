@@ -19,7 +19,8 @@ import {
 	AlertCircle,
 	CalendarCheck,
 	Megaphone,
-	Newspaper
+	Newspaper,
+	Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 
@@ -118,6 +119,12 @@ export function AppHeader() {
 			label: 'Blog',
 			icon: Newspaper,
 			isActive: pathname.startsWith('/admin') && currentTab === 'blog'
+		},
+		{
+			href: '/admin/submissions?tab=media',
+			label: 'Media',
+			icon: ImageIcon,
+			isActive: pathname.startsWith('/admin') && currentTab === 'media'
 		}
 	];
 

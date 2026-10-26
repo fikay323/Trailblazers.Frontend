@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck, Megaphone, Newspaper } from 'lucide-react';
+import { Lock, RefreshCw, Users, BookOpen, UserPlus, Mail, ShieldCheck, CalendarCheck, Megaphone, Newspaper, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '@/core/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,9 @@ import { AttendanceManagementView } from '@/features/admin-dashboard/components/
 import { StaffManagementView } from '@/features/admin-dashboard/components/StaffManagementView';
 import { NoticeboardManagementView } from '@/features/admin-dashboard/components/NoticeboardManagementView';
 import { BlogManagementView } from '@/features/admin-dashboard/components/BlogManagementView';
+import { MediaManagementView } from '@/features/admin-dashboard/components/MediaManagementView';
 
-type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff' | 'noticeboard' | 'blog';
+type AdminTab = 'students' | 'questions' | 'registration' | 'contact' | 'attendance' | 'staff' | 'noticeboard' | 'blog' | 'media';
 
 function SubmissionsDashboardContent() {
 	const router = useRouter();
@@ -33,7 +34,7 @@ function SubmissionsDashboardContent() {
 	// Active tab derived from query parameter ?tab (defaults to 'students')
 	const tabParam = searchParams.get('tab') as AdminTab | null;
 	const activeTab: AdminTab =
-		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff', 'noticeboard', 'blog'].includes(tabParam)
+		tabParam && ['students', 'questions', 'registration', 'contact', 'attendance', 'staff', 'noticeboard', 'blog', 'media'].includes(tabParam)
 			? tabParam
 			: 'students';
 
@@ -184,6 +185,12 @@ function SubmissionsDashboardContent() {
 							subtitle: 'Compose, preview, and publish academic guides, examination strategies, and school news.',
 							icon: Newspaper,
 							color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20'
+						},
+						media: {
+							title: 'Site Media & Picture Management',
+							subtitle: 'Upload, customize, and manage website pictures, hero carousel, gallery, and SEO social share cards.',
+							icon: ImageIcon,
+							color: 'text-orange-400 bg-orange-500/10 border-orange-500/20'
 						}
 					};
 
@@ -224,6 +231,7 @@ function SubmissionsDashboardContent() {
 					{activeTab === 'staff' && <StaffManagementView apiKey={apiKey} />}
 					{activeTab === 'noticeboard' && <NoticeboardManagementView apiKey={apiKey} />}
 					{activeTab === 'blog' && <BlogManagementView apiKey={apiKey} />}
+					{activeTab === 'media' && <MediaManagementView apiKey={apiKey} />}
 				</div>
 			</div>
 		</div>

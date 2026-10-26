@@ -18,38 +18,54 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getSummerStatus } from '@/lib/summer-coaching-utils'
+import { getSiteAssets } from '@/core/services/siteAssetService'
 
-export const metadata: Metadata = {
-	title: 'Summer Lessons & Coaching in Moniya, Ibadan | Trailblazer Academy',
-	description:
-		'Intensive summer prep lessons at Trailblazer Academy, Moniya, Ibadan. Classes for JSS1-SS3, WAEC/JAMB headstart, and practical CBT computer training. Register today!',
-	alternates: {
-		canonical: 'https://trailblazer-academy.com/summer-coaching',
-	},
-	openGraph: {
-		type: 'website',
-		locale: 'en_NG',
-		url: 'https://trailblazer-academy.com/summer-coaching',
-		siteName: 'Trailblazer Academy & Edukonsult',
-		title: 'Summer Lessons & Holiday Coaching in Moniya, Ibadan',
+export async function generateMetadata(): Promise<Metadata> {
+	let ogImageUrl = '/trailblazer.jpeg';
+	let ogAlt = 'Trailblazer Academy Summer Coaching Program';
+	try {
+		const assets = await getSiteAssets('seo');
+		const match = assets.find((a) => a.key === 'seo.og.summer_coaching' || a.key === 'seo.og.default');
+		if (match?.imageUrl) {
+			ogImageUrl = match.imageUrl;
+			if (match.altText) ogAlt = match.altText;
+		}
+	} catch {
+		ogImageUrl = '/trailblazer.jpeg';
+	}
+
+	return {
+		title: 'Summer Lessons & Coaching in Moniya, Ibadan | Trailblazer Academy',
 		description:
-			'Boost your child’s academic performance this holiday! Intensive preparatory classes for JSS1–SS3, JAMB headstart, and CBT training at Trailblazer Academy.',
-		images: [
-			{
-				url: '/trailblazer.jpeg',
-				width: 1200,
-				height: 630,
-				alt: 'Trailblazer Academy Summer Coaching Program',
-			},
-		],
-	},
-	twitter: {
-		card: 'summary_large_image',
-		title: 'Summer Coaching 2026 – Trailblazer Academy, Moniya, Ibadan',
-		description:
-			'Holiday coaching for JSS1–SS3 & UTME/JAMB headstart. Practical CBT lab, expert tutors, proven results.',
-		images: ['/trailblazer.jpeg'],
-	},
+			'Intensive summer prep lessons at Trailblazer Academy, Moniya, Ibadan. Classes for JSS1-SS3, WAEC/JAMB headstart, and practical CBT computer training. Register today!',
+		alternates: {
+			canonical: 'https://trailblazer-academy.com/summer-coaching',
+		},
+		openGraph: {
+			type: 'website',
+			locale: 'en_NG',
+			url: 'https://trailblazer-academy.com/summer-coaching',
+			siteName: 'Trailblazer Academy & Edukonsult',
+			title: 'Summer Lessons & Holiday Coaching in Moniya, Ibadan',
+			description:
+				'Boost your child’s academic performance this holiday! Intensive preparatory classes for JSS1–SS3, JAMB headstart, and CBT training at Trailblazer Academy.',
+			images: [
+				{
+					url: ogImageUrl,
+					width: 1200,
+					height: 630,
+					alt: ogAlt,
+				},
+			],
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: 'Summer Coaching 2026 – Trailblazer Academy, Moniya, Ibadan',
+			description:
+				'Holiday coaching for JSS1–SS3 & UTME/JAMB headstart. Practical CBT lab, expert tutors, proven results.',
+			images: [ogImageUrl],
+		},
+	};
 }
 
 export default function SummerCoachingPage() {

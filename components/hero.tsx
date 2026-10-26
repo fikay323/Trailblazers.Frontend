@@ -14,7 +14,14 @@ import {
 } from "@/components/ui/carousel"
 import { cn } from "@/lib/utils"
 
-const slides = [
+export interface HeroSlide {
+	id: number
+	label: string
+	description: string
+	image: string
+}
+
+export const defaultSlides: HeroSlide[] = [
 	{
 		id: 1,
 		label: "JAMB/CBT Prep",
@@ -65,9 +72,14 @@ const slides = [
 	}
 ]
 
-export function Hero() {
+export interface HeroProps {
+	slides?: HeroSlide[]
+}
+
+export function Hero({ slides: propSlides }: HeroProps) {
 	const [api, setApi] = useState<CarouselApi>()
 	const [current, setCurrent] = useState(0)
+	const slides = propSlides && propSlides.length > 0 ? propSlides : defaultSlides
 
 	useEffect(() => {
 		if (!api) {
@@ -102,46 +114,91 @@ export function Hero() {
 								src={slide.image}
 								alt={slide.label}
 								fill
-								className="object-cover"
 								priority={index === 0}
+								className="object-cover"
 							/>
-							{/* Overlay for readability */}
-							<div className="absolute inset-0 bg-black/60" />
-
-							{/* Right-Middle Slide Specific Content */}
-							<div className="absolute top-1/2 -translate-y-1/2 text-center z-10 flex flex-col items-center justify-center w-full px-4">
-								<h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 drop-shadow-xl tracking-tight">
-									{slide.label}
-								</h2>
-								<p className="text-xl md:text-2xl text-white/90 drop-shadow-md font-medium leading-snug mb-8 max-w-3xl mx-auto">
-									{slide.description}
-								</p>
-								<Button asChild className="bg-primary hover:bg-orange-600 text-white font-semibold text-lg px-8 py-6 rounded-md shadow-lg transition-all duration-300">
-									<Link href="/register">
-										Register Now
-									</Link>
-								</Button>
-							</div>
+							{/* Dim Overlay */}
+							<div className="absolute inset-0 bg-black/60 pointer-events-none" />
 						</CarouselItem>
 					))}
 				</CarouselContent>
-
-				{/* Side Edges (Overlay): Navigation Arrows */}
-				<CarouselPrevious className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/50 border-white/20 text-white h-12 w-12 md:h-16 md:w-16 backdrop-blur-sm z-20" />
-				<CarouselNext className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/50 border-white/20 text-white h-12 w-12 md:h-16 md:w-16 backdrop-blur-sm z-20" />
 			</Carousel>
 
-			{/* Bottom-Center (Overlay): Pagination Dots */}
-			<div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+			{/* Centered Main Content Overlay */}
+			<div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto pointer-events-none">
+				<h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+					Empowering Leaders of Tomorrow
+				</h1>
+				<p className="mt-4 text-lg sm:text-xl text-neutral-200 max-w-2xl font-light">
+					Join a community dedicated to academic distinction, innovative thinking, and personal growth.
+				</p>
+				<div className="mt-8 flex flex-wrap gap-4 justify-center pointer-events-auto">
+					<Button
+						asChild
+						size="lg"
+						className="bg-primary text-white hover:bg-primary/90 font-medium px-8 py-6 rounded-md shadow-lg transition-transform hover:scale-105"
+					>
+						<Link href="/programs">
+							Explore Programs
+						</Link>
+					</Button>
+					<Button
+						asChild
+						variant="outline"
+						size="lg"
+						className="border-neutral-400 bg-transparent text-white hover:bg-white/20 hover:text-white font-medium px-8 py-6 rounded-md backdrop-blur-xs transition-transform hover:scale-105"
+					>
+						<Link href="/about">
+							Learn More
+						</Link>
+					</Button>
+				</div>
+			</div>
+
+			{/* Bottom Left: Floating Slide Indicator & Info Card */}
+			<div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-10 z-20 pointer-events-auto max-w-xs sm:max-w-sm">
+				<div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-xl text-white shadow-2xl">
+					<div className="flex items-center gap-2 mb-1.5">
+						<span className="text-xs font-semibold uppercase tracking-wider text-primary">
+							Facility {current + 1} of {slides.length}
+						</span>
+					</div>
+					<h3 className="text-base sm:text-lg font-bold leading-snug">
+						{slides[current]?.label}
+					</h3>
+					<p className="text-xs sm:text-sm text-neutral-300 mt-1 line-clamp-2">
+						{slides[current]?.description}
+					</p>
+
+					{/* Custom Navigation controls */}
+					<div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/10">
+						<button
+							onClick={() => api?.scrollPrev()}
+							className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-medium transition-colors"
+						>
+							Previous
+						</button>
+						<button
+							onClick={() => api?.scrollNext()}
+							className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded text-xs font-medium transition-colors"
+						>
+							Next
+						</button>
+					</div>
+				</div>
+			</div>
+
+			{/* Bottom Right: Slide Indicator Dots */}
+			<div className="absolute bottom-6 right-4 sm:bottom-10 sm:right-10 z-20 flex gap-2 pointer-events-auto">
 				{slides.map((_, index) => (
 					<button
 						key={index}
 						onClick={() => api?.scrollTo(index)}
 						className={cn(
-							"h-3 w-3 rounded-full transition-all duration-500 ease-out",
+							"h-2 rounded-full transition-all duration-300",
 							current === index
-								? "bg-white w-12 shadow-lg shadow-white/40"
-								: "bg-white/40 hover:bg-white/80"
+								? "w-8 bg-primary"
+								: "w-2 bg-white/50 hover:bg-white/80"
 						)}
 						aria-label={`Go to slide ${index + 1}`}
 					/>

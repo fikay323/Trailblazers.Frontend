@@ -35,8 +35,10 @@ import {
 	FileText,
 	Image as ImageIcon,
 	Sparkles,
+	Upload,
 	X
 } from 'lucide-react';
+import { MediaUploadModal } from './MediaUploadModal';
 
 interface BlogManagementViewProps {
 	apiKey: string;
@@ -83,6 +85,7 @@ export function BlogManagementView({ apiKey }: BlogManagementViewProps) {
 	const [excerpt, setExcerpt] = useState('');
 	const [content, setContent] = useState('');
 	const [coverImageUrl, setCoverImageUrl] = useState('');
+	const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 	const [category, setCategory] = useState(PRESET_CATEGORIES[0]);
 	const [tagsInput, setTagsInput] = useState('');
 	const [isPublished, setIsPublished] = useState(false);
@@ -635,17 +638,44 @@ export function BlogManagementView({ apiKey }: BlogManagementViewProps) {
 								{/* Cover Image URL & Presets */}
 								<div className="space-y-2">
 									<label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-										<span>Cover Image URL</span>
+										<span>Cover Image</span>
 										<span className="text-slate-500 font-normal">Optional header banner</span>
 									</label>
 									<div className="flex gap-2">
 										<Input
-											placeholder="https://images.unsplash.com/..."
+											placeholder="https://images.unsplash.com/... or upload directly"
 											value={coverImageUrl}
 											onChange={e => setCoverImageUrl(e.target.value)}
 											className="bg-slate-950 border-slate-800 text-white text-sm"
 										/>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => setIsUploadModalOpen(true)}
+											className="border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs shrink-0 gap-1.5"
+										>
+											<Upload className="w-3.5 h-3.5 text-orange-400" />
+											Upload Image
+										</Button>
 									</div>
+									{coverImageUrl && (
+										<div className="relative w-full h-32 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center">
+											{/* eslint-disable-next-line @next/next/no-img-element */}
+											<img
+												src={coverImageUrl}
+												alt="Cover Preview"
+												className="w-full h-full object-cover"
+											/>
+											<button
+												type="button"
+												onClick={() => setCoverImageUrl('')}
+												className="absolute top-2 right-2 bg-slate-950/80 hover:bg-red-950 text-slate-300 hover:text-red-300 p-1 rounded border border-slate-700 transition-colors cursor-pointer"
+												title="Remove Cover Image"
+											>
+												<X className="w-3.5 h-3.5" />
+											</button>
+										</div>
+									)}
 									<div className="flex flex-wrap items-center gap-1.5 pt-1">
 										<span className="text-[11px] text-slate-500 mr-1">Quick Presets:</span>
 										{PRESET_COVERS.map(preset => (
@@ -837,6 +867,18 @@ export function BlogManagementView({ apiKey }: BlogManagementViewProps) {
 					</Card>
 				</div>
 			)}
+
+			{/* Media Upload Modal for Blog Cover */}
+			<MediaUploadModal
+				isOpen={isUploadModalOpen}
+				title="Upload Blog Cover Image"
+				description="Upload and crop a header banner for your article (recommended 16:9 aspect ratio)."
+				defaultAspect="16:9"
+				folder="blog"
+				tokenOrApiKey={apiKey}
+				onClose={() => setIsUploadModalOpen(false)}
+				onUploadSuccess={(data) => setCoverImageUrl(data.url)}
+			/>
 		</div>
 	);
 }

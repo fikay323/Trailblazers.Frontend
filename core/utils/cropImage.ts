@@ -17,13 +17,26 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
 export async function getCroppedImg(
 	imageSrc: string,
 	pixelCrop: PixelCrop,
-	outputWidth: number = 500,
-	outputHeight: number = 500
+	outputWidth?: number,
+	outputHeight?: number
 ): Promise<Blob> {
 	const image = await createImage(imageSrc);
 	const canvas = document.createElement('canvas');
-	canvas.width = outputWidth;
-	canvas.height = outputHeight;
+
+	// If explicit dimensions are provided, use them; otherwise use pixelCrop size capped at 2400px
+	let targetWidth = outputWidth ?? Math.round(pixelCrop.width);
+	let targetHeight = outputHeight ?? Math.round(pixelCrop.height);
+
+	// Cap large dimensions to 2400px to avoid memory overflow while preserving crispness
+	const maxDimension = 2400;
+	if (targetWidth > maxDimension || targetHeight > maxDimension) {
+		const scale = maxDimension / Math.max(targetWidth, targetHeight);
+		targetWidth = Math.round(targetWidth * scale);
+		targetHeight = Math.round(targetHeight * scale);
+	}
+
+	canvas.width = Math.max(1, targetWidth);
+	canvas.height = Math.max(1, targetHeight);
 	const ctx = canvas.getContext('2d');
 
 	if (!ctx) {
@@ -41,8 +54,8 @@ export async function getCroppedImg(
 		pixelCrop.height,
 		0,
 		0,
-		outputWidth,
-		outputHeight
+		canvas.width,
+		canvas.height
 	);
 
 	return new Promise((resolve, reject) => {
@@ -55,7 +68,7 @@ export async function getCroppedImg(
 				}
 			},
 			'image/webp',
-			0.9
+			0.92
 		);
 	});
 }

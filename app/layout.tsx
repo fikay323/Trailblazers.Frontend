@@ -5,6 +5,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { AuthProvider } from '@/core/contexts/AuthContext';
 import { Analytics } from '@vercel/analytics/next';
+import { getSiteAssets } from '@/core/services/siteAssetService';
 
 const inter = Inter({
 	subsets: ['latin'],
@@ -12,7 +13,21 @@ const inter = Inter({
 	variable: '--font-inter',
 });
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+	let ogImageUrl = '/trailblazer.jpeg';
+	let ogAlt = 'Trailblazer Academy & Edukonsult campus';
+	try {
+		const assets = await getSiteAssets('seo');
+		const match = assets.find((a) => a.key === 'seo.og.home' || a.key === 'seo.og.default');
+		if (match?.imageUrl) {
+			ogImageUrl = match.imageUrl;
+			if (match.altText) ogAlt = match.altText;
+		}
+	} catch {
+		ogImageUrl = '/trailblazer.jpeg';
+	}
+
+	return {
 	// metadataBase is REQUIRED for Next.js to resolve relative canonical URLs
 	// and for OpenGraph images. Without it, canonical tags emit as relative paths.
 	metadataBase: new URL('https://trailblazer-academy.com'),
@@ -38,10 +53,10 @@ export const metadata: Metadata = {
 			'Trailblazer Academy offers intensive JAMB, WAEC, NECO & GCE exam coaching in Ibadan. Expert tutors, dedicated CBT labs, and proven results.',
 		images: [
 			{
-				url: '/trailblazer.jpeg',
+				url: ogImageUrl,
 				width: 1200,
 				height: 630,
-				alt: 'Trailblazer Academy & Edukonsult campus',
+				alt: ogAlt,
 			},
 		],
 	},
@@ -51,7 +66,7 @@ export const metadata: Metadata = {
 		title: 'Trailblazer Academy & Edukonsult – Secure Your University Admission',
 		description:
 			'Intensive JAMB, WAEC, NECO & GCE prep in Ibadan. Expert tutors, CBT labs, proven results.',
-		images: ['/trailblazer.jpeg'],
+		images: [ogImageUrl],
 	},
 
 	icons: {
@@ -81,9 +96,22 @@ export const metadata: Metadata = {
 			'max-snippet': -1,
 		},
 	},
-};
+	};
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+	let brandingImage = 'https://trailblazer-academy.com/trailblazer.jpeg';
+	try {
+		const brandAssets = await getSiteAssets('branding');
+		const logoAsset = brandAssets.find((a) => a.key === 'brand.logo');
+		if (logoAsset?.imageUrl) {
+			brandingImage = logoAsset.imageUrl.startsWith('http')
+				? logoAsset.imageUrl
+				: `https://trailblazer-academy.com${logoAsset.imageUrl}`;
+		}
+	} catch {
+		brandingImage = 'https://trailblazer-academy.com/trailblazer.jpeg';
+	}
 	// EducationalOrganization JSON-LD — establishes brand authority with Google
 	const jsonLd = {
 		'@context': 'https://schema.org',
@@ -97,7 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			'width': 96,
 			'height': 96,
 		},
-		'image': 'https://trailblazer-academy.com/trailblazer.jpeg',
+		'image': brandingImage,
 		'description':
 			'Trailblazer Academy offers intensive JAMB, WAEC, NECO & GCE exam coaching in Ibadan. Expert tutors, dedicated CBT labs, and proven results.',
 		'telephone': '+2348165999425',
