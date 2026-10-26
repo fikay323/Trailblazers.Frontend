@@ -11,7 +11,8 @@ import {
 	ExternalLink,
 	CheckCircle2,
 	AlertCircle,
-	Sparkles
+	Sparkles,
+	Trash2
 } from 'lucide-react';
 import { SiteAsset, UpdateSiteAssetPayload } from '@/types/site-assets';
 import { MediaUploadModal, AspectRatioOption } from './MediaUploadModal';
@@ -23,6 +24,7 @@ export interface ImageSlotCardProps {
 	recommendedDimensions?: string;
 	onSave: (key: string, payload: UpdateSiteAssetPayload) => Promise<void>;
 	onResetToDefault?: (key: string) => Promise<void>;
+	onDelete?: (key: string) => Promise<void>;
 	tokenOrApiKey?: string;
 }
 
@@ -33,6 +35,7 @@ export function ImageSlotCard({
 	recommendedDimensions = '1200 × 630 px',
 	onSave,
 	onResetToDefault,
+	onDelete,
 	tokenOrApiKey
 }: ImageSlotCardProps) {
 	const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -104,6 +107,18 @@ export function ImageSlotCard({
 			const msg = err instanceof Error ? err.message : 'Failed to reset';
 			setStatusMessage({ type: 'error', text: msg });
 		} finally {
+			setIsSaving(false);
+		}
+	};
+
+	const handleDelete = async () => {
+		if (!onDelete) return;
+		try {
+			setIsSaving(true);
+			await onDelete(asset.key);
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : 'Failed to delete';
+			setStatusMessage({ type: 'error', text: msg });
 			setIsSaving(false);
 		}
 	};
@@ -232,8 +247,22 @@ export function ImageSlotCard({
 
 			{/* Actions Footer */}
 			<div className="flex items-center justify-between gap-2 border-t border-slate-800/80 pt-4 mt-4">
-				<div>
-					{isCustomImage && (
+				<div className="flex items-center gap-1.5">
+					{onDelete && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={handleDelete}
+							disabled={isSaving}
+							className="text-xs text-red-400 hover:text-red-300 hover:bg-red-950/60 h-8 px-2 gap-1 border border-red-900/30"
+						>
+							<Trash2 className="w-3 h-3" />
+							Delete
+						</Button>
+					)}
+
+					{isCustomImage && !onDelete && (
 						<Button
 							type="button"
 							variant="ghost"

@@ -167,6 +167,15 @@ export function MediaManagementView({ apiKey }: MediaManagementViewProps) {
 		setAssets((prev) => [...prev, newAsset]);
 	};
 
+	const handleDeleteAsset = async (key: string) => {
+		if (typeof window !== 'undefined' && !window.confirm(`Are you sure you want to delete "${key}" from the gallery?`)) {
+			return;
+		}
+
+		await deleteSiteAsset(key, apiKey);
+		setAssets((prev) => prev.filter((item) => item.key !== key));
+	};
+
 	const subTabMeta: Array<{ id: MediaSubTab; label: string; icon: React.ComponentType<{ className?: string }>; count: number }> = [
 		{ id: 'seo', label: 'SEO & Social Cards', icon: Share2, count: assets.filter((a) => a.group === 'seo').length },
 		{ id: 'home', label: 'Home Hero Carousel', icon: Sliders, count: assets.filter((a) => a.group === 'home').length },
@@ -375,6 +384,7 @@ export function MediaManagementView({ apiKey }: MediaManagementViewProps) {
 								recommendedDimensions={dimensions}
 								onSave={handleSaveAsset}
 								onResetToDefault={handleResetAsset}
+								onDelete={asset.group === 'gallery' ? handleDeleteAsset : undefined}
 								tokenOrApiKey={apiKey}
 							/>
 						);
